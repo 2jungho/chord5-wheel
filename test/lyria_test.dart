@@ -10,7 +10,7 @@ import 'package:web_socket_channel/io.dart';
 void main() {
   // 사용자가 직접 키를 입력하고 실행해야 함
   // set API_KEY=AIza... && flutter test test/lyria_test.dart
-  final apiKey = "AIzaSyCAe2weJKqDvhWrBZ4mJBhq2a-ZphZ1tbc";
+  final apiKey = "";
 
   group('Lyria Protocol Test', () {
     test('WebSocket Connection & Setup', () async {
