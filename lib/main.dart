@@ -3,13 +3,14 @@ import 'dart:ui';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:url_strategy/url_strategy.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'providers/music_state.dart';
 import 'providers/generator_state.dart';
 import 'providers/settings_state.dart';
 import 'providers/chat_state.dart';
 import 'providers/studio_state.dart';
+import 'providers/lyria_state.dart';
 
 import 'views/home_screen.dart';
 
@@ -24,7 +25,7 @@ import 'package:window_manager/window_manager.dart';
 /// Flutter 바인딩 초기화, 오디오 매니저 초기화 후 앱을 실행합니다.
 void main() async {
   // URL에서 '#' 제거 (PathUrlStrategy 사용)
-  setPathUrlStrategy();
+  usePathUrlStrategy();
 
   // 비동기 초기화를 위한 바인딩 보장
   WidgetsFlutterBinding.ensureInitialized();
@@ -119,6 +120,15 @@ class _MyAppState extends State<MyApp> with WindowListener {
         ChangeNotifierProvider(create: (_) => SettingsState()),
         // StudioState: 코드 스튜디오 상태 관리
         ChangeNotifierProvider(create: (_) => StudioState()),
+        // LyriaState: AI 잼 세션 및 사운드스케이프 상태 관리 (SettingsState의 Gemini Key 동기화)
+        ChangeNotifierProxyProvider<SettingsState, LyriaState>(
+          create: (_) => LyriaState(),
+          update: (_, settings, lyria) {
+            final state = lyria ?? LyriaState();
+            state.setApiKey(settings.geminiApiKey);
+            return state;
+          },
+        ),
       ],
       child: Consumer<SettingsState>(
         builder: (context, settings, _) {

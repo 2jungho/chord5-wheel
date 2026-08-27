@@ -190,12 +190,12 @@ class _PresetSelectorDialogState extends State<PresetSelectorDialog> {
                     color: Theme.of(context)
                         .colorScheme
                         .surfaceContainer
-                        .withOpacity(0.5),
+                        .withValues(alpha: 0.5),
                     margin: const EdgeInsets.only(bottom: 8),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
-                        color: Theme.of(context).dividerColor.withOpacity(0.5),
+                        color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
                       ),
                     ),
                     child: InkWell(

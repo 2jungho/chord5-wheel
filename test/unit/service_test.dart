@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:guitar_theory_app/services/music_theory_service.dart';
 import 'package:guitar_theory_app/models/chord_model.dart';
-import 'package:guitar_theory_app/models/music_constants.dart';
 
 void main() {
   group('MusicTheoryService Tests', () {

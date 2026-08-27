@@ -147,9 +147,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () => setState(() => _isAIChatOpen = true),
                 backgroundColor:
                     Theme.of(context).colorScheme.surfaceContainerHigh,
+                tooltip: 'AI 튜터 열기',
                 child: Icon(Icons.auto_awesome,
                     color: Theme.of(context).colorScheme.tertiary),
-                tooltip: 'AI 튜터 열기',
               )
             : null,
       );

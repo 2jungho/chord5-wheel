@@ -1,8 +1,6 @@
-import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
 // Note: sound_stream is a Flutter plugin and cannot run in pure Dart tests.
 // We will mock the audio part or just test the connection protocol.
@@ -14,7 +12,7 @@ void main() {
 
   group('Lyria Protocol Test', () {
     test('WebSocket Connection & Setup', () async {
-      if (apiKey == null || apiKey.isEmpty) {
+      if (apiKey.isEmpty) {
         print('Skipping test: API_KEY not provided in environment.');
         return;
       }
@@ -94,8 +92,9 @@ void main() {
       }, onDone: () {
         print(
             'Server closed connection. Code: ${channel.closeCode}, Reason: ${channel.closeReason}');
-        if (!completer.isCompleted)
+        if (!completer.isCompleted) {
           completer.completeError('Server closed connection prematurely');
+        }
       });
 
       // Wait for at least one turn completion or timeout

@@ -372,6 +372,37 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
                     ),
                   ],
                 ),
+                const Divider(height: 16),
+                Row(
+                  children: [
+                    const Icon(Icons.auto_awesome, size: 18),
+                    const SizedBox(width: 8),
+                    const Text('추론 강도', style: TextStyle(fontSize: 13)),
+                    const Spacer(),
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton<ThinkingLevel>(
+                        value: settings.thinkingLevel,
+                        isDense: true,
+                        items: ThinkingLevel.values
+                            .map((lvl) => DropdownMenuItem(
+                                  value: lvl,
+                                  child: Text(lvl.label,
+                                      style: const TextStyle(fontSize: 12)),
+                                ))
+                            .toList(),
+                        onChanged: (lvl) {
+                          if (lvl != null) {
+                            settings.setThinkingLevel(lvl);
+                          }
+                        },
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),

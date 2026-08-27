@@ -118,19 +118,14 @@ class ChordUtils {
     final rootIdx = NoteUtils.getNoteIndex(root);
     final (intervals, _, isMinor) = parseChordQuality(quality);
 
-    String simplifiedQuality = '';
-    if (quality.contains('m7b5'))
-      simplifiedQuality = 'm7b5';
-    else if (quality.contains('m7'))
-      simplifiedQuality = 'm7';
-    else if (quality.contains('Maj7') || quality.contains('M7'))
-      simplifiedQuality = 'Maj7';
-    else if (quality.contains('7'))
-      simplifiedQuality = '7';
-    else if (isMinor)
-      simplifiedQuality = 'm7';
-    else
-      simplifiedQuality = 'Maj7';
+    final simplifiedQuality = switch (quality) {
+      _ when quality.contains('m7b5') => 'm7b5',
+      _ when quality.contains('m7') => 'm7',
+      _ when quality.contains('Maj7') || quality.contains('M7') => 'Maj7',
+      _ when quality.contains('7') => '7',
+      _ when isMinor => 'm7',
+      _ => 'Maj7',
+    };
 
     final standardKeys = [
       'C', 'G', 'D', 'A', 'E', 'B', 'F#', 'Db', 'Ab', 'Eb', 'Bb', 'F'
@@ -196,17 +191,19 @@ class ChordUtils {
         if (degree == '9') status = 'Available (9)';
         if (degree == '13') status = 'Available (13)';
       } else if (scaleName.contains('Dorian')) {
-        if (degree == '13')
+        if (degree == '13') {
           status = 'Char. (Maj6)';
-        else
+        } else {
           status = 'Available';
+        }
       } else if (scaleName.contains('Phrygian')) {
         if (degree == '9') status = 'Char. (b9)';
       } else if (scaleName.contains('Lydian')) {
         if (degree == '11') status = 'Char. (#11)';
       } else if (scaleName.contains('Mixolydian')) {
-        if (degree == '11')
+        if (degree == '11') {
           status = 'Avoid (S4)';
+        }
       } else if (scaleName.contains('Aeolian')) {
         if (degree == '13') status = 'Avoid (b6)';
       } else if (scaleName.contains('Locrian')) {

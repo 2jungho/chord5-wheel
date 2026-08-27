@@ -20,10 +20,10 @@ class InstantModePanel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.1),
+        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
         ),
       ),
       child: Row(
@@ -78,7 +78,7 @@ class InstantModePanel extends StatelessWidget {
                       // Prompt for ambient mode music
                       final prompt =
                           "Create an ambient ${modeName.toLowerCase()} backing track in $rootNote. "
-                          "Focus on the characteristic intervals of the ${modeName} mode. "
+                          "Focus on the characteristic intervals of the $modeName mode. "
                           "Style: Ambient, Pad, Slow. Length: loop.";
                       lyria.startJam(prompt);
                     }

@@ -117,7 +117,7 @@ class AICommandService {
     if (isMinor) {
        keyIndex = -1;
        for (int i = 0; i < MusicConstants.KEYS.length; i++) {
-         if (MusicConstants.KEYS[i].minor == root + 'm' || MusicConstants.KEYS[i].minor == root) {
+         if (MusicConstants.KEYS[i].minor == '${root}m' || MusicConstants.KEYS[i].minor == root) {
            keyIndex = i;
            break;
          }

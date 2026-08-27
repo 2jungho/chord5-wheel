@@ -62,6 +62,7 @@ class _InsightReportWidgetState extends State<InsightReportWidget> {
         provider: settings.aiProvider,
         modelName: settings.geminiModel.id,
         systemPrompt: systemPrompt,
+        thinkingLevel: settings.thinkingLevel,
       );
 
       final buffer = StringBuffer();
@@ -104,7 +105,7 @@ class _InsightReportWidgetState extends State<InsightReportWidget> {
               Icon(Icons.lock_person,
                   size: 48,
                   color:
-                      Theme.of(context).colorScheme.outline.withOpacity(0.5)),
+                      Theme.of(context).colorScheme.outline.withValues(alpha: 0.5)),
               const SizedBox(height: 12),
               Text(
                 'AI 분석을 사용하려면 API 키가 필요합니다.',
@@ -238,11 +239,11 @@ class _InsightReportWidgetState extends State<InsightReportWidget> {
               color: Theme.of(context)
                   .colorScheme
                   .surfaceContainerHighest
-                  .withOpacity(0.5),
+                  .withValues(alpha: 0.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
                 side: BorderSide(
-                  color: Theme.of(context).dividerColor.withOpacity(0.5),
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
                 ),
               ),
               child: Padding(

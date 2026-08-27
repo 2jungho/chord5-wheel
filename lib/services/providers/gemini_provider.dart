@@ -6,11 +6,14 @@ class GeminiProvider implements AIProvider {
   late final GenerativeModel _model;
   ChatSession? _session;
   final String? _systemPrompt;
+  final ThinkingLevel? _thinkingLevel;
 
-  GeminiProvider(String apiKey, {String? modelName, String? systemPrompt})
-      : _systemPrompt = systemPrompt {
+  GeminiProvider(String apiKey,
+      {String? modelName, String? systemPrompt, ThinkingLevel? thinkingLevel})
+      : _systemPrompt = systemPrompt,
+        _thinkingLevel = thinkingLevel {
     _model = GenerativeModel(
-      model: modelName ?? GeminiModel.flashLite25.id,
+      model: modelName ?? GeminiModel.flash37.id,
       apiKey: apiKey,
     );
   }
@@ -19,11 +22,31 @@ class GeminiProvider implements AIProvider {
   Stream<String> sendMessageStream(
       String userMessage, String contextStr) async* {
     final bool isFirstMessage = _session == null;
-    if (_session == null) {
-      _session = _model.startChat();
-    }
+    _session ??= _model.startChat();
 
     String fullPrompt = userMessage;
+
+    String reasoningGuidance = '';
+    if (_thinkingLevel != null) {
+      switch (_thinkingLevel!) {
+        case ThinkingLevel.high:
+          reasoningGuidance =
+              '[Reasoning Effort: High]\nPerform deep, multi-layered musical and harmonic analysis, detailed chord-scale relationships, and thorough explanations.';
+          break;
+        case ThinkingLevel.medium:
+          reasoningGuidance =
+              '[Reasoning Effort: Medium]\nProvide balanced, structured analysis with clear and practical musical insights.';
+          break;
+        case ThinkingLevel.low:
+          reasoningGuidance =
+              '[Reasoning Effort: Low]\nProvide fast, concise responses focused directly on the key questions.';
+          break;
+        case ThinkingLevel.off:
+          reasoningGuidance =
+              '[Reasoning Effort: Off]\nProvide direct answers without extended commentary.';
+          break;
+      }
+    }
 
     if (contextStr.isNotEmpty) {
       if (isFirstMessage) {
@@ -41,7 +64,7 @@ CRITICAL INSTRUCTION:
 
         fullPrompt = '''
 $instruction
-
+${reasoningGuidance.isNotEmpty ? '\n$reasoningGuidance\n' : ''}
 [Current App Context]
 $contextStr
 
@@ -50,13 +73,19 @@ $userMessage
 ''';
       } else {
         fullPrompt = '''
-[Context Update]
+${reasoningGuidance.isNotEmpty ? '$reasoningGuidance\n' : ''}[Context Update]
 $contextStr
 
 [User Question]
 $userMessage
 ''';
       }
+    } else if (reasoningGuidance.isNotEmpty) {
+      fullPrompt = '''
+$reasoningGuidance
+
+$userMessage
+''';
     }
 
     final content = Content.text(fullPrompt);

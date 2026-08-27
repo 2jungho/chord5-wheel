@@ -84,6 +84,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
     }
   }
 
+  @override
   Widget build(BuildContext context) {
     final studio = context.watch<StudioState>();
     final session = studio.session;
@@ -160,7 +161,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
           border: Border.all(color: Theme.of(context).dividerColor),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -243,7 +244,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
                                   decoration: BoxDecoration(
                                     color: Theme.of(context)
                                         .dividerColor
-                                        .withOpacity(0.5),
+                                        .withValues(alpha: 0.5),
                                     borderRadius: BorderRadius.circular(2),
                                   ),
                                 ),
@@ -349,7 +350,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
                       VerticalDivider(
                           width: 1,
                           color:
-                              Theme.of(context).dividerColor.withOpacity(0.5)),
+                              Theme.of(context).dividerColor.withValues(alpha: 0.5)),
                       const Expanded(
                         child: SingleChildScrollView(
                           child: SoloingGuidePanel(),
@@ -452,7 +453,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
                 color: Theme.of(context)
                     .colorScheme
                     .surfaceContainerHighest
-                    .withOpacity(0.3),
+                    .withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
@@ -481,7 +482,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
                         color: Theme.of(context)
                             .colorScheme
                             .onSurfaceVariant
-                            .withOpacity(0.8)),
+                            .withValues(alpha: 0.8)),
                   ),
                 ],
               ),
@@ -536,7 +537,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
                   Theme.of(context)
                       .colorScheme
                       .primaryContainer
-                      .withOpacity(0.2), // 선택 시 약간의 틴트
+                      .withValues(alpha: 0.2), // 선택 시 약간의 틴트
                   Theme.of(context).colorScheme.surface,
                 ]
               : [
@@ -550,13 +551,13 @@ class _StudioTimelineState extends State<StudioTimeline> {
         border: Border.all(
           color: isSelected
               ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.primary.withOpacity(0.2),
+              : Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
           width: isSelected ? 2.0 : 1,
         ),
         boxShadow: [
           if (isSelected)
             BoxShadow(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
               blurRadius: 12,
               spreadRadius: 1,
               offset: const Offset(0, 0),
@@ -575,8 +576,15 @@ class _StudioTimelineState extends State<StudioTimeline> {
           onTap: () {
             studio.selectBlock(index);
             // Play sound on selection
-            final notes = TheoryUtils.analyzeChord(block.chordSymbol).notes;
-            AudioManager().playStrum(notes);
+            if (block.voicing != null &&
+                block.voicing!.frets.any((f) => f != -1)) {
+              AudioManager().playVoicing(block.voicing!,
+                  root: block.chordSymbol);
+            } else {
+              final notes =
+                  TheoryUtils.analyzeChord(block.chordSymbol).notes;
+              AudioManager().playStrum(notes);
+            }
           },
           child: Stack(
             children: [
@@ -600,7 +608,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
                           color: Theme.of(context)
                               .colorScheme
                               .onSurface
-                              .withOpacity(0.4),
+                              .withValues(alpha: 0.4),
                         ),
                       ),
                     ),
@@ -631,7 +639,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
                                 color: Theme.of(context)
                                     .colorScheme
                                     .onSurface
-                                    .withOpacity(0.6), // 테마 기반 하얀색/검은색 계열로 수정
+                                    .withValues(alpha: 0.6), // 테마 기반 하얀색/검은색 계열로 수정
                               ),
                             ),
                           ],
@@ -643,10 +651,17 @@ class _StudioTimelineState extends State<StudioTimeline> {
                                 borderRadius: BorderRadius.circular(12),
                                 onTap: () {
                                   studio.selectBlock(index);
-                                  final notes = TheoryUtils.analyzeChord(
-                                          block.chordSymbol)
-                                      .notes;
-                                  AudioManager().playStrum(notes);
+                                  if (block.voicing != null &&
+                                      block.voicing!.frets
+                                          .any((f) => f != -1)) {
+                                    AudioManager().playVoicing(block.voicing!,
+                                        root: block.chordSymbol);
+                                  } else {
+                                    final notes = TheoryUtils.analyzeChord(
+                                            block.chordSymbol)
+                                        .notes;
+                                    AudioManager().playStrum(notes);
+                                  }
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(2.0),
@@ -656,7 +671,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
                                     color: Theme.of(context)
                                         .colorScheme
                                         .secondary
-                                        .withOpacity(0.8),
+                                        .withValues(alpha: 0.8),
                                   ),
                                 ),
                               ),
@@ -753,11 +768,11 @@ class _StudioTimelineState extends State<StudioTimeline> {
                   : (isMainNode
                       ? colorScheme.surfaceContainerHigh
                       : colorScheme.surfaceContainerHighest
-                          .withOpacity(0.3)), // 브릿지도 배경색 부여
+                          .withValues(alpha: 0.3)), // 브릿지도 배경색 부여
               border: isSelected
                   ? Border.all(color: colorScheme.primary, width: 1.5)
                   : (isMainNode
-                      ? Border.all(color: colorScheme.outline.withOpacity(0.2))
+                      ? Border.all(color: colorScheme.outline.withValues(alpha: 0.2))
                       : null),
             ),
             child: Text(
@@ -819,11 +834,11 @@ class _StudioTimelineState extends State<StudioTimeline> {
               color: Theme.of(context)
                   .colorScheme
                   .tertiaryContainer
-                  .withOpacity(0.3),
+                  .withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                   color:
-                      Theme.of(context).colorScheme.tertiary.withOpacity(0.5)),
+                      Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.5)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -973,12 +988,12 @@ class _StudioTimelineState extends State<StudioTimeline> {
                 foregroundColor: isDark ? Colors.white : null,
                 side: BorderSide(
                     color: isDark
-                        ? Colors.white.withOpacity(0.5)
+                        ? Colors.white.withValues(alpha: 0.5)
                         : Theme.of(context)
                             .colorScheme
                             .primary
-                            .withOpacity(0.5)),
-                backgroundColor: isDark ? Colors.white.withOpacity(0.05) : null,
+                            .withValues(alpha: 0.5)),
+                backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : null,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 visualDensity: VisualDensity.compact,
               ),
@@ -1011,12 +1026,12 @@ class _StudioTimelineState extends State<StudioTimeline> {
                 foregroundColor: isDark ? Colors.white : null,
                 side: BorderSide(
                     color: isDark
-                        ? Colors.white.withOpacity(0.5)
+                        ? Colors.white.withValues(alpha: 0.5)
                         : Theme.of(context)
                             .colorScheme
                             .primary
-                            .withOpacity(0.5)),
-                backgroundColor: isDark ? Colors.white.withOpacity(0.05) : null,
+                            .withValues(alpha: 0.5)),
+                backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : null,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 visualDensity: VisualDensity.compact,
               ),
@@ -1157,10 +1172,10 @@ class _StudioTimelineState extends State<StudioTimeline> {
         color: Theme.of(context)
             .colorScheme
             .surfaceContainerHighest
-            .withOpacity(0.5),
+            .withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(8),
         border:
-            Border.all(color: Theme.of(context).dividerColor.withOpacity(0.5)),
+            Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
@@ -1280,7 +1295,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
             color: Theme.of(context).colorScheme.surface,
             border: Border(
               bottom: BorderSide(
-                color: Theme.of(context).dividerColor.withOpacity(0.5),
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
               ),
             ),
           ),
@@ -1415,11 +1430,11 @@ class _StudioTimelineState extends State<StudioTimeline> {
               color: Theme.of(context)
                   .colorScheme
                   .secondaryContainer
-                  .withOpacity(0.9),
+                  .withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 )
@@ -1457,7 +1472,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
         color: containerColor,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: containerColor.withOpacity(0.5),
+          color: containerColor.withValues(alpha: 0.5),
         ),
       ),
       child: Row(

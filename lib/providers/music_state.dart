@@ -275,7 +275,9 @@ class MusicState extends ChangeNotifier with ViewControlStateMixin {
 
     // Calculate final start fret for display logic (similar to CagedList)
     int minFret = 999;
-    for (int f in frets) if (f != -1 && f < minFret) minFret = f;
+    for (int f in frets) {
+      if (f != -1 && f < minFret) minFret = f;
+    }
 
     int displayStartFret =
         minFret != 999 ? minFret : (startFret > 0 ? startFret : 1);

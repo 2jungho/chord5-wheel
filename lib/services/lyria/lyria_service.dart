@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -10,7 +9,7 @@ import 'audio_queue.dart';
 class LyriaService {
   WebSocketChannel? _channel;
   final String _apiKey;
-  final String _model = 'models/gemini-2.0-flash-exp'; // Updated to valid model
+  final String _model = 'models/gemini-2.0-flash-exp';
 
   // Audio System
   final AudioQueue _audioQueue =
@@ -73,10 +72,19 @@ class LyriaService {
           "speech_config": {
             "voice_config": {
               "prebuilt_voice_config": {
-                "voice_name": "Aoede" // Example voice
+                "voice_name": "Aoede"
               }
             }
           }
+        },
+        "system_instruction": {
+          "parts": [
+            {
+              "text": "You are a professional virtual backing band and musical soundscape synthesizer for guitarists. "
+                  "When the user gives you chord progressions, key, tempo, or modal concepts, generate rich, melodic, and rhythmic musical accompaniment (rhythm chords, basslines, groove, ambient textures). "
+                  "Perform expressively and musically to support guitar soloing and harmonic exploration."
+            }
+          ]
         }
       }
     };
@@ -112,13 +120,18 @@ class LyriaService {
     sendJson(msg);
   }
 
+  void stopPlayback() {
+    _audioQueue.clear();
+    _statusController.add("Stopped");
+  }
+
   void _onMessage(dynamic message) {
     if (message is String) {
       try {
         final data = jsonDecode(message);
         _handleServerContent(data);
       } catch (e) {
-        print("Lyria JSON Parse Error: $e");
+        debugPrint("Lyria JSON Parse Error: $e");
       }
     } else if (message is Uint8List) {
       // Binary message direct
@@ -184,7 +197,7 @@ class LyriaService {
     }
   }
 
-  void _onError(error) {
+  void _onError(Object error) {
     _statusController.add("Error: $error");
     disconnect();
   }

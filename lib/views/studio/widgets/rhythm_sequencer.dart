@@ -121,13 +121,13 @@ class RhythmSequencer extends StatelessWidget {
                     : Theme.of(context)
                         .colorScheme
                         .surfaceContainerHighest
-                        .withOpacity(0.2),
+                        .withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(
                   color: isActive
-                      ? Theme.of(context).colorScheme.primary.withOpacity(0.5)
+                      ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.5)
                       : (isBeatStart
-                          ? Colors.grey.withOpacity(0.3)
+                          ? Colors.grey.withValues(alpha: 0.3)
                           : Colors.transparent),
                 ),
               ),
@@ -147,7 +147,7 @@ class RhythmSequencer extends StatelessWidget {
                       width: 2,
                       height: 2,
                       decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.5),
+                        color: Colors.grey.withValues(alpha: 0.5),
                         shape: BoxShape.circle,
                       ),
                     ),

@@ -65,6 +65,7 @@ class _StyleVoicingTabState extends State<StyleVoicingTab>
         modelName: settings.geminiModel.id,
         systemPrompt:
             PromptTemplates.getStyleVoicingSystemPrompt(settings.systemPrompt),
+        thinkingLevel: settings.thinkingLevel,
       );
 
       final prompt =
@@ -116,7 +117,7 @@ class _StyleVoicingTabState extends State<StyleVoicingTab>
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                    color: Theme.of(context).dividerColor.withOpacity(0.5)),
+                    color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
@@ -231,7 +232,7 @@ class _StyleVoicingTabState extends State<StyleVoicingTab>
                 color: Theme.of(context).colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                    color: Theme.of(context).dividerColor.withOpacity(0.5)),
+                    color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,7 +248,7 @@ class _StyleVoicingTabState extends State<StyleVoicingTab>
                       color: Theme.of(context)
                           .colorScheme
                           .primary
-                          .withOpacity(0.1),
+                          .withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -329,7 +330,7 @@ class _StyleVoicingTabState extends State<StyleVoicingTab>
                               color: Theme.of(context)
                                   .colorScheme
                                   .onSurfaceVariant
-                                  .withOpacity(0.8))),
+                                  .withValues(alpha: 0.8))),
                     ],
                   ),
                 ),

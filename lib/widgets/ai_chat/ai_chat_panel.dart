@@ -251,22 +251,23 @@ class _AIChatPanelState extends State<AIChatPanel> {
                     provider == 'gemini' ? settings.geminiModel.id : null;
                 final systemPrompt = settings.systemPrompt;
 
+                final chatState = context.read<ChatState>();
                 Navigator.pop(context); // Close dialog first
 
-                await context.read<ChatState>().editMessage(index, newText,
+                await chatState.editMessage(index, newText,
                     contextData: _getContextData(),
                     modelName: modelName,
-                    systemPrompt: systemPrompt);
+                    systemPrompt: systemPrompt,
+                    thinkingLevel: settings.thinkingLevel);
 
                 // AI 명령 파싱 및 실행
-                if (mounted) {
-                  final messages = context.read<ChatState>().messages;
-                  if (messages.isNotEmpty && messages.last['isUser'] == false) {
-                    final lastMsg = messages.last['text'] as String;
-                    final cmd = AICommandService.parse(lastMsg);
-                    if (cmd != null) {
-                      AICommandService.execute(context, cmd);
-                    }
+                if (!mounted) return;
+                final messages = chatState.messages;
+                if (messages.isNotEmpty && messages.last['isUser'] == false) {
+                  final lastMsg = messages.last['text'] as String;
+                  final cmd = AICommandService.parse(lastMsg);
+                  if (cmd != null && mounted) {
+                    AICommandService.execute(this.context, cmd);
                   }
                 }
               } else {
@@ -304,7 +305,8 @@ class _AIChatPanelState extends State<AIChatPanel> {
     await context.read<ChatState>().sendMessage(text, apiKey, provider,
         contextData: _getContextData(),
         modelName: provider == 'gemini' ? settings.geminiModel.id : null,
-        systemPrompt: systemPrompt);
+        systemPrompt: systemPrompt,
+        thinkingLevel: settings.thinkingLevel);
 
     // AI 명령 파싱 및 실행
     if (mounted) {
@@ -494,7 +496,7 @@ class _AIChatPanelState extends State<AIChatPanel> {
         border: Border.all(color: Theme.of(context).dividerColor),
         boxShadow: [
           BoxShadow(
-              color: Theme.of(context).shadowColor.withOpacity(0.1),
+              color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
               blurRadius: 4)
         ],
       ),
@@ -544,9 +546,7 @@ class _AIChatPanelState extends State<AIChatPanel> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              settings.geminiModel.label
-                                  .replaceFirst('Gemini ', '')
-                                  .replaceFirst('Flash', 'FL'),
+                              '${settings.geminiModel.label.replaceFirst('Gemini ', '')} · ${settings.thinkingLevel.id}',
                               style: GoogleFonts.robotoMono(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
@@ -711,7 +711,7 @@ class _AIChatPanelState extends State<AIChatPanel> {
                                   color: Theme.of(context)
                                       .colorScheme
                                       .outline
-                                      .withOpacity(0.3))
+                                      .withValues(alpha: 0.3))
                               : BorderSide.none,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),

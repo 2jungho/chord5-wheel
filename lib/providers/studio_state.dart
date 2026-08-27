@@ -313,9 +313,7 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
   void addChord(ChordBlock chord) {
     // 인터벌 태그 자동 생성
     String? tag = chord.functionTag;
-    if (tag == null) {
-      tag = TheoryUtils.getFunctionTag(_session.key, chord.chordSymbol);
-    }
+    tag ??= TheoryUtils.getFunctionTag(_session.key, chord.chordSymbol);
 
     final analyzed = TheoryUtils.analyzeChord(chord.chordSymbol);
     final voicings =

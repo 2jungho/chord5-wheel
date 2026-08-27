@@ -39,51 +39,87 @@
     <!-- Dynamically load flutter.js with cache busting -->
     <!-- Flutter bootstrap -->
     <script>
-      console.log("Web Audio Engine Initializing - v8 (Rhythm Support)");
+      console.log("Web Audio Engine Initializing - v9 (Reliable Audio & Fallback)");
 
       let sampler;
+      let fallbackSynth;
       let isLoaded = false;
       let currentInstrument = "guitar_std";
 
+      // Fallback Synth so audio always works immediately
+      try {
+        fallbackSynth = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: "triangle" },
+          envelope: { attack: 0.005, decay: 0.3, sustain: 0.3, release: 0.8 },
+        }).toDestination();
+        fallbackSynth.volume.value = 0;
+      } catch (e) {
+        console.warn("Could not init fallback synth:", e);
+      }
+
       window.setWebInstrument = function (id) {
         currentInstrument = id;
-        console.log("Web Audio: Instrument set to " + id);
       };
 
-      sampler = new Tone.Sampler({
-        urls: {
-          E2: "assets/assets/sounds/E2.mp3",
-          A2: "assets/assets/sounds/A2.mp3",
-          D3: "assets/assets/sounds/D3.mp3",
-          G3: "assets/assets/sounds/G3.mp3",
-          B3: "assets/assets/sounds/B3.mp3",
-          E4: "assets/assets/sounds/E4.mp3",
-          A3: "assets/assets/sounds/A3.mp3",
-          C3: "assets/assets/sounds/C3.mp3",
-          E3: "assets/assets/sounds/E3.mp3",
-          G2: "assets/assets/sounds/G2.mp3",
-        },
-        baseUrl: "./",
-        onload: () => {
-          console.log("Guitar samples mapping completed!");
-          isLoaded = true;
-        },
-      }).toDestination();
+      try {
+        sampler = new Tone.Sampler({
+          urls: {
+            E2: "assets/assets/sounds/E2.mp3",
+            A2: "assets/assets/sounds/A2.mp3",
+            D3: "assets/assets/sounds/D3.mp3",
+            G3: "assets/assets/sounds/G3.mp3",
+            B3: "assets/assets/sounds/B3.mp3",
+            E4: "assets/assets/sounds/E4.mp3",
+            A3: "assets/assets/sounds/A3.mp3",
+            C3: "assets/assets/sounds/C3.mp3",
+            E3: "assets/assets/sounds/E3.mp3",
+            G2: "assets/assets/sounds/G2.mp3",
+          },
+          baseUrl: "./",
+          onload: () => {
+            console.log("Guitar samples mapping completed!");
+            isLoaded = true;
+          },
+          onerror: (err) => {
+            console.warn("Tone.Sampler failed to load some samples, using fallback:", err);
+          },
+        }).toDestination();
+      } catch (e) {
+        console.warn("Tone.Sampler init error:", e);
+      }
 
-      window.playWebGuitarNote = function (note, octave) {
-        if (!isLoaded) return;
-        if (Tone.context.state !== "running") {
-          Tone.start();
+      window.playWebGuitarNote = async function (note, octave) {
+        try {
+          if (Tone.context.state !== "running") {
+            await Tone.start();
+            if (Tone.context.resume) {
+              await Tone.context.resume();
+            }
+          }
+
+          // Normalize note string (e.g. CSharp -> C#)
+          let cleanNote = note
+            .replace("CSharp", "C#")
+            .replace("DSharp", "D#")
+            .replace("FSharp", "F#")
+            .replace("GSharp", "G#")
+            .replace("ASharp", "A#");
+
+          let targetOctave = octave;
+          if (currentInstrument && currentInstrument.includes("bass")) {
+            targetOctave -= 1;
+          }
+
+          const pitch = cleanNote + targetOctave;
+
+          if (isLoaded && sampler) {
+            sampler.triggerAttackRelease(pitch, "2n");
+          } else if (fallbackSynth) {
+            fallbackSynth.triggerAttackRelease(pitch, "2n");
+          }
+        } catch (e) {
+          console.warn("playWebGuitarNote error:", e);
         }
-
-        // Bass Simulation: Shift down 1 octave
-        // Tone.Sampler will improved repitch available samples (e.g. E2 -> E1 = 0.5x speed)
-        let targetOctave = octave;
-        if (currentInstrument.includes("bass")) {
-          targetOctave -= 1;
-        }
-
-        sampler.triggerAttackRelease(note + targetOctave, "2n");
       };
 
       window.scheduleWebSequence = async function (bpm, dataJson) {

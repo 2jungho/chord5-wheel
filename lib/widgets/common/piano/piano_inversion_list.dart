@@ -89,7 +89,7 @@ class _PianoInversionListState extends State<PianoInversionList> {
                           : Border.all(
                               color: Theme.of(context)
                                   .dividerColor
-                                  .withOpacity(0.5)),
+                                  .withValues(alpha: 0.5)),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,

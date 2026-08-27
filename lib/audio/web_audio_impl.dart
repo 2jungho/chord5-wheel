@@ -1,38 +1,39 @@
-import 'package:js/js.dart';
+import 'dart:js_interop';
 
-@JS('window.playWebGuitarNote')
-external void playWebGuitarNote(String note, int octave);
+@JS('playWebGuitarNote')
+external void _playWebGuitarNote(JSString note, JSNumber octave);
 
-@JS('window.scheduleWebSequence')
-external void scheduleWebSequence(int bpm, String progressionJson);
+@JS('scheduleWebSequence')
+external void _scheduleWebSequence(JSNumber bpm, JSString progressionJson);
 
-@JS('window.stopWebAudio')
-external void stopWebAudio();
+@JS('stopWebAudio')
+external void _stopWebAudio();
 
-@JS('window.setWebBPM')
-external void setWebBPM(int bpm);
+@JS('setWebBPM')
+external void _setWebBPM(JSNumber bpm);
 
-@JS('window.setWebInstrument')
-external void setWebInstrument(String id);
+@JS('setWebInstrument')
+external void _setWebInstrument(JSString id);
 
 class WebAudioApi {
   static void playNote(String note, int octave) {
-    playWebGuitarNote(note, octave);
+    _playWebGuitarNote(note.toJS, octave.toJS);
   }
 
   static void scheduleSequence(int bpm, String progressionJson) {
-    scheduleWebSequence(bpm, progressionJson);
+    _scheduleWebSequence(bpm.toJS, progressionJson.toJS);
   }
 
   static void stop() {
-    stopWebAudio();
+    _stopWebAudio();
   }
 
   static void setBpm(int bpm) {
-    setWebBPM(bpm);
+    _setWebBPM(bpm.toJS);
   }
 
   static void setInstrument(String id) {
-    setWebInstrument(id);
+    _setWebInstrument(id.toJS);
   }
 }
+

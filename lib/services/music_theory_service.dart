@@ -7,7 +7,6 @@ import '../utils/theory/note_utils.dart';
 import '../utils/theory/scale_utils.dart';
 import '../utils/theory/chord_utils.dart';
 import '../utils/guitar/voicing_generator.dart';
-import '../utils/guitar/tuning_utils.dart';
 
 class MusicTheoryService {
   /// Calculates scale and diatonic chords based on key and mode indices.
@@ -89,7 +88,9 @@ class MusicTheoryService {
       }
 
       int minFret = 999;
-      for (int f in frets) if (f != -1 && f < minFret) minFret = f;
+      for (int f in frets) {
+        if (f != -1 && f < minFret) minFret = f;
+      }
       int displayStartFret = minFret != 999 ? minFret : (bestStartFret > 0 ? bestStartFret : 1);
       if (minFret == 0) displayStartFret = 1;
 

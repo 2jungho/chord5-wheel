@@ -106,16 +106,15 @@ class FretboardMapper {
     }
 
     if (voicing.tags.contains('CAGED')) {
-      String form = "";
-      if (voicing.name?.startsWith('E Form') ?? false)
-        form = "E";
-      else if (voicing.name?.startsWith('A Form') ?? false)
-        form = "A";
-      else if (voicing.name?.startsWith('D Form') ?? false)
-        form = "D";
-      else if (voicing.name?.startsWith('G Form') ?? false)
-        form = "G";
-      else if (voicing.name?.startsWith('C Form') ?? false) form = "C";
+      final name = voicing.name ?? '';
+      final form = switch (name) {
+        _ when name.startsWith('E Form') => 'E',
+        _ when name.startsWith('A Form') => 'A',
+        _ when name.startsWith('D Form') => 'D',
+        _ when name.startsWith('G Form') => 'G',
+        _ when name.startsWith('C Form') => 'C',
+        _ => '',
+      };
 
       return "CAGED 시스템의 $form 폼을 기반으로 한 보이싱입니다. 개방현 코드($form 코드)의 모양을 그대로 지판 위로 옮겨온 형태로, 넥 전체에서 코드를 찾고 연결하는 데 기초가 됩니다.";
     }

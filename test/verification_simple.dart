@@ -1,6 +1,6 @@
-import '../lib/models/scale_model.dart';
-import '../lib/models/music_constants.dart';
-import '../lib/utils/theory_utils.dart';
+import 'package:guitar_theory_app/models/scale_model.dart';
+import 'package:guitar_theory_app/models/music_constants.dart';
+import 'package:guitar_theory_app/utils/theory_utils.dart';
 
 void main() {
   const root = 'C';

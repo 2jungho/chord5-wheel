@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 
 import 'package:provider/provider.dart';
 import '../../providers/generator_state.dart';
-import 'dialogs/changelog_dialog.dart';
 import '../../utils/changelog_parser.dart';
 
 /// 첫 글자를 영문 대문자로 강제 변환하는 포매터
@@ -187,9 +186,7 @@ class _AppHeaderState extends State<AppHeader> {
                                 ),
                           ),
                           Text(
-                            widget.currentTab == AppTab.explorer
-                                ? 'Circle of Fifths'
-                                : 'Chord Flow & Rhythm',
+                            '${widget.currentTab == AppTab.explorer ? 'Circle of Fifths' : 'Chord Flow & Rhythm'}${_latestVersion.isNotEmpty ? '  v$_latestVersion' : ''}',
                             style: TextStyle(
                               color: Theme.of(context)
                                   .colorScheme

@@ -184,11 +184,11 @@ class ScaleVisualizationSection extends StatelessWidget {
                   ? Theme.of(context).colorScheme.onPrimary
                   : Theme.of(context).colorScheme.onSurface;
               final subTextColor = shouldHighlight
-                  ? Theme.of(context).colorScheme.onPrimary.withOpacity(0.8)
+                  ? Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8)
                   : Theme.of(context)
                       .colorScheme
                       .onSurfaceVariant
-                      .withOpacity(0.7);
+                      .withValues(alpha: 0.7);
 
               return Container(
                   width: 38,
@@ -199,7 +199,7 @@ class ScaleVisualizationSection extends StatelessWidget {
                       boxShadow: [
                         if (shouldHighlight)
                           BoxShadow(
-                            color: bgColor.withOpacity(0.3),
+                            color: bgColor.withValues(alpha: 0.3),
                             blurRadius: 4,
                             offset: const Offset(0, 1),
                           ),

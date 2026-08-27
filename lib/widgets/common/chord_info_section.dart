@@ -35,9 +35,11 @@ class ChordInfoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     // 퀄리티 표시용 문자열 변환
     String displayQuality = quality;
-    if (quality == 'm')
+    if (quality == 'm') {
       displayQuality = 'minor';
-    else if (quality == 'maj7') displayQuality = 'major 7';
+    } else if (quality == 'maj7') {
+      displayQuality = 'major 7';
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

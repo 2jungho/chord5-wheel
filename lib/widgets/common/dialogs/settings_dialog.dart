@@ -78,10 +78,10 @@ class _SettingsDialogState extends State<SettingsDialog> {
           decoration: BoxDecoration(
             color: isSelected
                 ? colorScheme.primaryContainer
-                : colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(8),
             border: isSelected
-                ? Border.all(color: colorScheme.primary.withOpacity(0.5))
+                ? Border.all(color: colorScheme.primary.withValues(alpha: 0.5))
                 : Border.all(color: Colors.transparent),
           ),
           child: Row(
@@ -301,7 +301,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                             color: Theme.of(context)
                                 .colorScheme
                                 .surfaceContainerHighest
-                                .withOpacity(0.3),
+                                .withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                                 color: Theme.of(context).dividerColor),
@@ -375,7 +375,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                                     color: Theme.of(context)
                                         .colorScheme
                                         .surfaceContainerHighest
-                                        .withOpacity(0.3),
+                                        .withValues(alpha: 0.3),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: DropdownButtonHideUnderline(
@@ -392,8 +392,62 @@ class _SettingsDialogState extends State<SettingsDialog> {
                                               ))
                                           .toList(),
                                       onChanged: (m) {
-                                        if (m != null)
+                                        if (m != null) {
                                           settings.setGeminiModel(m);
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          // Thinking Level Selector
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  '추론 강도 (Thinking)',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 7,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest
+                                        .withValues(alpha: 0.3),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<ThinkingLevel>(
+                                      value: settings.thinkingLevel,
+                                      isDense: true,
+                                      isExpanded: true,
+                                      items: ThinkingLevel.values
+                                          .map((lvl) => DropdownMenuItem(
+                                                value: lvl,
+                                                child: Text(lvl.label,
+                                                    style: const TextStyle(
+                                                        fontSize: 13)),
+                                              ))
+                                          .toList(),
+                                      onChanged: (lvl) {
+                                        if (lvl != null) {
+                                          settings.setThinkingLevel(lvl);
+                                        }
                                       },
                                     ),
                                   ),
@@ -452,7 +506,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                               fillColor: Theme.of(context)
                                   .colorScheme
                                   .surfaceContainerHighest
-                                  .withOpacity(0.3),
+                                  .withValues(alpha: 0.3),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
                                 borderSide: BorderSide.none,
@@ -510,7 +564,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                 color: Theme.of(context)
                     .colorScheme
                     .surfaceContainerHighest
-                    .withOpacity(0.3),
+                    .withValues(alpha: 0.3),
                 borderRadius:
                     const BorderRadius.vertical(bottom: Radius.circular(20)),
               ),
@@ -523,7 +577,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                           color: Theme.of(context)
                               .colorScheme
                               .onSurface
-                              .withOpacity(0.5))),
+                              .withValues(alpha: 0.5))),
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: TextButton.styleFrom(
@@ -556,7 +610,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
               fillColor: Theme.of(context)
                   .colorScheme
                   .surfaceContainerHighest
-                  .withOpacity(0.3),
+                  .withValues(alpha: 0.3),
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide.none),
@@ -590,9 +644,9 @@ class _SettingsDialogState extends State<SettingsDialog> {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.1),
+          color: Colors.green.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.green.withOpacity(0.3)),
+          border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [

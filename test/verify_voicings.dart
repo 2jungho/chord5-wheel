@@ -1,6 +1,6 @@
-import '../lib/utils/guitar_utils.dart';
-import '../lib/utils/theory_utils.dart';
-import '../lib/models/chord_model.dart'; // Import ChordVoicing class
+import 'package:guitar_theory_app/utils/guitar_utils.dart';
+import 'package:guitar_theory_app/utils/theory_utils.dart';
+import 'package:guitar_theory_app/models/chord_model.dart'; // Import ChordVoicing class
 
 void main() {
   print('=== Verifying Drop & Shell Voicings ===\n');

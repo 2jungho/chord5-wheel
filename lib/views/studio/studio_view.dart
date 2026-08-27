@@ -5,6 +5,7 @@ import '../../widgets/common/fretboard/fretboard_section.dart';
 import '../../widgets/common/view_control_panel.dart';
 import 'widgets/studio_timeline.dart';
 import 'widgets/famous_songs_panel.dart';
+import 'widgets/lyria_jam_panel.dart';
 
 import '../../utils/guitar_utils.dart';
 import '../../utils/theory_utils.dart';
@@ -138,13 +139,20 @@ class _StudioViewState extends State<StudioView> {
                       width: 60,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).dividerColor.withOpacity(0.5),
+                        color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                   ),
                 ),
               ),
+
+              const SizedBox(height: 8),
+
+              // AI Jam Session & Backing Band Panel
+              const LyriaJamPanel(),
+
+              const SizedBox(height: 16),
 
               // Famous Songs Panel (Independent Section)
               FamousSongsPanel(session: session),

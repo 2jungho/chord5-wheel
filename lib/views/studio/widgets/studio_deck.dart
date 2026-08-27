@@ -36,7 +36,7 @@ class _StudioDeckState extends State<StudioDeck>
         border: Border.all(color: Theme.of(context).dividerColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -96,7 +96,7 @@ class _StudioDeckState extends State<StudioDeck>
       children: [
         Icon(Icons.video_library,
             size: 48,
-            color: Theme.of(context).colorScheme.secondary.withOpacity(0.5)),
+            color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.5)),
         const SizedBox(height: 16),
         const Text('YouTube & Backing Track',
             style: TextStyle(fontWeight: FontWeight.bold)),

@@ -99,10 +99,10 @@ class CircleOfFifthsSelector extends StatelessWidget {
       List<KeyData> keys) {
     final RenderBox box = context.findRenderObject() as RenderBox;
     final Offset localPos = box.globalToLocal(details.globalPosition);
-    final Center = Offset(radius, radius);
+    final center = Offset(radius, radius);
 
-    final dx = localPos.dx - Center.dx;
-    final dy = localPos.dy - Center.dy;
+    final dx = localPos.dx - center.dx;
+    final dy = localPos.dy - center.dy;
 
     final dist = sqrt(dx * dx + dy * dy);
 

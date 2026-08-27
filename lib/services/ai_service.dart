@@ -11,11 +11,13 @@ class AIService {
       {required String apiKey,
       required String provider,
       String? modelName,
-      String? systemPrompt}) {
+      String? systemPrompt,
+      ThinkingLevel? thinkingLevel}) {
     if (provider == 'gemini') {
       _provider = GeminiProvider(apiKey.trim(),
-          modelName: modelName ?? GeminiModel.flashLite25.id,
-          systemPrompt: systemPrompt);
+          modelName: modelName ?? GeminiModel.flash37.id,
+          systemPrompt: systemPrompt,
+          thinkingLevel: thinkingLevel);
     } else {
       _provider = OpenAIProvider(apiKey.trim(), systemPrompt: systemPrompt);
     }

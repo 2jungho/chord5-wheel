@@ -70,6 +70,7 @@ class _AISongSearchDialogState extends State<AISongSearchDialog> {
         provider: settings.aiProvider,
         modelName: settings.geminiModel.id,
         systemPrompt: systemPrompt,
+        thinkingLevel: settings.thinkingLevel,
       );
 
       final buffer = StringBuffer();
@@ -157,7 +158,7 @@ class _AISongSearchDialogState extends State<AISongSearchDialog> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: _selectedSection,
+                  initialValue: _selectedSection,
                   decoration: const InputDecoration(
                     labelText: '요청 구간',
                     border: OutlineInputBorder(),
@@ -253,7 +254,7 @@ class _AISongSearchDialogState extends State<AISongSearchDialog> {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color:
-                Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
@@ -300,7 +301,7 @@ class _AISongSearchDialogState extends State<AISongSearchDialog> {
                     Text(chord,
                         style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 18)),
-                    Text('${dur}박자',
+                    Text('$dur박자',
                         style:
                             const TextStyle(fontSize: 10, color: Colors.grey)),
                   ],

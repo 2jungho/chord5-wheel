@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 // Mock classes to simulate the environment
 class StudioState {

@@ -75,7 +75,9 @@ class FretboardMapWidget extends StatelessWidget {
 
             for (var marker in markers) {
               if (visibleIntervals != null &&
-                  !visibleIntervals!.contains(marker.interval)) continue;
+                  !visibleIntervals!.contains(marker.interval)) {
+                continue;
+              }
 
               final noteIdx = (openNoteIdx + marker.fret) % 12;
               final useSharp = (rootNote != null &&
@@ -96,7 +98,7 @@ class FretboardMapWidget extends StatelessWidget {
         decoration: BoxDecoration(
           color: isDark ? colorScheme.surfaceContainerHighest : Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: dividerColor.withOpacity(0.5)),
+          border: Border.all(color: dividerColor.withValues(alpha: 0.5)),
         ),
         child: PianoKeysWidget(
           rootNote: rootNote,
@@ -116,7 +118,7 @@ class FretboardMapWidget extends StatelessWidget {
             : const Color(
                 0xFFF1F5F9), // Light Mode: Slate 100 for a cleaner look
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: dividerColor.withOpacity(0.5), width: 1),
+        border: Border.all(color: dividerColor.withValues(alpha: 0.5), width: 1),
       ),
       child: RepaintBoundary(
         child: CustomPaint(
@@ -218,7 +220,9 @@ class _FretboardPainter extends CustomPainter {
           highlightMap.forEach((stringIdx, markers) {
             for (final marker in markers) {
               if (visibleIntervals != null &&
-                  !visibleIntervals!.contains(marker.interval)) continue;
+                  !visibleIntervals!.contains(marker.interval)) {
+                continue;
+              }
               if (marker.fret >= zone.min && marker.fret <= zone.max) score++;
             }
           });
@@ -227,10 +231,11 @@ class _FretboardPainter extends CustomPainter {
             bestZone = zone;
           }
         }
-        if (bestZone != null)
+        if (bestZone != null) {
           zones = [bestZone];
-        else
+        } else {
           zones = [];
+        }
       } else {
         zones = [];
       }
@@ -335,7 +340,7 @@ class _FretboardPainter extends CustomPainter {
           Path.combine(PathOperation.difference, fullPath, zonePath);
 
       final vignettePaint = Paint()
-        ..color = Colors.black.withOpacity(0.55) // 다크 모드/라이트 모드 공통적으로 어두운 오버레이
+        ..color = Colors.black.withValues(alpha: 0.55) // 다크 모드/라이트 모드 공통적으로 어두운 오버레이
         ..style = PaintingStyle.fill;
 
       // Blur 효과를 주어 경계를 부드럽게 (Soft Vignette)
@@ -400,7 +405,7 @@ class _FretboardPainter extends CustomPainter {
         if (isResolution) {
           // Add a small glow to resolution lines
           canvas.drawCircle(Offset(toX, toY), 8,
-              Paint()..color = const Color(0xFFfbbf24).withOpacity(0.3));
+              Paint()..color = const Color(0xFFfbbf24).withValues(alpha: 0.3));
         }
       }
     }
@@ -415,7 +420,9 @@ class _FretboardPainter extends CustomPainter {
       for (final marker in markers) {
         if (marker.fret > fretCount) continue;
         if (visibleIntervals != null &&
-            !visibleIntervals!.contains(marker.interval)) continue;
+            !visibleIntervals!.contains(marker.interval)) {
+          continue;
+        }
 
         bool isTarget = false;
         if (voiceLeadingLines != null) {
@@ -451,23 +458,24 @@ class _FretboardPainter extends CustomPainter {
           strokeColor = Colors.transparent;
 
           // Spotlight 오버레이 아래에 있는(Dimmed) 마커는 더 희미하게
-          if (isDimmed)
-            fillColor = fillColor.withOpacity(0.3); // 기존 0.15보다 약간 높임 (오버레이 감안)
+          if (isDimmed) {
+            fillColor = fillColor.withValues(alpha: 0.3); // 기존 0.15보다 약간 높임 (오버레이 감안)
+          }
         } else {
           final iv = marker.interval;
-          if (iv == '1P' || iv == '1')
-            fillColor = const Color(0xFFef4444);
-          else if (iv.contains('3'))
-            fillColor = iv.contains('M')
+          fillColor = switch (iv) {
+            '1P' || '1' => const Color(0xFFef4444),
+            _ when iv.contains('3') => iv.contains('M')
                 ? const Color(0xFF60a5fa)
-                : const Color(0xFF22d3ee);
-          else if (iv.contains('5'))
-            fillColor = const Color(0xFFfacc15);
-          else if (iv.contains('7')) fillColor = const Color(0xFF4ade80);
+                : const Color(0xFF22d3ee),
+            _ when iv.contains('5') => const Color(0xFFfacc15),
+            _ when iv.contains('7') => const Color(0xFF4ade80),
+            _ => fillColor,
+          };
         }
 
         canvas.drawCircle(Offset(x, y), 11,
-            Paint()..color = strokeColor.withOpacity(isDimmed ? 0.2 : 1.0));
+            Paint()..color = strokeColor.withValues(alpha: isDimmed ? 0.2 : 1.0));
 
         if (isTarget) {
           // Target Ring pops over everything
@@ -487,7 +495,7 @@ class _FretboardPainter extends CustomPainter {
                 text: marker.interval,
                 style: TextStyle(
                     color: const Color(0xFF1e293b)
-                        .withOpacity((marker.isGhost || isDimmed) ? 0.5 : 1.0),
+                        .withValues(alpha: (marker.isGhost || isDimmed) ? 0.5 : 1.0),
                     fontSize: 9,
                     fontWeight: FontWeight.bold)),
             textDirection: TextDirection.ltr)
@@ -500,7 +508,9 @@ class _FretboardPainter extends CustomPainter {
     if (voiceLeadingLines != null) {
       final drawnPoints = <String>{};
       highlightMap.forEach((s, markers) {
-        for (var m in markers) drawnPoints.add('${m.fret}-$s');
+        for (var m in markers) {
+          drawnPoints.add('${m.fret}-$s');
+        }
       });
 
       for (final line in voiceLeadingLines!) {

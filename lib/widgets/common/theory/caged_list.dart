@@ -128,7 +128,7 @@ class _CagedListState extends State<CagedList> {
     state.selectCagedPattern(
         item.pattern.name, item.pattern.cagedName); // 패턴 선택 상태 업데이트
     state.setCustomVoicing(item.result.voicing);
-    AudioManager().playStrum(item.result.notes);
+    AudioManager().playVoicing(item.result.voicing, root: state.selectedChord.root);
   }
 
   _CagedResult _calculateCagedVoicing(

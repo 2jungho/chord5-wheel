@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/ai_service.dart';
+import '../models/gemini_model.dart';
 
 class ChatState with ChangeNotifier {
   final List<Map<String, dynamic>> _messages = [];
@@ -13,6 +14,7 @@ class ChatState with ChangeNotifier {
   String? _currentProvider;
   String? _currentModel;
   String? _currentSystemPrompt;
+  ThinkingLevel? _currentThinkingLevel;
 
   List<Map<String, dynamic>> get messages => _messages;
   bool get isLoading => _isLoading;
@@ -70,6 +72,7 @@ class ChatState with ChangeNotifier {
     required Map<String, dynamic> contextData,
     String? modelName,
     String? systemPrompt,
+    ThinkingLevel? thinkingLevel,
   }) async {
     if (index < 0 || index >= _messages.length || _isLoading) return;
 
@@ -91,7 +94,8 @@ class ChatState with ChangeNotifier {
     await _sendAIRequest(newText, _currentApiKey!, provider,
         contextData: contextData,
         modelName: modelName,
-        systemPrompt: systemPrompt);
+        systemPrompt: systemPrompt,
+        thinkingLevel: thinkingLevel);
   }
 
   // 마지막 메시지 재생성
@@ -99,6 +103,7 @@ class ChatState with ChangeNotifier {
     required Map<String, dynamic> contextData,
     String? modelName,
     String? systemPrompt,
+    ThinkingLevel? thinkingLevel,
   }) async {
     if (_messages.isEmpty || _isLoading) return;
 
@@ -124,14 +129,16 @@ class ChatState with ChangeNotifier {
     await _sendAIRequest(text, _currentApiKey!, provider,
         contextData: contextData,
         modelName: modelName,
-        systemPrompt: systemPrompt);
+        systemPrompt: systemPrompt,
+        thinkingLevel: thinkingLevel);
   }
 
   // 메시지 추가 및 API 호출 (Public)
   Future<void> sendMessage(String text, String apiKey, String provider,
       {Map<String, dynamic>? contextData,
       String? modelName,
-      String? systemPrompt}) async {
+      String? systemPrompt,
+      ThinkingLevel? thinkingLevel}) async {
     if (text.trim().isEmpty) return;
 
     // 1. 사용자 메시지 추가
@@ -142,14 +149,16 @@ class ChatState with ChangeNotifier {
     await _sendAIRequest(text, apiKey, provider,
         contextData: contextData,
         modelName: modelName,
-        systemPrompt: systemPrompt);
+        systemPrompt: systemPrompt,
+        thinkingLevel: thinkingLevel);
   }
 
   // 실제 AI 요청 로직 (Private)
   Future<void> _sendAIRequest(String text, String apiKey, String provider,
       {Map<String, dynamic>? contextData,
       String? modelName,
-      String? systemPrompt}) async {
+      String? systemPrompt,
+      ThinkingLevel? thinkingLevel}) async {
     _isLoading = true;
     notifyListeners();
 
@@ -158,16 +167,19 @@ class ChatState with ChangeNotifier {
         _currentApiKey != apiKey ||
         _currentProvider != provider ||
         _currentModel != modelName ||
-        _currentSystemPrompt != systemPrompt) {
+        _currentSystemPrompt != systemPrompt ||
+        _currentThinkingLevel != thinkingLevel) {
       _aiService = AIService(
           apiKey: apiKey,
           provider: provider,
           modelName: modelName,
-          systemPrompt: systemPrompt);
+          systemPrompt: systemPrompt,
+          thinkingLevel: thinkingLevel);
       _currentApiKey = apiKey;
       _currentProvider = provider;
       _currentModel = modelName;
       _currentSystemPrompt = systemPrompt;
+      _currentThinkingLevel = thinkingLevel;
     }
 
     try {

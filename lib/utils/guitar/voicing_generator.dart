@@ -28,14 +28,13 @@ class VoicingGenerator {
       },
     };
 
-    String qKey = 'Maj7';
-    if (quality.contains('m7b5'))
-      qKey = 'm7b5';
-    else if (quality.contains('m7'))
-      qKey = 'm7';
-    else if (quality.contains('Maj7'))
-      qKey = 'Maj7';
-    else if (quality.contains('7')) qKey = '7';
+    final qKey = switch (quality) {
+      _ when quality.contains('m7b5') => 'm7b5',
+      _ when quality.contains('m7') => 'm7',
+      _ when quality.contains('Maj7') => 'Maj7',
+      _ when quality.contains('7') => '7',
+      _ => 'Maj7',
+    };
 
     final s = shapes[qKey] ?? shapes['Maj7']!;
 

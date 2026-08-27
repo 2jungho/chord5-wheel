@@ -89,7 +89,7 @@ class HuggingFaceService implements MusicGeneratorService {
               'Model is loading. Waiting ${waitTime.toStringAsFixed(1)}s...');
           await Future.delayed(
               Duration(milliseconds: (waitTime * 1000).toInt()));
-          return _generateWithRetry(prompt, onStatusChanged, attempt + 1);
+          return await _generateWithRetry(prompt, onStatusChanged, attempt + 1);
         } else {
           onStatusChanged?.call('Error: Model loading took too long.');
           return null;

@@ -26,8 +26,9 @@ class SettingsState extends ChangeNotifier {
   // 5. Theme Mode
   ThemeMode _themeMode = ThemeMode.dark;
 
-  // 6. Gemini Model
-  GeminiModel _geminiModel = GeminiModel.flashLite25;
+  // 6. Gemini Model & Thinking Level
+  GeminiModel _geminiModel = GeminiModel.flash37;
+  ThinkingLevel _thinkingLevel = ThinkingLevel.high;
 
   // 7. System Prompt
   String _systemPrompt = '''
@@ -84,6 +85,7 @@ class SettingsState extends ChangeNotifier {
   String get openAiApiKey => _openAiApiKey;
   ThemeMode get themeMode => _themeMode;
   GeminiModel get geminiModel => _geminiModel;
+  ThinkingLevel get thinkingLevel => _thinkingLevel;
   String get systemPrompt => _systemPrompt;
   double get chatFontSize => _chatFontSize;
 
@@ -114,7 +116,12 @@ class SettingsState extends ChangeNotifier {
     }
     final String? modelId = _prefs?.getString('geminiModel');
     _geminiModel =
-        modelId != null ? GeminiModel.fromId(modelId) : GeminiModel.flashLite25;
+        modelId != null ? GeminiModel.fromId(modelId) : GeminiModel.flash37;
+
+    final String? thinkingId = _prefs?.getString('thinkingLevel');
+    _thinkingLevel = thinkingId != null
+        ? ThinkingLevel.fromId(thinkingId)
+        : _geminiModel.defaultThinking;
 
     _systemPrompt = _prefs?.getString('systemPrompt') ?? _systemPrompt;
     _chatFontSize = _prefs?.getDouble('chatFontSize') ?? 14.0;
@@ -162,6 +169,16 @@ class SettingsState extends ChangeNotifier {
     if (_geminiModel != model) {
       _geminiModel = model;
       _prefs?.setString('geminiModel', _geminiModel.id);
+      _thinkingLevel = model.defaultThinking;
+      _prefs?.setString('thinkingLevel', _thinkingLevel.id);
+      notifyListeners();
+    }
+  }
+
+  void setThinkingLevel(ThinkingLevel level) {
+    if (_thinkingLevel != level) {
+      _thinkingLevel = level;
+      _prefs?.setString('thinkingLevel', _thinkingLevel.id);
       notifyListeners();
     }
   }

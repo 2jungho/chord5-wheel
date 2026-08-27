@@ -58,6 +58,7 @@ class _ModulationDialogState extends State<ModulationDialog> {
         modelName: settings.geminiModel.id,
         systemPrompt:
             PromptTemplates.getModulationSystemPrompt(settings.systemPrompt),
+        thinkingLevel: settings.thinkingLevel,
       );
 
       final prompt = PromptTemplates.getModulationUserPrompt(
@@ -159,7 +160,7 @@ class _ModulationDialogState extends State<ModulationDialog> {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color:
-                Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -238,9 +239,9 @@ class _ModulationDialogState extends State<ModulationDialog> {
                               color: Theme.of(context)
                                   .colorScheme
                                   .outline
-                                  .withOpacity(0.3)),
+                                  .withValues(alpha: 0.3)),
                         ),
-                        child: Text('${duration} beats',
+                        child: Text('$duration beats',
                             style: TextStyle(
                                 fontSize: 10,
                                 color: Theme.of(context)
@@ -266,10 +267,10 @@ class _ModulationDialogState extends State<ModulationDialog> {
             color: Theme.of(context)
                 .colorScheme
                 .primary
-                .withOpacity(0.05), // 부드러운 배경색
+                .withValues(alpha: 0.05), // 부드러운 배경색
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
             ),
           ),
           child: SingleChildScrollView(
@@ -301,7 +302,7 @@ class _ModulationDialogState extends State<ModulationDialog> {
                     color: Theme.of(context)
                         .colorScheme
                         .onSurface
-                        .withOpacity(0.9),
+                        .withValues(alpha: 0.9),
                   ),
                 ),
               ],
@@ -407,7 +408,7 @@ class _ModulationDialogState extends State<ModulationDialog> {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Icon(
           Icons.arrow_forward_rounded,
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
           size: 28,
         ),
       ),
@@ -495,7 +496,7 @@ class _ModulationDialogState extends State<ModulationDialog> {
                             ? Theme.of(context)
                                 .colorScheme
                                 .onPrimary
-                                .withOpacity(0.8)
+                                .withValues(alpha: 0.8)
                             : Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
@@ -522,7 +523,7 @@ class _ModulationDialogState extends State<ModulationDialog> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),

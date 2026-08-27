@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart'; // for kIsWeb
+// for kIsWeb
 import 'package:flutter/material.dart';
 import '../../../models/progression/progression_models.dart';
 import '../../../utils/theory_utils.dart';
@@ -81,7 +81,8 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
           apiKey: apiKey,
           provider: provider,
           modelName: settings.geminiModel.id,
-          systemPrompt: systemPrompt);
+          systemPrompt: systemPrompt,
+          thinkingLevel: settings.thinkingLevel);
 
       // 스트림 응답 수신 및 누적
       final stream = aiService.sendMessageStream(userPrompt);
@@ -189,7 +190,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
         color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.5),
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
         ),
       ),
       child: Column(
@@ -244,7 +245,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                             color: Theme.of(context)
                                 .colorScheme
                                 .primary
-                                .withOpacity(0.5)),
+                                .withValues(alpha: 0.5)),
                       ),
                     ),
                   ),
@@ -268,7 +269,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                      color: Theme.of(context).dividerColor.withOpacity(0.5)),
+                      color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
@@ -384,7 +385,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
               border: Border.all(
                 color: isPrimary
                     ? Colors.transparent // 테두리 제거
-                    : colorScheme.outline.withOpacity(0.2),
+                    : colorScheme.outline.withValues(alpha: 0.2),
               ),
             ),
             child: Icon(
@@ -412,11 +413,11 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
             color: Theme.of(context).colorScheme.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               ),
@@ -522,10 +523,10 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
             isMobile ? double.infinity : 450, // Removed fixed width for mobile
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           ),
         ),
         child: Row(
@@ -649,11 +650,11 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
             color: Theme.of(context)
                 .colorScheme
                 .primary
-                .withOpacity(0.3), // AI 결과임을 강조하기 위해 테두리 색상 변경
+                .withValues(alpha: 0.3), // AI 결과임을 강조하기 위해 테두리 색상 변경
           ),
           boxShadow: [
             BoxShadow(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
               blurRadius: 10,
               spreadRadius: 1,
             ),
@@ -793,7 +794,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
         color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.5),
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
         ),
       ),
       child: Column(
@@ -829,7 +830,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
               color: Theme.of(context)
                   .colorScheme
                   .surfaceContainerHigh
-                  .withOpacity(0.3),
+                  .withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
             ),
             child: LayoutBuilder(builder: (context, promoConstraints) {
@@ -843,7 +844,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                       color: Theme.of(context)
                           .colorScheme
                           .primary
-                          .withOpacity(0.5),
+                          .withValues(alpha: 0.5),
                     ),
                     const SizedBox(width: 16),
                   ],
@@ -930,10 +931,10 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color:
-            Theme.of(context).colorScheme.surfaceContainerHigh.withOpacity(0.5),
+            Theme.of(context).colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.3),
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -998,7 +999,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
         border:
-            Border.all(color: Theme.of(context).dividerColor.withOpacity(0.5)),
+            Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1047,7 +1048,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
           foregroundColor: Theme.of(context).colorScheme.secondary,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           backgroundColor:
-              Theme.of(context).colorScheme.secondaryContainer.withOpacity(0.3),
+              Theme.of(context).colorScheme.secondaryContainer.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         ),
       ),
@@ -1062,7 +1063,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
         border:
-            Border.all(color: Theme.of(context).dividerColor.withOpacity(0.5)),
+            Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(

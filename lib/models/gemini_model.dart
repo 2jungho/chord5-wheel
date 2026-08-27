@@ -1,18 +1,46 @@
-enum GeminiModel {
-  flash3('gemini-3-flash-preview', 'Gemini 3.0 Flash'),
-  flash25('gemini-2.5-flash', 'Gemini 2.5 Flash'),
-  flashLite25('gemini-2.5-flash-lite', 'Gemini 2.5 Flash Lite'),
-  gemma3_27b('gemma-3-27b-it', 'Gemma 3 27B');
+enum ThinkingLevel {
+  high('high', 'High (심층 추론)'),
+  medium('medium', 'Medium (균형 추론, Fast)'),
+  low('low', 'Low (빠른 응답)'),
+  off('off', 'Off (추론 끄기)');
 
   final String id;
   final String label;
 
-  const GeminiModel(this.id, this.label);
+  const ThinkingLevel(this.id, this.label);
+
+  static ThinkingLevel fromId(String id) {
+    return ThinkingLevel.values.firstWhere(
+      (e) => e.id.toLowerCase() == id.toLowerCase(),
+      orElse: () => ThinkingLevel.medium,
+    );
+  }
+}
+
+enum GeminiModel {
+  flash37('gemini-3.7-flash', 'Gemini 3.7 Flash', ThinkingLevel.high),
+  flash36('gemini-3.6-flash', 'Gemini 3.6 Flash', ThinkingLevel.medium),
+  flash35('gemini-3.5-flash', 'Gemini 3.5 Flash', ThinkingLevel.medium),
+  flash35Lite('gemini-3.5-flash-lite', 'Gemini 3.5 Flash Lite', ThinkingLevel.low),
+  pro31('gemini-3.1-pro-preview', 'Gemini 3.1 Pro', ThinkingLevel.low),
+  flash25('gemini-2.5-flash', 'Gemini 2.5 Flash', ThinkingLevel.off),
+  pro25('gemini-2.5-pro', 'Gemini 2.5 Pro', ThinkingLevel.off),
+  gemma4_31b('gemma-4-31b-it', 'Gemma 4 31B', ThinkingLevel.off);
+
+  final String id;
+  final String label;
+  final ThinkingLevel defaultThinking;
+
+  const GeminiModel(this.id, this.label, this.defaultThinking);
 
   static GeminiModel fromId(String id) {
+    if (id == 'gemini-3-flash-preview') return GeminiModel.flash37;
+    if (id == 'gemini-2.5-flash-lite') return GeminiModel.flash35Lite;
+    if (id == 'gemma-3-27b-it') return GeminiModel.gemma4_31b;
+
     return GeminiModel.values.firstWhere(
       (e) => e.id == id,
-      orElse: () => GeminiModel.flashLite25,
+      orElse: () => GeminiModel.flash37,
     );
   }
 }

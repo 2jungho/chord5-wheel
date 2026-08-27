@@ -1,5 +1,6 @@
-import 'web_audio_api.dart';
 import 'dart:async';
+import 'web_audio_api.dart';
+import '../models/chord_model.dart';
 import '../utils/theory_utils.dart';
 
 /// This is the web-only implementation of AudioManager.
@@ -9,21 +10,60 @@ class AudioManager {
   factory AudioManager() => _instance;
   AudioManager._internal();
 
-  bool _isReady = false;
+  Future<void> initialize() async {}
 
-  Future<void> initialize() async {
-    if (_isReady) return;
-    print("AudioManager (Web): Audio is ready.");
-    _isReady = true;
+  Future<void> playNote(String noteInput, int defaultOctave) async {
+
+    // Clean note and extract optional embedded octave (e.g., "C3", "Db4", "F#")
+    String rawNote = noteInput.trim();
+    int targetOctave = defaultOctave;
+
+    final regex = RegExp(r'^([A-Ga-g][#b]?)([0-9]?)$');
+    final match = regex.firstMatch(rawNote);
+    if (match != null) {
+      rawNote = match.group(1)!;
+      if (rawNote.isNotEmpty) {
+        rawNote = rawNote[0].toUpperCase() + rawNote.substring(1);
+      }
+      final octStr = match.group(2);
+      if (octStr != null && octStr.isNotEmpty) {
+        targetOctave = int.tryParse(octStr) ?? defaultOctave;
+      }
+    }
+
+    WebAudioApi.playNote(rawNote, targetOctave);
   }
 
-  Future<void> playNote(String noteName, int octave) async {
-    if (!_isReady) return;
-    WebAudioApi.playNote(noteName, octave);
+  /// Play full guitar voicing across all strings with accurate pitches and arpeggio strum
+  Future<void> playVoicing(ChordVoicing voicing, {String? root}) async {
+    // Standard Guitar Tuning Open String Pitches (C0 = 0):
+    // E2=28, A2=33, D3=38, G3=43, B3=47, E4=52
+    const openStringPitches = [28, 33, 38, 43, 47, 52];
+    bool hasPlayedNote = false;
+
+    for (int i = 0; i < 6 && i < voicing.frets.length; i++) {
+      final fret = voicing.frets[i];
+      if (fret != -1) {
+        hasPlayedNote = true;
+        final absPitch = openStringPitches[i] + fret;
+        final octave = absPitch ~/ 12;
+        final noteIndex = absPitch % 12;
+        final noteName = TheoryUtils.getNoteName(
+            noteIndex, !(root?.contains('b') ?? false));
+
+        playNote(noteName, octave);
+        await Future.delayed(const Duration(milliseconds: 35));
+      }
+    }
+
+    // Fallback if voicing has no active frets
+    if (!hasPlayedNote && root != null) {
+      final analyzed = TheoryUtils.analyzeChord(root);
+      playStrum(analyzed.notes);
+    }
   }
 
   void playChordBlock(List<String> notes) {
-    if (!_isReady) return;
     int currentOctave = 3;
     int lastIndex = -1;
     for (String note in notes) {
@@ -37,7 +77,6 @@ class AudioManager {
   }
 
   Future<void> playStrum(List<String> notes) async {
-    if (!_isReady) return;
     int currentOctave = 3;
     int lastIndex = -1;
     for (String note in notes) {
@@ -53,27 +92,23 @@ class AudioManager {
 
   // --- Phase 2: High Precision Scheduling ---
   void startProgression(int bpm, String progressionJson) {
-    if (!_isReady) return;
     WebAudioApi.scheduleSequence(bpm, progressionJson);
   }
 
   void stopProgression() {
-    if (!_isReady) return;
     WebAudioApi.stop();
   }
 
   void updateBpm(int bpm) {
-    if (!_isReady) return;
     WebAudioApi.setBpm(bpm);
   }
 
   void setInstrument(String instrumentId) {
-    if (!_isReady) return;
     WebAudioApi.setInstrument(instrumentId);
   }
 
   void dispose() {
     stopProgression();
-    print("AudioManager (Web): Disposing resources.");
   }
 }
+

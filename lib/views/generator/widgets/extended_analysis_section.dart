@@ -118,7 +118,7 @@ class ExtendedAnalysisSection extends StatelessWidget {
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-                color: Theme.of(context).dividerColor.withOpacity(0.5)),
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,9 +192,9 @@ class ExtendedAnalysisSection extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                       color: textColor)),
-              Text('$degree',
+              Text(degree,
                   style: TextStyle(
-                      fontSize: 9, color: textColor.withOpacity(0.8))),
+                      fontSize: 9, color: textColor.withValues(alpha: 0.8))),
             ],
           ),
         );

@@ -59,11 +59,11 @@ class ProgressionUtils {
 
           if (suffix.isNotEmpty) {
             if (suffix == 'dom' || suffix == '7') {
-              chordSymbol = root + '7';
+              chordSymbol = '${root}7';
             } else if (suffix == 'm' || suffix == 'min') {
-              chordSymbol = root + 'm7';
+              chordSymbol = '${root}m7';
             } else if (suffix == 'maj' || suffix == 'M') {
-              chordSymbol = root + 'Maj7';
+              chordSymbol = '${root}Maj7';
             }
           }
         }

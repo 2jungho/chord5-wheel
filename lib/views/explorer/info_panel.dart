@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/music_state.dart';
+import '../../providers/lyria_state.dart';
 import '../../audio/audio_manager.dart';
 import '../../widgets/common/chord_info_section.dart';
 import '../../providers/settings_state.dart';
@@ -11,17 +12,15 @@ class InfoPanel extends StatelessWidget {
 
   const InfoPanel({super.key, this.withContainer = true});
 
-  // _handleGenerateMoodPreview removed (Legacy MusicGen)
-
   @override
   Widget build(BuildContext context) {
     return Consumer<MusicState>(
       builder: (context, state, _) {
         final mode = state.currentMode;
+        final root = state.rootNote;
         final scale = state.currentScale;
         final chord = state.selectedChord;
         final voicing = state.mainChordVoicing;
-        final root = state.rootNote;
 
         // Character Note
         final charNote = scale.characterNote;
@@ -45,7 +44,58 @@ class InfoPanel extends StatelessWidget {
                     // Parent Key logic...
                   ],
                 ),
-                /* Legacy MusicGen Button Removed */
+                Builder(
+                  builder: (context) {
+                    final lyria = context.watch<LyriaState>();
+                    final isThisModePlaying =
+                        lyria.isMoodscapePlaying && lyria.currentMoodscapeMode == mode.name;
+
+                    return Tooltip(
+                      message: isThisModePlaying
+                          ? '사운드스케이프 중지'
+                          : '$root ${mode.name} 모드 AI 사운드스케이프 감상',
+                      child: FilledButton.tonalIcon(
+                        onPressed: () {
+                          if (isThisModePlaying) {
+                            lyria.stopPlayback();
+                          } else {
+                            lyria.playModeMoodscape(mode.name, root, charNote);
+                          }
+                        },
+                        style: FilledButton.styleFrom(
+                          visualDensity: VisualDensity.compact,
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          backgroundColor: isThisModePlaying
+                              ? Colors.redAccent.withValues(alpha: 0.2)
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer
+                                  .withValues(alpha: 0.7),
+                        ),
+                        icon: Icon(
+                          isThisModePlaying
+                              ? Icons.stop_rounded
+                              : Icons.auto_awesome,
+                          size: 16,
+                          color: isThisModePlaying
+                              ? Colors.redAccent
+                              : Theme.of(context).colorScheme.primary,
+                        ),
+                        label: Text(
+                          isThisModePlaying ? '중지' : 'AI 모드 감상',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: isThisModePlaying
+                              ? Colors.redAccent
+                              : Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -77,11 +127,11 @@ class InfoPanel extends StatelessWidget {
                     ? Theme.of(context).colorScheme.onPrimary
                     : Theme.of(context).colorScheme.onSurface;
                 final subTextColor = isHighlight
-                    ? Theme.of(context).colorScheme.onPrimary.withOpacity(0.8)
+                    ? Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.8)
                     : Theme.of(context)
                         .colorScheme
                         .onSurfaceVariant
-                        .withOpacity(0.7);
+                        .withValues(alpha: 0.7);
 
                 return Container(
                   width: 42,
@@ -92,7 +142,7 @@ class InfoPanel extends StatelessWidget {
                     boxShadow: [
                       if (isHighlight)
                         BoxShadow(
-                          color: bgColor.withOpacity(0.3),
+                          color: bgColor.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -132,7 +182,7 @@ class InfoPanel extends StatelessWidget {
                   color: Theme.of(context)
                       .colorScheme
                       .surfaceContainerHighest
-                      .withOpacity(0.3),
+                      .withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(6)),
               child: Text(
                 mode.description,
@@ -155,7 +205,7 @@ class InfoPanel extends StatelessWidget {
                   border: Border.all(color: Theme.of(context).dividerColor),
                   boxShadow: [
                     BoxShadow(
-                        color: Theme.of(context).shadowColor.withOpacity(0.1),
+                        color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
                         blurRadius: 4)
                   ],
                 ),
@@ -172,7 +222,13 @@ class InfoPanel extends StatelessWidget {
           quality: chord.quality,
           intervals: chord.intervals.join(', '),
           notes: chord.notes,
-          onPlay: () => AudioManager().playStrum(chord.notes),
+          onPlay: () {
+            if (voicing.frets.any((f) => f != -1)) {
+              AudioManager().playVoicing(voicing, root: chord.root);
+            } else {
+              AudioManager().playStrum(chord.notes);
+            }
+          },
           voicing: voicing,
           characterNote: charNote,
           degree: chord.degree,
@@ -189,7 +245,7 @@ class InfoPanel extends StatelessWidget {
                   border: Border.all(color: Theme.of(context).dividerColor),
                   boxShadow: [
                     BoxShadow(
-                        color: Theme.of(context).shadowColor.withOpacity(0.1),
+                        color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
                         blurRadius: 4)
                   ],
                 ),

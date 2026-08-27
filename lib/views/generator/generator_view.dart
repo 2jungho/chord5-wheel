@@ -54,7 +54,17 @@ class _GeneratorViewState extends State<GeneratorView> {
                         quality: generatorState.analyzedQuality,
                         intervals: generatorState.analyzedIntervals,
                         notes: generatorState.chordNotes,
-                        onPlay: generatorState.playChordStrum,
+                        onPlay: () {
+                          final v = generatorState.generatedVoicings.isNotEmpty
+                              ? generatorState.generatedVoicings[
+                                  generatorState.selectedVoicingIndex ?? 0]
+                              : null;
+                          if (v != null && v.frets.any((f) => f != -1)) {
+                            generatorState.playVoicing(v);
+                          } else {
+                            generatorState.playChordStrum();
+                          }
+                        },
                         onRestore: generatorState.canRestore
                             ? generatorState.restoreInitialChord
                             : null,
@@ -216,7 +226,7 @@ class _GeneratorViewState extends State<GeneratorView> {
             Icons.music_note,
             size: 80,
             color:
-                Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.5),
+                Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 24),
           Text(
@@ -245,7 +255,17 @@ class _GeneratorViewState extends State<GeneratorView> {
             quality: generatorState.analyzedQuality,
             intervals: generatorState.analyzedIntervals,
             notes: generatorState.chordNotes,
-            onPlay: generatorState.playChordStrum,
+            onPlay: () {
+              final v = generatorState.generatedVoicings.isNotEmpty
+                  ? generatorState.generatedVoicings[
+                      generatorState.selectedVoicingIndex ?? 0]
+                  : null;
+              if (v != null && v.frets.any((f) => f != -1)) {
+                generatorState.playVoicing(v);
+              } else {
+                generatorState.playChordStrum();
+              }
+            },
             onRestore: generatorState.canRestore
                 ? generatorState.restoreInitialChord
                 : null,

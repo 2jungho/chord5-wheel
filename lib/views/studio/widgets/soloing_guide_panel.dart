@@ -48,6 +48,7 @@ class _SoloingGuidePanelState extends State<SoloingGuidePanel> {
         provider: settings.aiProvider,
         modelName: settings.geminiModel.id,
         systemPrompt: systemPrompt,
+        thinkingLevel: settings.thinkingLevel,
       );
 
       final buffer = StringBuffer();
@@ -237,19 +238,19 @@ class _SoloingGuidePanelState extends State<SoloingGuidePanel> {
                   ? Theme.of(context)
                       .colorScheme
                       .primaryContainer
-                      .withOpacity(0.3)
+                      .withValues(alpha: 0.3)
                   : Theme.of(context)
                       .colorScheme
                       .secondaryContainer
-                      .withOpacity(0.2),
+                      .withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                   color: isAiResult
-                      ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
+                      ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
                       : Theme.of(context)
                           .colorScheme
                           .secondary
-                          .withOpacity(0.3)),
+                          .withValues(alpha: 0.3)),
             ),
             child: _errorMessage != null &&
                     QuotaErrorWidget.isQuotaErrorDetected(_errorMessage!)
