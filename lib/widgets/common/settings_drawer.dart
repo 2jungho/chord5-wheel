@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import '../../providers/settings_state.dart';
 import '../../models/instrument_model.dart';
 import '../../models/gemini_model.dart';
+import '../../utils/app_theme.dart';
 import '../common/dialogs/changelog_dialog.dart';
+
 
 class SettingsDrawer extends StatefulWidget {
   const SettingsDrawer({super.key});
@@ -151,30 +153,65 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Theme Mode
-        const Text('테마 (Theme)', style: TextStyle(fontWeight: FontWeight.w500)),
-        const SizedBox(height: 8),
-        SegmentedButton<ThemeMode>(
-          segments: const [
-            ButtonSegment(
-                value: ThemeMode.light,
-                icon: Icon(Icons.light_mode, size: 16),
-                label: Text('라이트')),
-            ButtonSegment(
-                value: ThemeMode.dark,
-                icon: Icon(Icons.dark_mode, size: 16),
-                label: Text('다크')),
-          ],
-          selected: {settings.themeMode},
-          onSelectionChanged: (Set<ThemeMode> newSelection) {
-            settings.setThemeMode(newSelection.first);
-          },
-          style: const ButtonStyle(
-            visualDensity: VisualDensity.compact,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-        ),
-        const SizedBox(height: 24),
+        // Theme Preset Selection
+        const Text('앱 테마 (Theme Palette)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        const SizedBox(height: 10),
+        ...AppThemePreset.values.map((preset) {
+          final isSelected = settings.themePreset == preset;
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 6.0),
+            child: InkWell(
+              onTap: () => settings.setThemePreset(preset),
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.6)
+                      : Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).dividerColor,
+                    width: isSelected ? 1.5 : 1.0,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: preset.primaryAccent,
+                        border: Border.all(color: Colors.white70, width: 1.5),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        preset.label,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    if (isSelected)
+                      Icon(Icons.check_circle, size: 16, color: Theme.of(context).colorScheme.primary),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+        const SizedBox(height: 18),
+
+
 
         // Master Volume
         Row(

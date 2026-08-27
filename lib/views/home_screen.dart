@@ -9,9 +9,10 @@ import 'studio/studio_view.dart';
 import '../widgets/ai_chat/ai_chat_panel.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_state.dart';
+import '../utils/app_theme.dart';
 
 /// 앱의 메인 화면입니다.
-/// 상단 헤더(AppHeader)를 통해 탭(Explorer/Generator)을 전환하고,
+/// 상단 헤더(AppHeader)를 통해 탭(Explorer/Generator/Studio)을 전환하고,
 /// 선택된 탭에 맞는 뷰를 본문에 표시합니다.
 class HomeScreen extends StatefulWidget {
   // 초기 탭 설정 (URL 파라미터 등에서 전달받음)
@@ -67,6 +68,8 @@ class _HomeScreenState extends State<HomeScreen> {
           break;
       }
 
+      final gradientColors = AppTheme.getBackgroundGradient(settings.themePreset);
+
       return Scaffold(
         key: _scaffoldKey,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor, // 앱 전체 배경색
@@ -87,23 +90,13 @@ class _HomeScreenState extends State<HomeScreen> {
           hasApiKey: hasApiKey,
         ),
 
-        // 탭 상태에 따라 ExplorerView 또는 GeneratorView 표시
+        // 탭 상태에 따라 ExplorerView, GeneratorView 또는 StudioView 표시
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: Theme.of(context).brightness == Brightness.dark
-                  ? [
-                      const Color(0xFF0F172A), // Slate 900
-                      const Color(0xFF1E1B4B), // Indigo 950
-                      const Color(0xFF312E81), // Indigo 900
-                    ]
-                  : [
-                      const Color(0xFFF8FAFC), // Slate 50
-                      const Color(0xFFE0E7FF), // Indigo 100
-                      const Color(0xFFDBEAFE), // Blue 100
-                    ],
+              colors: gradientColors,
             ),
           ),
           child: isDesktop

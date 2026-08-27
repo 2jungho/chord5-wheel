@@ -3,7 +3,11 @@ import 'package:flutter/services.dart';
 
 import 'package:provider/provider.dart';
 import '../../providers/generator_state.dart';
+import '../../providers/settings_state.dart';
+import '../../utils/app_theme.dart';
 import '../../utils/changelog_parser.dart';
+
+
 
 /// 첫 글자를 영문 대문자로 강제 변환하는 포매터
 class FirstLetterUppercaseFormatter extends TextInputFormatter {
@@ -296,7 +300,111 @@ class _AppHeaderState extends State<AppHeader> {
               else
                 const Spacer(), // Spacer to push Tab Buttons to right
 
-              // Tab Buttons
+              // Quick Theme Selector Menu Button
+              Builder(builder: (context) {
+                final settings = context.watch<SettingsState>();
+                final currentTheme = settings.themePreset;
+
+                return PopupMenuButton<AppThemePreset>(
+                  initialValue: currentTheme,
+                  tooltip: '테마 선택 (Theme Palette)',
+                  onSelected: (preset) {
+                    settings.setThemePreset(preset);
+                  },
+                  offset: const Offset(0, 40),
+                  color: Theme.of(context).colorScheme.surface,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(color: Theme.of(context).dividerColor),
+                  ),
+                  itemBuilder: (context) {
+                    return AppThemePreset.values.map((preset) {
+                      final isSelected = preset == currentTheme;
+                      return PopupMenuItem<AppThemePreset>(
+                        value: preset,
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 14,
+                              height: 14,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: preset.primaryAccent,
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.4),
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              preset.label,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight:
+                                    isSelected ? FontWeight.bold : FontWeight.normal,
+                                color: isSelected
+                                    ? Theme.of(context).colorScheme.primary
+                                    : Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                            if (isSelected) ...[
+                              const Spacer(),
+                              Icon(Icons.check,
+                                  size: 16,
+                                  color: Theme.of(context).colorScheme.primary),
+                            ],
+                          ],
+                        ),
+                      );
+                    }).toList();
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: isUltraMobile ? 6 : 10,
+                        vertical: isUltraMobile ? 4 : 6),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Theme.of(context).dividerColor,
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: currentTheme.primaryAccent,
+                          ),
+                        ),
+                        if (!isUltraMobile) ...[
+                          const SizedBox(width: 6),
+                          Text(
+                            currentTheme.shortName,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Icon(Icons.arrow_drop_down,
+                              size: 16,
+                              color: Theme.of(context).colorScheme.onSurfaceVariant),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              }),
+              const SizedBox(width: 8),
+
+              // Tab Buttons (Always visible in Classic mode)
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
@@ -333,7 +441,9 @@ class _AppHeaderState extends State<AppHeader> {
                 ),
               ),
 
+
               SizedBox(width: isUltraMobile ? 4 : (isMobile ? 8 : 16)),
+
 
               // AI Chat Button
               if (widget.hasApiKey) ...[

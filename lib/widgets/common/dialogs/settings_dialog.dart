@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../../../providers/settings_state.dart';
 import '../../../../models/gemini_model.dart';
 import '../../../../models/instrument_model.dart';
+import '../../../../utils/app_theme.dart';
+
 
 class SettingsDialog extends StatefulWidget {
   const SettingsDialog({super.key});
@@ -59,60 +61,6 @@ class _SettingsDialogState extends State<SettingsDialog> {
     );
   }
 
-  Widget _buildSelectionButton<T>(
-    BuildContext context, {
-    required T value,
-    required T groupValue,
-    required String label,
-    required Function(T) onSelected,
-    IconData? icon,
-  }) {
-    final isSelected = value == groupValue;
-    final colorScheme = Theme.of(context).colorScheme;
-    return Expanded(
-      child: InkWell(
-        onTap: () => onSelected(value),
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? colorScheme.primaryContainer
-                : colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(8),
-            border: isSelected
-                ? Border.all(color: colorScheme.primary.withValues(alpha: 0.5))
-                : Border.all(color: Colors.transparent),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (icon != null) ...[
-                Icon(
-                  icon,
-                  size: 16,
-                  color: isSelected
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 8),
-              ],
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  color: isSelected
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildPersonaChip(
     BuildContext context,
@@ -211,38 +159,91 @@ class _SettingsDialogState extends State<SettingsDialog> {
                             icon: Icons.dashboard_customize),
                         const SizedBox(height: 8),
 
-                        // Theme
-                        Row(
-                          children: [
-                            _buildSelectionButton(
-                              context,
-                              value: ThemeMode.system,
-                              groupValue: settings.themeMode,
-                              label: '시스템',
-                              icon: Icons.brightness_auto,
-                              onSelected: settings.setThemeMode,
-                            ),
-                            const SizedBox(width: 8),
-                            _buildSelectionButton(
-                              context,
-                              value: ThemeMode.light,
-                              groupValue: settings.themeMode,
-                              label: '라이트',
-                              icon: Icons.light_mode,
-                              onSelected: settings.setThemeMode,
-                            ),
-                            const SizedBox(width: 8),
-                            _buildSelectionButton(
-                              context,
-                              value: ThemeMode.dark,
-                              groupValue: settings.themeMode,
-                              label: '다크',
-                              icon: Icons.dark_mode,
-                              onSelected: settings.setThemeMode,
-                            ),
-                          ],
+                        // Theme Preset Selection
+                        Text('앱 테마 (Theme Palette)',
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant)),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: AppThemePreset.values.map((preset) {
+                            final isSelected = settings.themePreset == preset;
+                            return InkWell(
+                              onTap: () => settings.setThemePreset(preset),
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                width: 200,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? Theme.of(context)
+                                          .colorScheme
+                                          .primaryContainer
+                                          .withValues(alpha: 0.6)
+                                      : Theme.of(context)
+                                          .colorScheme
+                                          .surfaceContainerHighest
+                                          .withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).dividerColor,
+                                    width: isSelected ? 1.5 : 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 16,
+                                      height: 16,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: preset.primaryAccent,
+                                        border: Border.all(
+                                            color: Colors.white70, width: 1.5),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        preset.label,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: isSelected
+                                              ? FontWeight.bold
+                                              : FontWeight.w500,
+                                          color: isSelected
+                                              ? Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                              : Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface,
+                                        ),
+                                      ),
+                                    ),
+                                    if (isSelected)
+                                      Icon(Icons.check_circle,
+                                          size: 16,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primary),
+                                  ],
+                                ),
+                              ),
+                            );
+                          }).toList(),
                         ),
                         const SizedBox(height: 20),
+
+
 
                         // Master Volume
                         Row(

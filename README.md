@@ -8,7 +8,7 @@
 
 **[👉 웹 데모 실행하기 (Live Demo)](https://chord5-wheel.web.app)** | **[📦 GitHub 저장소 바로가기](https://github.com/2jungho/chord5-wheel)**
 
-화성학 이론과 기타 연주 정보를 시각적으로 탐험하고, 생성형 AI 및 실시간 오디오 반주 세션과 함께 음악적 영감을 얻는 멀티 플랫폼 Flutter 애플리케이션입니다. 5도권(Circle of Fifths) 기반의 키 탐색부터, 고도화된 코드 보이싱 알고리즘, 실시간 타임라인 코드 진행 스튜디오, 그리고 AI 잼 세션(AI Jam Session & Backing Band)까지 음악인을 위한 올인원 환경을 제공합니다.
+화성학 이론과 기타 연주 정보를 시각적으로 탐험하고, 생성형 AI 및 4인조 가상 밴드(드럼, 베이스, 건반, 기타) 세션과 함께 음악적 영감을 얻는 멀티 플랫폼 Flutter 애플리케이션입니다. 5도권(Circle of Fifths) 기반의 키 탐색부터, 고도화된 코드 보이싱 알고리즘, 실시간 타임라인 코드 진행 스튜디오, 5가지 고품질 테마 팔레트, 그리고 AI 잼 세션(AI Jam Session & 4-Piece Virtual Band)까지 음악인을 위한 올인원 환경을 제공합니다.
 
 ---
 
@@ -43,6 +43,20 @@ git config user.email "jungho.lee@maius.co.kr"
 
 ---
 
+## 🎨 5대 테마 팔레트 (Theme Preset System)
+
+상단 헤더의 테마 뱃지 또는 환경설정에서 원클릭으로 변경할 수 있으며, 선택한 테마는 로컬 스토리지에 영구 저장됩니다.
+
+| 테마 프리셋 | 주요 색상 & 톤 | 설명 |
+| :--- | :--- | :--- |
+| **🌌 Slate Dark (기본)** | Slate 900 (`#0F172A`), Indigo Accent (`#6366F1`) | 가장 친숙하고 가독성이 뛰어난 클래식 딥 다크 테마 |
+| **✨ Obsidian Cyber** | Obsidian Black (`#070B14`), Neon Cyan (`#06B6D4`), Neon Violet | 미래지향적인 사이버 펑크 & 네온 글로우 테마 |
+| **🎸 Vintage Amber** | Dark Mahogany (`#1A120B`), Warm Amber Gold (`#F59E0B`) | 클래식 펜더/깁슨 앰프와 우드 기타 느낌의 따뜻한 레트로 락 테마 |
+| **🌿 Midnight Forest** | Midnight Pine (`#061A14`), Vivid Emerald Mint (`#10B981`) | 차분하고 눈의 피로를 덜어주는 에메랄드 포레스트 테마 |
+| **☀️ Studio Clean Light** | Crisp Slate 50 (`#F8FAFC`), Pure White, Deep Indigo | 밝고 화사하며 선명한 화이트 스튜디오 라이트 테마 |
+
+---
+
 ## 🚀 주요 기능 (Key Features)
 
 ### 1. 5도권 탐색기 (Circle of Fifths Explorer)
@@ -67,13 +81,17 @@ git config user.email "jungho.lee@maius.co.kr"
 *   **Famous Songs Panel**: 입력된 코드 진행과 연관된 전 세계 유명 곡을 AI가 검색해주며, **YouTube 팝업 플레이어**를 통해 원곡과 배킹 트랙을 즉시 감상할 수 있습니다.
 *   **AI Arranger & Reharmonization**: 기본 진행을 Neo-Soul, Jazz Funk, Gospel 등 감각적인 코드로 자동 재화문화(Reharmonization)합니다.
 
-### 5. 🎹 AI 잼 세션 & 실시간 배킹 밴드 (AI Jam Session & Backing Band)
-*   **AI Realtime Streaming & Virtual Band**: Google Gemini / Lyria 실시간 오디오 반주 및 내장 가상 밴드 엔진(Tone.js)을 통해 타임라인 진행에 맞춘 즉흥 연주 반주를 제공합니다.
+### 5. 🥁 4인조 가상 밴드 & AI 잼 세션 (4-Piece Virtual Band & AI Jam)
+*   **Multi-Instrument Realtime Accompaniment**:
+    *   **Drums**: 펀치감 넘치는 킥(Kick), 스네어(Snare), 오픈/클로즈드 하이햇(Hi-Hat) 패턴.
+    *   **Bass**: 코드 근음(Root)과 코드톤을 따라가는 그루브 베이스 라인 (Filtered Sawtooth + Sub-Bass).
+    *   **Keys (E-Piano / Rhodes)**: 따뜻하고 풍성한 벨 톤 화음 반주 (FM Synthesis).
+    *   **Guitar**: 리드미컬한 다운/업 스트로크 아르페지오.
 *   **Dynamic Controls**:
     *   **Tempo Slider**: 60 ~ 180 BPM 실시간 템포 조절.
     *   **Volume Slider & Mute Toggle**: 0% ~ 100% 볼륨 조절 및 원클릭 음소거/복원 토글.
     *   **7 Multi-Styles**: Neo-Soul, Jazz Funk, Lofi Chill, Rock, Blues, City Pop, Acoustic Ballad.
-*   **Zero-Config Ready**: API 키가 없어도 내장 가상 밴드로 즉시 연주 가능하며, Gemini API 키 등록 시 AI 잼 세션으로 원활하게 확장됩니다.
+*   **Zero-Config Ready**: API 키가 없어도 내장 4인조 가상 밴드로 즉시 연주 가능하며, Gemini API 키 등록 시 AI 잼 세션으로 원활하게 확장됩니다.
 
 ### 6. 🧠 최신 Gemini 3.x 모델 및 추론 강도(Thinking Level) 지원
 *   **Supported Models**:
@@ -94,7 +112,7 @@ git config user.email "jungho.lee@maius.co.kr"
 |---|---|---|
 | **Framework** | Flutter 3.x (Dart 3) | 반응형 크로스 플랫폼 프레임워크 |
 | **State Management** | Provider | 상태 관리 및 모듈별 State 분리 (`StudioState`, `LyriaState`, `SettingsState` 등) |
-| **Audio Engine** | Tone.js (Web) / flutter_soloud (Native) / audioplayers | 플랫폼별 최적화된 하이브리드 오디오 엔진 |
+| **Audio Engine** | Tone.js (Web) / VirtualBandSynth (PCM/WAV) / flutter_soloud / audioplayers | 플랫폼별 최적화된 하이브리드 오디오 엔진 |
 | **AI (LLM / Audio)** | Google Gemini 3.7 Flash / Lyria Protocol | 음악 이론 분석, 편곡 추천 및 실시간 잼 세션 |
 | **Hosting & Deploy** | Firebase Hosting | 프로덕션 웹 릴리즈 배포 (`chord5-wheel.web.app`) |
 | **Repository** | GitHub (`2jungho/chord5-wheel`) | 버전 관리 및 협업 |
@@ -106,14 +124,14 @@ git config user.email "jungho.lee@maius.co.kr"
 
 ```
 lib/
-├── audio/                 # 하이브리드 오디오 브릿지 (Tone.js JS Interop, Native SoLoud)
+├── audio/                 # 하이브리드 오디오 브릿지 (VirtualBandSynth, Tone.js, Native SoLoud)
 ├── models/                # 데이터 모델 (Chord, Voicing, Scale, MusicConstants, GeminiModel)
 ├── providers/             # 상태 관리자 (SettingsState, StudioState, LyriaState, MusicState)
 ├── services/              # 외부 서비스 연동
 │   ├── ai_service.dart          # Gemini 3.x LLM API 및 프롬프트 처리
-│   ├── lyria/                   # Gemini/Lyria 실시간 스트리밍 및 AudioQueue
+│   ├── lyria/                   # 4인조 가상 밴드 시퀀서 및 Lyria 실시간 스트리밍
 │   └── music_theory_service.dart # 핵심 화성학 연산
-├── utils/                 # 기타/피아노 지판 연산, 노멀라이즈된 유틸리티
+├── utils/                 # 기타/피아노 지판 연산, 테마 프리셋(AppTheme) 유틸리티
 ├── views/                 # 메인 화면
 │   ├── explorer/                # 5도권 탐색기 대시보드
 │   ├── generator/               # 코드 분석기 및 보이싱 다이어그램
@@ -160,7 +178,7 @@ flutter run -d windows
 # 정적 분석 (0 issues)
 dart analyze lib test
 
-# 전체 단위 및 위젯 테스트 실행 (21 tests)
+# 전체 단위 및 위젯 테스트 실행 (22 tests)
 flutter test
 ```
 
@@ -182,24 +200,24 @@ firebase deploy --only hosting
 
 ## 📝 변경 이력 (Changelog)
 
+### v2.1.0 (2026-08-28 - 4-Piece Virtual Band & 5-Theme Preset System)
+* **4-Piece Virtual Band Sound Engine**:
+  * 단순 기타 코드 재생을 넘어 **드럼(Drums), 베이스(Bass), 건반(Keys/Rhodes), 기타(Guitar)**가 어우러진 4인조 가상 밴드 신디사이저 및 시퀀서 구현.
+  * 장르별(Pop, Jazz, Blues, Rock, Funk, Ballad) 고유 리듬 패턴 및 베이스라인 자동 연동.
+* **5가지 고품질 테마 프리셋 (Theme Palette)**:
+  * 🌌 **Slate Dark** (기본 클래식), ✨ **Obsidian Cyber** (네온 사이언), 🎸 **Vintage Amber** (레트로 골드), 🌿 **Midnight Forest** (에메랄드 포레스트), ☀️ **Studio Clean Light** (화이트 스튜디오) 지원.
+  * 상단 헤더 원클릭 테마 팝업 메뉴 및 설정 서랍 연동.
+* **테스트 & 품질 보증**:
+  * 22개 전체 단위 및 위젯 테스트 통과 (`flutter test`), 린트 제로 달성 (`dart analyze`).
+
 ### v2.0.0 (2026-08-27 - Lyria Realtime Jam, Gemini 3.x Suite & Clean Architecture Refactor)
 * **AI Jam Session & Backing Band**:
   * Gemini 실시간 스트리밍 & Tone.js 가상 밴드 하이브리드 엔진 구축.
   * 0~100% 정밀 볼륨 조절 슬라이더 및 원클릭 음소거/복원 토글 기능 추가.
   * 60~180 BPM 템포 슬라이더 및 7가지 음악 스타일 프리셋 지원.
-  * 모바일 및 좁은 화면을 위한 반응형 레이아웃 적용.
 * **Gemini 3.x Model Suite & Thinking Intensity**:
-  * `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.1-pro-preview`, `gemma-4-31b-it` 완벽 지원.
+  * `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.1-pro-preview`, `gemma-4-31b-it` 지원.
   * 모델별 추론 강도(`ThinkingLevel`: Off, Low, Medium, High) 설정 기능 추가.
-* **코드베이스 리팩토링 & 린트 Zero (0 Issues)**:
-  * 미사용 레거시 코드 제거로 웹 번들 최적화.
-  * Effective Dart 표준 네이밍(`noteNames`, `keys`, `modes`, `tuningNotes`) 일괄 적용.
-  * `FamousSongItem`, `TimelineChordCard` 등 거대 위젯 단일 책임 컴포넌트로 분리.
-  * Gemini 모델 파싱 및 추론 강도 검증을 위한 신규 단위 테스트 추가 (21/21 All Passed).
-
-### v1.9.2 (2026-08-27 - Gemini 3.7 & Modern API Upgrade)
-* 최신 플래그십 모델 지원 및 레거시 모델 식별자 자동 마이그레이션.
-* Firebase Hosting 배포 안정화.
 
 ---
 

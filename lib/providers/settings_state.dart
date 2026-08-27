@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/gemini_model.dart';
 import '../models/instrument_model.dart';
 import '../audio/audio_manager.dart';
+import '../utils/app_theme.dart';
 
 /// 앱 전반의 설정 상태를 관리하는 Provider입니다.
 /// SharedPreferences를 통해 설정을 영구 저장합니다.
@@ -11,20 +12,20 @@ class SettingsState extends ChangeNotifier {
 
   // --- 상태 변수 ---
 
-  // 1. 마스터 볼륨 (0.0 ~ 1.0)
+  // 1. 테마 프리셋
+  AppThemePreset _themePreset = AppThemePreset.slateDark;
+
+  // 2. 마스터 볼륨 (0.0 ~ 1.0)
   double _masterVolume = 0.8;
 
-  // 2. Gemini API Key
+  // 3. Gemini API Key
   String _geminiApiKey = '';
 
-  // 3. AI Provider (gemini / openai)
+  // 4. AI Provider (gemini / openai)
   String _aiProvider = 'gemini';
 
-  // 4. OpenAI API Key
+  // 5. OpenAI API Key
   String _openAiApiKey = '';
-
-  // 5. Theme Mode
-  ThemeMode _themeMode = ThemeMode.dark;
 
   // 6. Gemini Model & Thinking Level
   GeminiModel _geminiModel = GeminiModel.flash37;
@@ -79,11 +80,11 @@ class SettingsState extends ChangeNotifier {
   ];
 
   // --- Getters ---
+  AppThemePreset get themePreset => _themePreset;
   double get masterVolume => _masterVolume;
   String get geminiApiKey => _geminiApiKey;
   String get aiProvider => _aiProvider;
   String get openAiApiKey => _openAiApiKey;
-  ThemeMode get themeMode => _themeMode;
   GeminiModel get geminiModel => _geminiModel;
   ThinkingLevel get thinkingLevel => _thinkingLevel;
   String get systemPrompt => _systemPrompt;
@@ -105,15 +106,22 @@ class SettingsState extends ChangeNotifier {
 
   Future<void> _loadSettings() async {
     _prefs = await SharedPreferences.getInstance();
+    
+    // Load theme preset
+    final String? savedThemePreset = _prefs?.getString('themePreset');
+    if (savedThemePreset != null) {
+      try {
+        _themePreset = AppThemePreset.values.byName(savedThemePreset);
+      } catch (_) {
+        _themePreset = AppThemePreset.slateDark;
+      }
+    }
+
     _masterVolume = _prefs?.getDouble('masterVolume') ?? 0.8;
     _geminiApiKey = _prefs?.getString('geminiApiKey') ?? '';
     _aiProvider = _prefs?.getString('aiProvider') ?? 'gemini';
     _openAiApiKey = _prefs?.getString('openAiApiKey') ?? '';
 
-    final int themeIndex = _prefs?.getInt('themeMode') ?? 2; // Default to Dark
-    if (themeIndex >= 0 && themeIndex < ThemeMode.values.length) {
-      _themeMode = ThemeMode.values[themeIndex];
-    }
     final String? modelId = _prefs?.getString('geminiModel');
     _geminiModel =
         modelId != null ? GeminiModel.fromId(modelId) : GeminiModel.flash37;
@@ -134,10 +142,10 @@ class SettingsState extends ChangeNotifier {
 
   // --- Actions ---
 
-  void setThemeMode(ThemeMode mode) {
-    if (_themeMode != mode) {
-      _themeMode = mode;
-      _prefs?.setInt('themeMode', mode.index);
+  void setThemePreset(AppThemePreset preset) {
+    if (_themePreset != preset) {
+      _themePreset = preset;
+      _prefs?.setString('themePreset', preset.name);
       notifyListeners();
     }
   }

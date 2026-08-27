@@ -132,15 +132,17 @@ class _MyAppState extends State<MyApp> with WindowListener {
       ],
       child: Consumer<SettingsState>(
         builder: (context, settings, _) {
+          final activeTheme = AppTheme.getTheme(settings.themePreset);
           return MaterialApp.router(
             title: 'Guitar & Theory Explorer',
             scrollBehavior: const AppScrollBehavior(),
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: settings.themeMode,
+            theme: activeTheme,
+            darkTheme: activeTheme,
+            themeMode: ThemeMode.dark,
             routerConfig: _router,
           );
         },
+
       ),
     );
   }
