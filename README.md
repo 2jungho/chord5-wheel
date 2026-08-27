@@ -1,8 +1,36 @@
 # Guitar & Theory Explorer 🎸
 
-**[👉 웹 데모 실행하기 (Live Demo)](https://chord5-wheel.web.app)**
+[![GitHub Repository](https://img.shields.io/badge/GitHub-2jungho%2Fchord5--wheel-181717?style=flat-square&logo=github)](https://github.com/2jungho/chord5-wheel)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-chord5--wheel.web.app-4285F4?style=flat-square&logo=googlechrome&logoColor=white)](https://chord5-wheel.web.app)
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
+[![Firebase](https://img.shields.io/badge/Firebase-Hosting-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com)
+[![Gemini](https://img.shields.io/badge/Gemini-3.7_Flash-8E75B2?style=flat-square&logo=google)](https://deepmind.google/technologies/gemini/)
+
+**[👉 웹 데모 실행하기 (Live Demo)](https://chord5-wheel.web.app)** | **[📦 GitHub 저장소 바로가기](https://github.com/2jungho/chord5-wheel)**
 
 화성학 이론과 기타 연주 정보를 시각적으로 탐험하고, 생성형 AI 및 실시간 오디오 반주 세션과 함께 음악적 영감을 얻는 멀티 플랫폼 Flutter 애플리케이션입니다. 5도권(Circle of Fifths) 기반의 키 탐색부터, 고도화된 코드 보이싱 알고리즘, 실시간 타임라인 코드 진행 스튜디오, 그리고 AI 잼 세션(AI Jam Session & Backing Band)까지 음악인을 위한 올인원 환경을 제공합니다.
+
+---
+
+## 🔗 Git & Repository 정보 (Version Control)
+
+| 항목 | 상세 정보 |
+|---|---|
+| **GitHub Repository** | [https://github.com/2jungho/chord5-wheel](https://github.com/2jungho/chord5-wheel) |
+| **Clone URL (HTTPS)** | `https://github.com/2jungho/chord5-wheel.git` |
+| **Clone URL (SSH)** | `git@github.com:2jungho/chord5-wheel.git` |
+| **Default Branch** | `main` |
+| **Author / Maintainer** | `jungho.lee` (`jungho.lee@maius.co.kr` / `2jungho@gmail.com`) |
+
+```bash
+# 저장소 복제 (Clone)
+git clone https://github.com/2jungho/chord5-wheel.git
+cd chord5-wheel
+
+# 로컬 Git 작성자 설정 (선택 사항)
+git config user.name "jungho.lee"
+git config user.email "jungho.lee@maius.co.kr"
+```
 
 ---
 
@@ -69,6 +97,7 @@
 | **Audio Engine** | Tone.js (Web) / flutter_soloud (Native) / audioplayers | 플랫폼별 최적화된 하이브리드 오디오 엔진 |
 | **AI (LLM / Audio)** | Google Gemini 3.7 Flash / Lyria Protocol | 음악 이론 분석, 편곡 추천 및 실시간 잼 세션 |
 | **Hosting & Deploy** | Firebase Hosting | 프로덕션 웹 릴리즈 배포 (`chord5-wheel.web.app`) |
+| **Repository** | GitHub (`2jungho/chord5-wheel`) | 버전 관리 및 협업 |
 | **Code Quality** | Effective Dart / 0-Lint Architecture | `dart analyze lib test` 0개 이슈 달성 |
 
 ---
@@ -103,10 +132,16 @@ lib/
 
 ### 1. 사전 요구사항
 * Flutter SDK (3.0.0 이상)
+* Git (`git --version`)
 * Node.js & Firebase CLI (`npm install -g firebase-tools`)
 
-### 2. 의존성 설치
+### 2. 저장소 복제 및 의존성 설치
 ```bash
+# 저장소 복제
+git clone https://github.com/2jungho/chord5-wheel.git
+cd chord5-wheel
+
+# 의존성 설치
 flutter clean
 flutter pub get
 ```
@@ -168,4 +203,8 @@ firebase deploy --only hosting
 
 ---
 
-**Developer/Maintainer**: Lee Jungho (2jungho@gmail.com)
+## 👤 Developer / Maintainer
+
+* **이정호 (Lee Jungho)**
+  * **GitHub**: [@2jungho](https://github.com/2jungho)
+  * **Email**: `jungho.lee@maius.co.kr` / `2jungho@gmail.com`
