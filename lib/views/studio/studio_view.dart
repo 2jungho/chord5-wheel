@@ -149,13 +149,40 @@ class _StudioViewState extends State<StudioView> {
 
               const SizedBox(height: 8),
 
-              // AI Jam Session & Backing Band Panel
-              const LyriaJamPanel(),
+              // AI Jam Session & Famous Songs Panels (Side-by-side on wide screens)
+              LayoutBuilder(
+                builder: (context, panelConstraints) {
+                  final isCompact = panelConstraints.maxWidth < 950;
 
-              const SizedBox(height: 16),
+                  if (isCompact) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const LyriaJamPanel(),
+                        const SizedBox(height: 12),
+                        FamousSongsPanel(session: session),
+                      ],
+                    );
+                  }
 
-              // Famous Songs Panel (Independent Section)
-              FamousSongsPanel(session: session),
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 좌측: AI Jam 세션 패널
+                      const Expanded(
+                        flex: 5,
+                        child: LyriaJamPanel(),
+                      ),
+                      const SizedBox(width: 12),
+                      // 우측: 유명 곡 리스트 패널
+                      Expanded(
+                        flex: 5,
+                        child: FamousSongsPanel(session: session),
+                      ),
+                    ],
+                  );
+                },
+              ),
 
               const SizedBox(height: 16),
 

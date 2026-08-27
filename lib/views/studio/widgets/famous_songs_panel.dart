@@ -161,7 +161,6 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(top: 16, bottom: 16),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
@@ -473,7 +472,6 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
 
       return Container(
         width: double.infinity,
-        margin: const EdgeInsets.only(top: 16, bottom: 16),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainer,
@@ -620,7 +618,6 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
 
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(top: 16, bottom: 16),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
