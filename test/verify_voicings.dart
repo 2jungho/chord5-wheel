@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'package:guitar_theory_app/utils/guitar_utils.dart';
 import 'package:guitar_theory_app/utils/theory_utils.dart';
 import 'package:guitar_theory_app/models/chord_model.dart'; // Import ChordVoicing class

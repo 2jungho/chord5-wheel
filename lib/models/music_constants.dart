@@ -1,5 +1,5 @@
 class MusicConstants {
-  static const List<String> NOTE_NAMES = [
+  static const List<String> noteNames = [
     'C',
     'C#',
     'D',
@@ -13,7 +13,7 @@ class MusicConstants {
     'A#',
     'B',
   ];
-  static const List<String> CHROMATIC_SCALE = [
+  static const List<String> chromaticScale = [
     'C',
     'Db',
     'D',
@@ -27,7 +27,7 @@ class MusicConstants {
     'Bb',
     'B',
   ];
-  static const List<String> CHROMATIC_SHARP = [
+  static const List<String> chromaticSharp = [
     'C',
     'C#',
     'D',
@@ -44,7 +44,7 @@ class MusicConstants {
 
   // Circle of Fifths order
   // Key Definition: name, minor, accidentals, index
-  static const List<KeyData> KEYS = [
+  static const List<KeyData> keys = [
     KeyData(name: 'C', minor: 'Am', accidentals: 0, index: 0),
     KeyData(name: 'G', minor: 'Em', accidentals: 1, index: 1),
     KeyData(name: 'D', minor: 'Bm', accidentals: 2, index: 2),
@@ -59,7 +59,7 @@ class MusicConstants {
     KeyData(name: 'F', minor: 'Dm', accidentals: -1, index: 11),
   ];
 
-  static const List<ModeData> MODES = [
+  static const List<ModeData> modes = [
     ModeData(
       name: 'Lydian',
       offset: 1,
@@ -124,6 +124,18 @@ class MusicConstants {
       description: '5도(b5)가 특징인 불안정한 모드',
     ),
   ];
+
+  // Backward compatibility aliases
+  // ignore: constant_identifier_names
+  static const List<String> NOTE_NAMES = noteNames;
+  // ignore: constant_identifier_names
+  static const List<String> CHROMATIC_SCALE = chromaticScale;
+  // ignore: constant_identifier_names
+  static const List<String> CHROMATIC_SHARP = chromaticSharp;
+  // ignore: constant_identifier_names
+  static const List<KeyData> KEYS = keys;
+  // ignore: constant_identifier_names
+  static const List<ModeData> MODES = modes;
 }
 
 class KeyData {

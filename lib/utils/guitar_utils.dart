@@ -14,7 +14,9 @@ export 'guitar/voice_leading.dart';
 /// Legacy Facade for Guitar Utilities.
 /// Refactored to delegate to specific utility classes in `lib/utils/guitar/`.
 class GuitarUtils {
-  static const TUNING_NOTES = TuningUtils.TUNING_NOTES;
+  static const tuningNotes = TuningUtils.tuningNotes;
+  // ignore: constant_identifier_names
+  static const TUNING_NOTES = tuningNotes;
 
   static int get6thStringFret(String noteName) =>
       TuningUtils.get6thStringFret(noteName);

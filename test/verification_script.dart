@@ -1,6 +1,7 @@
-import 'models/scale_model.dart';
-import 'models/music_constants.dart';
-import 'utils/theory_utils.dart';
+// ignore_for_file: avoid_print
+import 'package:guitar_theory_app/models/scale_model.dart';
+import 'package:guitar_theory_app/models/music_constants.dart';
+import 'package:guitar_theory_app/utils/theory_utils.dart';
 
 void main() {
   const root = 'C';

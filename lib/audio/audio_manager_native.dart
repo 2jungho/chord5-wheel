@@ -217,5 +217,11 @@ class AudioManager {
   }
 
   void setInstrument(String instrumentId) {}
+
+  void setVolume(double volume) {
+    try {
+      _soLoud?.setGlobalVolume(volume.clamp(0.0, 1.0));
+    } catch (_) {}
+  }
 }
 

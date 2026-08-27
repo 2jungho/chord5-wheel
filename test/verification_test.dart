@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'package:flutter_test/flutter_test.dart';
 import 'package:guitar_theory_app/models/scale_model.dart';
 import 'package:guitar_theory_app/models/music_constants.dart';

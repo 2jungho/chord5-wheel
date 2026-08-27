@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 
 /// Native (IO) implementation
 Future<void> saveFileImpl(Uint8List bytes, String fileName) async {
@@ -19,5 +19,5 @@ Future<void> saveFileImpl(Uint8List bytes, String fileName) async {
 
   // Note: Caller might want to know the path, but interface returns void for simplicity with Web.
   // In a real app, we might return a Result object.
-  print('Saved to $fullPath');
+  debugPrint('Saved to $fullPath');
 }

@@ -3,20 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/studio_state.dart';
 import '../../../models/progression/progression_models.dart';
-import '../../../models/music_constants.dart'; // Import MusicConstants
-import '../../../providers/music_state.dart'; // Import MusicState
-
+import '../../../models/music_constants.dart';
+import '../../../providers/music_state.dart';
 import '../../../utils/theory_utils.dart';
-import '../../../widgets/common/guitar/guitar_chord_widget.dart';
-import '../../../widgets/common/piano/piano_chord_widget.dart';
-import '../../../models/instrument_model.dart';
-import '../../../audio/audio_manager.dart';
 import '../../../widgets/common/circle_of_fifths_selector.dart';
 import 'preset_selector_dialog.dart';
 import '../../../providers/settings_state.dart';
 import '../dialogs/ai_arrange_dialog.dart';
 import '../dialogs/ai_song_search_dialog.dart';
-
+import 'timeline/timeline_chord_card.dart';
 import 'soloing_guide_panel.dart';
 import 'insight_report_widget.dart';
 
@@ -526,217 +521,10 @@ class _StudioTimelineState extends State<StudioTimeline> {
 
   Widget _buildChordBlock(
       BuildContext context, ChordBlock block, int index, StudioState studio) {
-    final isSelected = studio.selectedBlockIndex == index;
-    return Container(
-      // GridView에서 제어하므로 고정 크기 제거
-
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isSelected
-              ? [
-                  Theme.of(context)
-                      .colorScheme
-                      .primaryContainer
-                      .withValues(alpha: 0.2), // 선택 시 약간의 틴트
-                  Theme.of(context).colorScheme.surface,
-                ]
-              : [
-                  Theme.of(context).colorScheme.surfaceContainerHigh,
-                  Theme.of(context).colorScheme.surfaceContainerHighest,
-                ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isSelected
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
-          width: isSelected ? 2.0 : 1,
-        ),
-        boxShadow: [
-          if (isSelected)
-            BoxShadow(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
-              blurRadius: 12,
-              spreadRadius: 1,
-              offset: const Offset(0, 0),
-            ),
-          const BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          )
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            studio.selectBlock(index);
-            // Play sound on selection
-            if (block.voicing != null &&
-                block.voicing!.frets.any((f) => f != -1)) {
-              AudioManager().playVoicing(block.voicing!,
-                  root: block.chordSymbol);
-            } else {
-              final notes =
-                  TheoryUtils.analyzeChord(block.chordSymbol).notes;
-              AudioManager().playStrum(notes);
-            }
-          },
-          child: Stack(
-            children: [
-              // 선택 강조 테두리 (Deprecated: Container decoration에서 처리함)
-              // if (studio.selectedBlockIndex == index) ...
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    // Bar Number Label
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Text(
-                        'Bar ${index + 1}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.4),
-                        ),
-                      ),
-                    ),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(block.chordSymbol,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface, // 테마 색상 적용
-                                  )),
-                          if (block.functionTag != null) ...[
-                            const SizedBox(width: 4),
-                            Text(
-                              '(${block.functionTag!})',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.6), // 테마 기반 하얀색/검은색 계열로 수정
-                              ),
-                            ),
-                          ],
-                          if (block.chordDetail != null) ...[
-                            const SizedBox(width: 2),
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(12),
-                                onTap: () {
-                                  studio.selectBlock(index);
-                                  if (block.voicing != null &&
-                                      block.voicing!.frets
-                                          .any((f) => f != -1)) {
-                                    AudioManager().playVoicing(block.voicing!,
-                                        root: block.chordSymbol);
-                                  } else {
-                                    final notes = TheoryUtils.analyzeChord(
-                                            block.chordSymbol)
-                                        .notes;
-                                    AudioManager().playStrum(notes);
-                                  }
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Icon(
-                                    Icons.volume_up_rounded,
-                                    size: 14,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .secondary
-                                        .withValues(alpha: 0.8),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    if (block.voicing != null)
-                      Expanded(
-                        child: FittedBox(
-                          fit: BoxFit.contain,
-                          child: Consumer<SettingsState>(
-                            builder: (context, settings, _) {
-                              if (settings.selectedInstrument.type ==
-                                  InstrumentType.piano) {
-                                return PianoChordWidget(
-                                  notes: TheoryUtils.analyzeChord(
-                                          block.chordSymbol)
-                                      .notes,
-                                  width: 130,
-                                  height: 80,
-                                  showLabels: true,
-                                );
-                              }
-                              return GuitarChordWidget(
-                                voicing: block.voicing!,
-                                width: 130,
-                                height: 100,
-                                stringCount:
-                                    settings.selectedInstrument.stringCount,
-                              );
-                            },
-                          ),
-                        ),
-                      )
-                    else
-                      const Expanded(
-                        child: Center(
-                          child: Icon(Icons.music_off,
-                              size: 24, color: Colors.grey),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: IconButton(
-                  icon: const Icon(Icons.close, size: 14),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 24,
-                    minHeight: 24,
-                  ),
-                  onPressed: () => studio.removeChord(index),
-                  tooltip: '삭제',
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return TimelineChordCard(
+      block: block,
+      index: index,
+      studio: studio,
     );
   }
 

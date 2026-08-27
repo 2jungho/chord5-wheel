@@ -1,5 +1,7 @@
 class TuningUtils {
-  static const TUNING_NOTES = ['E', 'A', 'D', 'G', 'B', 'E'];
+  static const tuningNotes = ['E', 'A', 'D', 'G', 'B', 'E'];
+  // ignore: constant_identifier_names
+  static const TUNING_NOTES = tuningNotes;
 
   static int get6thStringFret(String noteName) {
     const map = {

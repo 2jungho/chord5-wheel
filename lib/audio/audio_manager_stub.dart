@@ -107,6 +107,10 @@ class AudioManager {
     WebAudioApi.setInstrument(instrumentId);
   }
 
+  void setVolume(double volume) {
+    WebAudioApi.setVolume(volume);
+  }
+
   void dispose() {
     stopProgression();
   }

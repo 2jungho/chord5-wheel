@@ -218,4 +218,8 @@ class LyriaService {
     _audioQueue.clear();
     _isSetupComplete = false;
   }
+
+  void setVolume(double volume) {
+    _audioQueue.setVolume(volume);
+  }
 }

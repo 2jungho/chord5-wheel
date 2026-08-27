@@ -15,6 +15,9 @@ external void _setWebBPM(JSNumber bpm);
 @JS('setWebInstrument')
 external void _setWebInstrument(JSString id);
 
+@JS('setWebVolume')
+external void _setWebVolume(JSNumber volume);
+
 class WebAudioApi {
   static void playNote(String note, int octave) {
     _playWebGuitarNote(note.toJS, octave.toJS);
@@ -34,6 +37,10 @@ class WebAudioApi {
 
   static void setInstrument(String id) {
     _setWebInstrument(id.toJS);
+  }
+
+  static void setVolume(double volume) {
+    _setWebVolume(volume.toJS);
   }
 }
 

@@ -21,6 +21,8 @@ class LyriaState extends ChangeNotifier {
   // Jam Parameters
   double _tempo = 120.0;
   String _style = "Neo-Soul";
+  double _volume = 0.8;
+  double _preMuteVolume = 0.8;
 
   // Virtual Band Timer
   Timer? _virtualBandTimer;
@@ -36,6 +38,8 @@ class LyriaState extends ChangeNotifier {
   bool get isMoodscapePlaying => _isPlaying && _currentMoodscapeMode != null;
   double get tempo => _tempo;
   String get style => _style;
+  double get volume => _volume;
+  bool get isMuted => _volume <= 0.001;
 
   StreamSubscription? _statusSubscription;
 
@@ -303,6 +307,25 @@ class LyriaState extends ChangeNotifier {
 
     if (_isPlaying) {
       _service?.sendPrompt("Change style to $newStyle");
+    }
+  }
+
+  void updateVolume(double newVolume) {
+    _volume = newVolume.clamp(0.0, 1.0);
+    if (_volume > 0.001) {
+      _preMuteVolume = _volume;
+    }
+    _service?.setVolume(_volume);
+    AudioManager().setVolume(_volume);
+    notifyListeners();
+  }
+
+  void toggleMute() {
+    if (isMuted) {
+      updateVolume(_preMuteVolume > 0.05 ? _preMuteVolume : 0.8);
+    } else {
+      _preMuteVolume = _volume;
+      updateVolume(0.0);
     }
   }
 

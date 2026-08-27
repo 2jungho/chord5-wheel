@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import '../models/changelog_model.dart';
 
@@ -8,7 +9,7 @@ class ChangelogParser {
       return _parseMarkdown(content);
     } catch (e) {
       // Fallback or error handling
-      print('Error loading README.md: $e');
+      debugPrint('Error loading README.md: $e');
       return [];
     }
   }

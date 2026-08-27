@@ -57,6 +57,22 @@
         console.warn("Could not init fallback synth:", e);
       }
 
+      window.setWebVolume = function (vol) {
+        try {
+          const clamped = Math.max(0.0, Math.min(1.0, vol));
+          if (clamped <= 0.001) {
+            Tone.Destination.mute = true;
+          } else {
+            Tone.Destination.mute = false;
+            // Map 0.01..1.0 to -40dB..+3dB
+            const db = 20 * Math.log10(clamped);
+            Tone.Destination.volume.value = Math.max(-40, db);
+          }
+        } catch (e) {
+          console.warn("setWebVolume error:", e);
+        }
+      };
+
       window.setWebInstrument = function (id) {
         currentInstrument = id;
       };

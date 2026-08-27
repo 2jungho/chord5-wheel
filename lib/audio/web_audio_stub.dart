@@ -4,4 +4,5 @@ class WebAudioApi {
   static void stop() {}
   static void setBpm(int bpm) {}
   static void setInstrument(String id) {}
+  static void setVolume(double volume) {}
 }

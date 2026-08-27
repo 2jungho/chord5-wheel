@@ -1,4 +1,4 @@
-
+// ignore_for_file: avoid_print
 // Mock classes to simulate the environment
 class StudioState {
   int selectedBlockIndex = 0;

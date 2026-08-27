@@ -172,11 +172,12 @@ class LyriaJamPanel extends StatelessWidget {
             const SizedBox(height: 12),
           ],
 
-          // Controls Bar
-          Row(
-            children: [
-              // Single-click Start / Stop Jam Session Button
-              FilledButton.icon(
+          // Controls Bar (Responsive Layout)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 650;
+
+              final startButton = FilledButton.icon(
                 onPressed: lyria.isConnecting
                     ? null
                     : () {
@@ -246,49 +247,99 @@ class LyriaJamPanel extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-              ),
+              );
 
-              const SizedBox(width: 16),
-
-              // Tempo Slider
-              Expanded(
-                flex: 3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Tempo: ${lyria.tempo.toInt()} BPM",
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                      ),
+              final tempoSlider = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Tempo: ${lyria.tempo.toInt()} BPM",
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.7),
                     ),
-                    SizedBox(
-                      height: 24,
-                      child: Slider(
-                        value: lyria.tempo,
-                        min: 60,
-                        max: 180,
-                        divisions: 24,
-                        onChanged: (val) => lyria.updateTempo(val),
-                      ),
+                  ),
+                  SizedBox(
+                    height: 24,
+                    child: Slider(
+                      value: lyria.tempo,
+                      min: 60,
+                      max: 180,
+                      divisions: 24,
+                      onChanged: (val) => lyria.updateTempo(val),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                ],
+              );
 
-              const SizedBox(width: 16),
+              final volumeSlider = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      InkWell(
+                        onTap: () => lyria.toggleMute(),
+                        borderRadius: BorderRadius.circular(4),
+                        child: Icon(
+                          lyria.isMuted
+                              ? Icons.volume_off_rounded
+                              : (lyria.volume < 0.5
+                                  ? Icons.volume_down_rounded
+                                  : Icons.volume_up_rounded),
+                          size: 14,
+                          color: lyria.isMuted
+                              ? Colors.redAccent
+                              : Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        "Vol: ${(lyria.volume * 100).round()}%",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: 24,
+                    child: Slider(
+                      value: lyria.volume,
+                      min: 0.0,
+                      max: 1.0,
+                      divisions: 20,
+                      activeColor: lyria.isMuted
+                          ? Colors.grey
+                          : Theme.of(context).colorScheme.secondary,
+                      onChanged: (val) => lyria.updateVolume(val),
+                    ),
+                  ),
+                ],
+              );
 
-              // Style Dropdown
-              Container(
+              final styleDropdown = Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                  color: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest
+                      .withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: DropdownButton<String>(
-                  value: styles.contains(lyria.style) ? lyria.style : styles.first,
+                  value: styles.contains(lyria.style)
+                      ? lyria.style
+                      : styles.first,
                   underline: const SizedBox.shrink(),
                   icon: const Icon(Icons.arrow_drop_down, size: 20),
                   items: styles
@@ -296,7 +347,8 @@ class LyriaJamPanel extends StatelessWidget {
                             value: s,
                             child: Text(
                               s,
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.bold),
                             ),
                           ))
                       .toList(),
@@ -304,8 +356,42 @@ class LyriaJamPanel extends StatelessWidget {
                     if (val != null) lyria.updateStyle(val);
                   },
                 ),
-              ),
-            ],
+              );
+
+              if (isNarrow) {
+                return Column(
+                  children: [
+                    Row(
+                      children: [
+                        startButton,
+                        const Spacer(),
+                        styleDropdown,
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(child: tempoSlider),
+                        const SizedBox(width: 12),
+                        Expanded(child: volumeSlider),
+                      ],
+                    ),
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  startButton,
+                  const SizedBox(width: 16),
+                  Expanded(flex: 3, child: tempoSlider),
+                  const SizedBox(width: 16),
+                  Expanded(flex: 3, child: volumeSlider),
+                  const SizedBox(width: 16),
+                  styleDropdown,
+                ],
+              );
+            },
           ),
         ],
       ),

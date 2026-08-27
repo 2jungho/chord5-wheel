@@ -1,4 +1,3 @@
-// for kIsWeb
 import 'package:flutter/material.dart';
 import '../../../models/progression/progression_models.dart';
 import '../../../utils/theory_utils.dart';
@@ -6,9 +5,9 @@ import 'package:provider/provider.dart';
 import '../../../providers/settings_state.dart';
 import '../../../services/ai_service.dart';
 import '../../../services/prompt_templates.dart';
-
-import 'package:url_launcher/url_launcher.dart';
-import '../../../../widgets/common/ai/quota_error_widget.dart'; // import QuotaErrorWidget
+import '../../../../widgets/common/ai/quota_error_widget.dart';
+import 'famous_songs/famous_song_item.dart';
+import 'famous_songs/famous_song_info_box.dart';
 
 class FamousSongsPanel extends StatefulWidget {
   final ProgressionSession session;
@@ -126,28 +125,6 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
         setState(() {
           _isGenerating = false;
         });
-      }
-    }
-  }
-
-  Future<void> _launchYoutubeSearch(String query) async {
-    final urlString =
-        'https://www.youtube.com/results?search_query=${Uri.encodeComponent(query)}';
-    final Uri url = Uri.parse(urlString);
-
-    // 웹 환경(또는 지원하는 플랫폼)에서 팝업 창으로 열기 위한 시도
-    // webOnlyWindowName에 window features(크기 등)를 전달하면
-    // Flutter Web에서는 window.open의 3번째 인자로 사용될 수 있음.
-    if (!await launchUrl(
-      url,
-      mode: LaunchMode.externalApplication,
-      webOnlyWindowName:
-          'width=1000,height=600,menubar=no,status=no,toolbar=no,resizable=yes,scrollbars=yes',
-    )) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not launch YouTube')),
-        );
       }
     }
   }
@@ -361,156 +338,11 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
     );
   }
 
-  Widget _buildIconButton(BuildContext context,
-      {required String tooltip,
-      required IconData icon,
-      required VoidCallback onTap,
-      required bool isPrimary}) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: isPrimary
-                  ? colorScheme.primary // 솔리드 컬러로 변경하여 선명하게
-                  : colorScheme.surfaceDim,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: isPrimary
-                    ? Colors.transparent // 테두리 제거
-                    : colorScheme.outline.withValues(alpha: 0.2),
-              ),
-            ),
-            child: Icon(
-              icon,
-              size: 18,
-              color: isPrimary
-                  ? colorScheme.onPrimary // 배경 대비 선명한 아이콘 색상 (보통 흰색)
-                  : colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildSongList(List<String> songs, BuildContext context) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: songs.map((songTitle) {
-        return Container(
-          width: 240,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 2,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              // Song Title & Artist
-              Expanded(
-                child: Row(
-                  children: [
-                    Icon(Icons.music_note_rounded,
-                        size: 14,
-                        color: Theme.of(context).colorScheme.tertiary),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Builder(builder: (context) {
-                        String title = songTitle;
-                        String artist = '';
-                        final separatorIndex = songTitle.lastIndexOf(' - ');
-                        if (separatorIndex != -1) {
-                          title = songTitle.substring(0, separatorIndex).trim();
-                          artist =
-                              songTitle.substring(separatorIndex + 3).trim();
-                        }
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Tooltip(
-                              message: title,
-                              child: Text(
-                                title,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color:
-                                      Theme.of(context).colorScheme.onSurface,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (artist.isNotEmpty)
-                              Tooltip(
-                                message: artist,
-                                child: Text(
-                                  '($artist)',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurfaceVariant,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                          ],
-                        );
-                      }),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              // Action Buttons
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildIconButton(
-                    context,
-                    tooltip: '원곡 듣기',
-                    icon: Icons.play_circle_fill,
-                    onTap: () => _launchYoutubeSearch(songTitle),
-                    isPrimary: true,
-                  ),
-                  const SizedBox(width: 4),
-                  _buildIconButton(
-                    context,
-                    tooltip: '배킹 트랙',
-                    icon: Icons.graphic_eq,
-                    onTap: () =>
-                        _launchYoutubeSearch('$songTitle backing track'),
-                    isPrimary: false,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      }).toList(),
+      children: songs.map((songTitle) => FamousSongItem(songTitle: songTitle)).toList(),
     );
   }
 
@@ -706,7 +538,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                   Row(
                     children: [
                       if (isNarrow) ...[
-                        _buildModelSelector(context),
+                        const FamousSongModelBadge(),
                         const SizedBox(width: 8),
                       ],
                       // Back to DB Results
@@ -743,7 +575,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                             children: [
                               _buildSongList(currentSongs, context),
                               const SizedBox(height: 16),
-                              _buildAiInfoBox(context),
+                              FamousSongInfoBox(session: widget.session, isMobile: true),
                             ],
                           );
                         }
@@ -755,7 +587,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                               Expanded(
                                   child: _buildSongList(currentSongs, context)),
                               const SizedBox(width: 24),
-                              _buildAiInfoBox(context, isMobile: false),
+                              FamousSongInfoBox(session: widget.session, isMobile: false),
                             ],
                           ),
                         );
@@ -818,7 +650,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                 ),
               ),
               const SizedBox(width: 8),
-              _buildModelSelector(context),
+              const FamousSongModelBadge(),
             ],
           ),
           const SizedBox(height: 16),
@@ -919,101 +751,6 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                 ],
               );
             }),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAiInfoBox(BuildContext context, {bool isMobile = true}) {
-    return Container(
-      width: isMobile ? double.infinity : 300,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color:
-            Theme.of(context).colorScheme.surfaceContainerHigh.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.info_outline,
-                  size: 16, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(width: 8),
-              Text(
-                'AI 생성 결과',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '이 목록은 생성형 AI가 추천한 결과로, 실제 곡의 코드 진행과 다를 수 있습니다.',
-            style: TextStyle(
-              fontSize: 11,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Current Progression Summary
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              widget.session.progression
-                  .map((b) => b.chordSymbol)
-                  .join('  -  '),
-              style: TextStyle(
-                fontSize: 11,
-                fontFamily: 'monospace',
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildModelSelector(BuildContext context) {
-    final settings = context.watch<SettingsState>();
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border:
-            Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.psychology,
-              size: 14, color: Theme.of(context).colorScheme.secondary),
-          const SizedBox(width: 6),
-          Text(
-            settings.geminiModel.label,
-            style: TextStyle(
-              fontSize: 11,
-              color: Theme.of(context).colorScheme.secondary,
-              fontWeight: FontWeight.bold,
-            ),
           ),
         ],
       ),
