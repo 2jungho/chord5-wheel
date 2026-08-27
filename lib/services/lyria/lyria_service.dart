@@ -9,11 +9,10 @@ import 'audio_queue.dart';
 class LyriaService {
   WebSocketChannel? _channel;
   final String _apiKey;
-  final String _model = 'models/gemini-2.0-flash-exp';
+  final String _model = 'models/lyria-realtime-exp';
 
-  // Audio System
-  final AudioQueue _audioQueue =
-      AudioQueue(sampleRate: 24000); // Gemini def: 24kHz
+  // Audio System (Lyria RealTime: 48kHz Stereo)
+  final AudioQueue _audioQueue = AudioQueue(sampleRate: 48000, channels: 2);
 
   // Status Stream
   final _statusController = StreamController<String>.broadcast();
@@ -51,7 +50,7 @@ class LyriaService {
         onDone: _onDone,
       );
 
-      // Send Setup Message
+      // Send Setup Message for Lyria RealTime
       _sendSetupMessage();
 
       _statusController.add("Connected");
@@ -69,22 +68,6 @@ class LyriaService {
         "model": _model,
         "generation_config": {
           "response_modalities": ["AUDIO"],
-          "speech_config": {
-            "voice_config": {
-              "prebuilt_voice_config": {
-                "voice_name": "Aoede"
-              }
-            }
-          }
-        },
-        "system_instruction": {
-          "parts": [
-            {
-              "text": "You are a professional virtual backing band and musical soundscape synthesizer for guitarists. "
-                  "When the user gives you chord progressions, key, tempo, or modal concepts, generate rich, melodic, and rhythmic musical accompaniment (rhythm chords, basslines, groove, ambient textures). "
-                  "Perform expressively and musically to support guitar soloing and harmonic exploration."
-            }
-          ]
         }
       }
     };
@@ -97,32 +80,67 @@ class LyriaService {
     _channel!.sink.add(jsonString);
   }
 
-  /// Send a text prompt to generate music context
-  void sendPrompt(String text) {
-    if (!_isSetupComplete) {
-      debugPrint("Cannot send prompt, setup not complete.");
-      return;
-    }
+  /// Configure real-time music parameters (BPM, Temperature, Scale, Density)
+  void setMusicGenerationConfig({
+    required int bpm,
+    double temperature = 1.0,
+    String? scale,
+    double? density,
+  }) {
+    final Map<String, dynamic> config = {
+      "bpm": bpm,
+      "temperature": temperature,
+    };
+    if (scale != null) config["scale"] = scale;
+    if (density != null) config["density"] = density;
 
     final msg = {
-      "client_content": {
-        "turns": [
-          {
-            "role": "user",
-            "parts": [
-              {"text": text}
-            ]
-          }
-        ],
-        "turn_complete": true
-      }
+      "music_generation_config": config,
     };
     sendJson(msg);
   }
 
+  /// Set or update weighted prompts for real-time steering/morphing
+  void setWeightedPrompts(List<Map<String, dynamic>> prompts) {
+    final msg = {
+      "weighted_prompts": prompts,
+    };
+    sendJson(msg);
+  }
+
+  /// Start playing the music generation stream
+  void play() {
+    final msg = {
+      "play": {}
+    };
+    sendJson(msg);
+    _statusController.add("Playing...");
+  }
+
+  /// Pause music generation stream
+  void pause() {
+    final msg = {
+      "pause": {}
+    };
+    sendJson(msg);
+    _statusController.add("Paused");
+  }
+
+  /// Stop playback and clear audio queue
   void stopPlayback() {
+    final msg = {
+      "stop": {}
+    };
+    sendJson(msg);
     _audioQueue.clear();
     _statusController.add("Stopped");
+  }
+
+  /// Send a text prompt (convenience wrapper for weighted prompts / fallback)
+  void sendPrompt(String text) {
+    setWeightedPrompts([
+      {"text": text, "weight": 1.0}
+    ]);
   }
 
   void _onMessage(dynamic message) {
@@ -140,28 +158,28 @@ class LyriaService {
   }
 
   void _handleServerContent(Map<String, dynamic> data) {
-    // Check for "serverContent" -> "modelTurn" -> "parts" -> "inlineData"
-
-    // Also check for setupComplete at top level (sometimes)
-    // Actually the protocol structure: { "serverContent": { "modelTurn": ... } }
-    // Setup complete might be a separate toolUse or empty turn?
-    // Let's assume after first response or specific signal.
-    // Spec: "The server will send a 'setupComplete' message..." - actually it's inside serverContent usually?
-    // Wait, checked docs: yes, it can be a top-level key or inside.
-
-    // For now, if we get ANY response that is valid, consider setup done?
-    // No, better check explicit keys.
-
-    // Check top level keys
-    // debugPrint("Lyria Msg: ${data.keys.toList()}");
-
-    // Handling various message types
+    // Check for setupComplete signal
     if (data.containsKey('setupComplete')) {
       _isSetupComplete = true;
       _statusController.add("Setup Complete - Ready to Jam");
       return;
     }
 
+    // 1. Direct audioChunks at top level or inside serverContent
+    final audioChunks = data['audioChunks'] ?? (data['serverContent'] is Map ? data['serverContent']['audioChunks'] : null);
+    if (audioChunks is List) {
+      for (var chunk in audioChunks) {
+        if (chunk is Map && chunk.containsKey('data')) {
+          final base64String = chunk['data'] as String;
+          final bytes = base64Decode(base64String);
+          _audioQueue.addChunk(bytes);
+        }
+      }
+      _isSetupComplete = true;
+      return;
+    }
+
+    // 2. Handle serverContent wrapper
     if (data.containsKey('serverContent')) {
       final serverContent = data['serverContent'];
 
@@ -178,6 +196,7 @@ class LyriaService {
 
       // Handle Model Turn (Audio Data)
       if (serverContent.containsKey('modelTurn')) {
+        _isSetupComplete = true;
         final parts = serverContent['modelTurn']['parts'] as List?;
         if (parts != null) {
           for (var part in parts) {

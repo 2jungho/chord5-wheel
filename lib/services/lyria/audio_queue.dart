@@ -7,14 +7,14 @@ class AudioQueue {
   final List<Uint8List> _queue = [];
   bool _isPlaying = false;
 
-  // PCM Format (Gemini Default)
+  // PCM Format (Lyria RealTime default: 48kHz Stereo)
   final int sampleRate;
   final int channels;
 
   // AudioPlayers instance
   late final AudioPlayer _player;
 
-  AudioQueue({this.sampleRate = 24000, this.channels = 1});
+  AudioQueue({this.sampleRate = 48000, this.channels = 2});
 
   Future<void> initialize() async {
     _player = AudioPlayer();

@@ -215,6 +215,7 @@ class LyriaJamPanel extends StatelessWidget {
                           lyria.startJamSession(
                             chordProgression: chords,
                             blocks: session.progression,
+                            key: session.key.isNotEmpty ? session.key : 'C Major',
                           );
                         }
                       },

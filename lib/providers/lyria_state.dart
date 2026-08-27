@@ -136,16 +136,23 @@ class LyriaState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Current Jam Metadata
+  String _currentKey = 'C Major';
+  String _currentProgression = 'C - Am - F - G';
+
   /// Single-click Jam Session entry point: Connects and starts playing immediately
   Future<void> startJamSession({
     required String chordProgression,
     List<ChordBlock>? blocks,
+    String key = 'C Major',
   }) async {
     _isConnecting = true;
     _currentMoodscapeMode = null;
+    _currentKey = key;
+    _currentProgression = chordProgression;
     notifyListeners();
 
-    // 1. If API Key is present, connect & send prompt to Gemini Live
+    // 1. If API Key is present, connect & start Lyria RealTime streaming
     if (_apiKey.isNotEmpty) {
       if (!_isConnected || !_isReady) {
         if (_service == null) {
@@ -162,25 +169,36 @@ class LyriaState extends ChangeNotifier {
       }
 
       if (_isReady) {
-        final prompt = "Style: $_style, Tempo: ${_tempo.toInt()} BPM\n"
-            "Chord Progression: $chordProgression\n"
-            "Perform a virtual backing track band with drums, bass, and rhythm accompaniment for this progression. "
-            "Maintain a steady tempo at ${_tempo.toInt()} BPM.";
-        _service?.sendPrompt(prompt);
+        // Configure Tempo (BPM)
+        _service?.setMusicGenerationConfig(bpm: _tempo.toInt(), temperature: 1.0);
+
+        // Build weighted prompts with style, key, and chords
+        final mainPrompt = "$_style backing track band for guitar in key of $_currentKey, "
+            "chord progression: $_currentProgression, "
+            "rhythm guitar, acoustic chords, electric bassline, steady groove drums, dynamic accompaniment";
+
+        _service?.setWeightedPrompts([
+          {"text": mainPrompt, "weight": 1.0},
+          {"text": "tight rhythmic backing band, no vocals, clear guitar backing", "weight": 0.7},
+        ]);
+
+        // Start playing the music stream
+        _service?.play();
       }
     }
 
-    // 2. Set active state and start virtual rhythmic comping loop
+    // 2. Set active state and start virtual rhythmic fallback loop
     _isConnecting = false;
     _isPlaying = true;
     _statusMessage = "Playing ($_style ${_tempo.toInt()} BPM)";
     notifyListeners();
 
+    // Run local audio generator alongside if needed or as fallback
     _startVirtualLoop(blocks);
   }
 
-  void startJam(String chordProgression) {
-    startJamSession(chordProgression: chordProgression);
+  void startJam(String chordProgression, {String key = 'C Major'}) {
+    startJamSession(chordProgression: chordProgression, key: key);
   }
 
   void _startVirtualLoop(List<ChordBlock>? blocks) {
@@ -214,15 +232,17 @@ class LyriaState extends ChangeNotifier {
 
       final detail = block.chordDetail ?? TheoryUtils.analyzeChord(block.chordSymbol);
 
-      // Beat 1: Bass note
-      final rootNote = detail.root;
-      AudioManager().playNote(rootNote, 2);
+      // Beat 1: Bass note (only if Lyria is not streaming directly to avoid clash)
+      if (_service == null || !_isReady) {
+        final rootNote = detail.root;
+        AudioManager().playNote(rootNote, 2);
 
-      // Beat 1: Main chord voicing or strum
-      if (block.voicing != null) {
-        AudioManager().playVoicing(block.voicing!, root: block.chordSymbol);
-      } else if (detail.notes.isNotEmpty) {
-        AudioManager().playStrum(detail.notes);
+        // Beat 1: Main chord voicing or strum
+        if (block.voicing != null) {
+          AudioManager().playVoicing(block.voicing!, root: block.chordSymbol);
+        } else if (detail.notes.isNotEmpty) {
+          AudioManager().playStrum(detail.notes);
+        }
       }
 
       // Calculate timing based on BPM (1 beat = 60000 / _tempo ms)
@@ -230,7 +250,7 @@ class LyriaState extends ChangeNotifier {
       final totalBlockMs = (beatMs * block.duration).clamp(500, 10000);
 
       // Beat 3: Add rhythmic syncopation / accent strum if bar is >= 4 beats
-      if (block.duration >= 4) {
+      if (block.duration >= 4 && (_service == null || !_isReady)) {
         Timer(Duration(milliseconds: beatMs * 2), () {
           if (!_isPlaying) return;
           if (block.voicing != null) {
@@ -285,11 +305,16 @@ class LyriaState extends ChangeNotifier {
       return;
     }
 
-    final prompt = "Generate a 15-second ambient musical soundscape in the $rootNote $modeName mode. "
-        "Emphasize the unique modal character note '$characterNote'. "
-        "Create an evocative, atmospheric backing atmosphere suitable for hearing the color of the $modeName mode.";
-
-    _service?.sendPrompt(prompt);
+    // Configure Lyria for Mode Moodscape
+    _service?.setMusicGenerationConfig(bpm: 80, scale: "$rootNote $modeName", temperature: 0.9);
+    _service?.setWeightedPrompts([
+      {
+        "text": "Ambient musical soundscape in $rootNote $modeName mode, atmospheric guitar textures, pad synth, emphasizing character note $characterNote",
+        "weight": 1.0
+      },
+      {"text": "peaceful meditative guitar backing, subtle rhythm", "weight": 0.5}
+    ]);
+    _service?.play();
   }
 
   void updateTempo(double newTempo) {
@@ -297,7 +322,7 @@ class LyriaState extends ChangeNotifier {
     notifyListeners();
 
     if (_isPlaying) {
-      _service?.sendPrompt("Change tempo to ${newTempo.toInt()} BPM");
+      _service?.setMusicGenerationConfig(bpm: newTempo.toInt());
     }
   }
 
@@ -306,7 +331,13 @@ class LyriaState extends ChangeNotifier {
     notifyListeners();
 
     if (_isPlaying) {
-      _service?.sendPrompt("Change style to $newStyle");
+      final promptText = "$newStyle guitar backing track in key of $_currentKey, "
+          "chord progression: $_currentProgression, "
+          "rhythm guitar, bass, groove drums";
+      _service?.setWeightedPrompts([
+        {"text": promptText, "weight": 1.0},
+        {"text": "tight rhythmic backing band", "weight": 0.6}
+      ]);
     }
   }
 
