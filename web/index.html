@@ -104,6 +104,109 @@
         console.warn("Tone.Sampler init error:", e);
       }
 
+      // Drums, Bass, and Keys Synthesizers
+      let drumKick, drumSnare, drumHiHat, drumRim;
+      let bassSynth, keysSynth;
+
+      try {
+        drumKick = new Tone.MembraneSynth({
+          pitchDecay: 0.05,
+          octaves: 6,
+          oscillator: { type: "sine" },
+          envelope: { attack: 0.001, decay: 0.35, sustain: 0.01, release: 0.35 }
+        }).toDestination();
+
+        drumSnare = new Tone.NoiseSynth({
+          noise: { type: "white" },
+          envelope: { attack: 0.001, decay: 0.22, sustain: 0 }
+        }).toDestination();
+
+        drumHiHat = new Tone.MetalSynth({
+          frequency: 250,
+          envelope: { attack: 0.001, decay: 0.06, release: 0.06 },
+          harmonicity: 5.1,
+          modulationIndex: 32,
+          resonance: 4000,
+          octaves: 1.5
+        }).toDestination();
+
+        drumRim = new Tone.MembraneSynth({
+          pitchDecay: 0.01,
+          octaves: 2,
+          oscillator: { type: "triangle" },
+          envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.08 }
+        }).toDestination();
+
+        bassSynth = new Tone.MonoSynth({
+          oscillator: { type: "sawtooth" },
+          filter: { Q: 2, type: "lowpass", rolloff: -24 },
+          filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.4, baseFrequency: 55, octaves: 2.5 },
+          envelope: { attack: 0.01, decay: 0.4, sustain: 0.5, release: 0.5 }
+        }).toDestination();
+
+        keysSynth = new Tone.PolySynth(Tone.FMSynth, {
+          harmonicity: 2,
+          modulationIndex: 1.5,
+          oscillator: { type: "sine" },
+          envelope: { attack: 0.015, decay: 0.8, sustain: 0.4, release: 1.2 },
+          modulation: { type: "triangle" },
+          modulationEnvelope: { attack: 0.01, decay: 0.5, sustain: 0.2, release: 0.8 }
+        }).toDestination();
+      } catch (e) {
+        console.warn("Could not init backing band synths:", e);
+      }
+
+      window.playWebDrum = async function (type, volume) {
+        try {
+          if (Tone.context.state !== "running") await Tone.start();
+          const vol = volume !== undefined ? volume : 0.8;
+          if (type === "kick" && drumKick) {
+            drumKick.volume.value = Tone.gainToDb(vol);
+            drumKick.triggerAttackRelease("C1", "8n");
+          } else if (type === "snare" && drumSnare) {
+            drumSnare.volume.value = Tone.gainToDb(vol * 0.9);
+            drumSnare.triggerAttackRelease("8n");
+          } else if (type === "hiHatClosed" && drumHiHat) {
+            drumHiHat.volume.value = Tone.gainToDb(vol * 0.6);
+            drumHiHat.triggerAttackRelease("32n");
+          } else if (type === "hiHatOpen" && drumHiHat) {
+            drumHiHat.volume.value = Tone.gainToDb(vol * 0.7);
+            drumHiHat.triggerAttackRelease("8n");
+          } else if (type === "rimshot" && drumRim) {
+            drumRim.volume.value = Tone.gainToDb(vol * 0.7);
+            drumRim.triggerAttackRelease("G2", "16n");
+          }
+        } catch (e) {
+          console.warn("playWebDrum error:", e);
+        }
+      };
+
+      window.playWebBass = async function (note, octave, volume) {
+        try {
+          if (Tone.context.state !== "running") await Tone.start();
+          const pitch = (note || "C").replace("CSharp", "C#").replace("DSharp", "D#").replace("FSharp", "F#").replace("GSharp", "G#").replace("ASharp", "A#") + (octave || 2);
+          if (bassSynth) {
+            bassSynth.volume.value = Tone.gainToDb(volume !== undefined ? volume : 0.75);
+            bassSynth.triggerAttackRelease(pitch, "4n");
+          }
+        } catch (e) {
+          console.warn("playWebBass error:", e);
+        }
+      };
+
+      window.playWebKeys = async function (note, octave, volume) {
+        try {
+          if (Tone.context.state !== "running") await Tone.start();
+          const pitch = (note || "C").replace("CSharp", "C#").replace("DSharp", "D#").replace("FSharp", "F#").replace("GSharp", "G#").replace("ASharp", "A#") + (octave || 3);
+          if (keysSynth) {
+            keysSynth.volume.value = Tone.gainToDb(volume !== undefined ? volume : 0.65);
+            keysSynth.triggerAttackRelease(pitch, "2n");
+          }
+        } catch (e) {
+          console.warn("playWebKeys error:", e);
+        }
+      };
+
       window.playWebGuitarNote = async function (note, octave) {
         try {
           if (Tone.context.state !== "running") {

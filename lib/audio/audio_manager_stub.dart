@@ -2,6 +2,7 @@ import 'dart:async';
 import 'web_audio_api.dart';
 import '../models/chord_model.dart';
 import '../utils/theory_utils.dart';
+import 'virtual_band_synth.dart';
 
 /// This is the web-only implementation of AudioManager.
 /// It does not import flutter_soloud and relies on JavaScript for audio.
@@ -12,8 +13,30 @@ class AudioManager {
 
   Future<void> initialize() async {}
 
-  Future<void> playNote(String noteInput, int defaultOctave) async {
+  Future<void> playDrum(DrumSound sound, {double volume = 0.8}) async {
+    WebAudioApi.playDrum(sound.name, volume);
+  }
 
+  Future<void> playBassNote(String noteName, int octave, {double volume = 0.75}) async {
+    WebAudioApi.playBass(noteName, octave, volume);
+  }
+
+  Future<void> playKeyboardNote(String noteName, int octave, {double volume = 0.65}) async {
+    WebAudioApi.playKeys(noteName, octave, volume);
+  }
+
+  Future<void> playKeyboardChord(List<String> notes, {int octave = 3, double volume = 0.6}) async {
+    int currentOctave = octave;
+    int lastIndex = -1;
+    for (String note in notes) {
+      final idx = TheoryUtils.getNoteIndex(note);
+      if (idx <= lastIndex) currentOctave++;
+      playKeyboardNote(note, currentOctave, volume: volume);
+      lastIndex = idx;
+    }
+  }
+
+  Future<void> playNote(String noteInput, int defaultOctave) async {
     // Clean note and extract optional embedded octave (e.g., "C3", "Db4", "F#")
     String rawNote = noteInput.trim();
     int targetOctave = defaultOctave;
@@ -90,7 +113,7 @@ class AudioManager {
     }
   }
 
-  // --- Phase 2: High Precision Scheduling ---
+  // --- High Precision Scheduling ---
   void startProgression(int bpm, String progressionJson) {
     WebAudioApi.scheduleSequence(bpm, progressionJson);
   }
@@ -115,4 +138,5 @@ class AudioManager {
     stopProgression();
   }
 }
+
 

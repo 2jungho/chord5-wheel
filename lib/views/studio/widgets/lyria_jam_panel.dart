@@ -77,10 +77,10 @@ class LyriaJamPanel extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "Lyria / Gemini Realtime Backing Track",
+                    "Full 4-Piece Band: Drums • Bass • Keys • Guitar",
                     style: TextStyle(
                       fontSize: 11,
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                   ),
                 ],
@@ -148,7 +148,7 @@ class LyriaJamPanel extends StatelessWidget {
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
-                      "Gemini API Key가 없어도 가상 밴드로 연주 가능합니다. (AI 실시간 밴드는 설정에서 키 등록)",
+                      "내장 가상 밴드(드럼/베이스/건반/기타)로 즉시 연주됩니다. (AI 실시간 생성은 설정에서 키 등록)",
                       style: TextStyle(fontSize: 12),
                     ),
                   ),
@@ -191,25 +191,6 @@ class LyriaJamPanel extends StatelessWidget {
                           } else {
                             chords +=
                                 "Progression: ${session.progression.map((b) => b.chordSymbol).join(" - ")}";
-                          }
-
-                          if (!settings.hasApiKey) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text(
-                                    "Gemini API 키가 없어 내장 가상 밴드로 반주를 시작합니다."),
-                                duration: const Duration(seconds: 3),
-                                action: SnackBarAction(
-                                  label: "설정 열기",
-                                  onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (_) => const SettingsDialog(),
-                                    );
-                                  },
-                                ),
-                              ),
-                            );
                           }
 
                           lyria.startJamSession(
@@ -305,9 +286,9 @@ class LyriaJamPanel extends StatelessWidget {
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.7),
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.7),
                         ),
                       ),
                     ],
@@ -394,8 +375,154 @@ class LyriaJamPanel extends StatelessWidget {
               );
             },
           ),
+
+          const SizedBox(height: 14),
+
+          // Instrument Mixer & Beat Visualizer
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.25),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Text(
+                  "Band Mixer:",
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // 4 Instrument Toggle Chips
+                _buildInstrumentChip(
+                  context: context,
+                  label: "Drums",
+                  icon: Icons.album_outlined,
+                  isActive: lyria.drumsEnabled,
+                  onTap: () => lyria.toggleInstrument("drums"),
+                ),
+                const SizedBox(width: 6),
+                _buildInstrumentChip(
+                  context: context,
+                  label: "Bass",
+                  icon: Icons.graphic_eq,
+                  isActive: lyria.bassEnabled,
+                  onTap: () => lyria.toggleInstrument("bass"),
+                ),
+                const SizedBox(width: 6),
+                _buildInstrumentChip(
+                  context: context,
+                  label: "Keys",
+                  icon: Icons.piano,
+                  isActive: lyria.keysEnabled,
+                  onTap: () => lyria.toggleInstrument("keys"),
+                ),
+                const SizedBox(width: 6),
+                _buildInstrumentChip(
+                  context: context,
+                  label: "Guitar",
+                  icon: Icons.music_note,
+                  isActive: lyria.guitarEnabled,
+                  onTap: () => lyria.toggleInstrument("guitar"),
+                ),
+
+                const Spacer(),
+
+                // Beat Metronome / Pulse Indicator
+                if (lyria.isPlaying) ...[
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(4, (index) {
+                      final isCurrentBeat = lyria.activeBeat == (index + 1);
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 100),
+                        margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                        width: isCurrentBeat ? 14 : 8,
+                        height: isCurrentBeat ? 14 : 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isCurrentBeat
+                              ? (index == 0
+                                  ? Colors.redAccent
+                                  : Theme.of(context).colorScheme.primary)
+                              : Colors.grey.withValues(alpha: 0.3),
+                          boxShadow: isCurrentBeat
+                              ? [
+                                  BoxShadow(
+                                    color: (index == 0
+                                            ? Colors.redAccent
+                                            : Theme.of(context).colorScheme.primary)
+                                        .withValues(alpha: 0.6),
+                                    blurRadius: 6,
+                                  )
+                                ]
+                              : null,
+                        ),
+                      );
+                    }),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
+
+  Widget _buildInstrumentChip({
+    required BuildContext context,
+    required String label,
+    required IconData icon,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: isActive
+              ? theme.colorScheme.primary.withValues(alpha: 0.15)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isActive
+                ? theme.colorScheme.primary.withValues(alpha: 0.5)
+                : theme.dividerColor.withValues(alpha: 0.4),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 13,
+              color: isActive ? theme.colorScheme.primary : Colors.grey,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                color: isActive ? theme.colorScheme.primary : Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
+

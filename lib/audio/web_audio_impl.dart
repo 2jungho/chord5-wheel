@@ -3,6 +3,15 @@ import 'dart:js_interop';
 @JS('playWebGuitarNote')
 external void _playWebGuitarNote(JSString note, JSNumber octave);
 
+@JS('playWebDrum')
+external void _playWebDrum(JSString type, JSNumber volume);
+
+@JS('playWebBass')
+external void _playWebBass(JSString note, JSNumber octave, JSNumber volume);
+
+@JS('playWebKeys')
+external void _playWebKeys(JSString note, JSNumber octave, JSNumber volume);
+
 @JS('scheduleWebSequence')
 external void _scheduleWebSequence(JSNumber bpm, JSString progressionJson);
 
@@ -21,6 +30,18 @@ external void _setWebVolume(JSNumber volume);
 class WebAudioApi {
   static void playNote(String note, int octave) {
     _playWebGuitarNote(note.toJS, octave.toJS);
+  }
+
+  static void playDrum(String type, double volume) {
+    _playWebDrum(type.toJS, volume.toJS);
+  }
+
+  static void playBass(String note, int octave, double volume) {
+    _playWebBass(note.toJS, octave.toJS, volume.toJS);
+  }
+
+  static void playKeys(String note, int octave, double volume) {
+    _playWebKeys(note.toJS, octave.toJS, volume.toJS);
   }
 
   static void scheduleSequence(int bpm, String progressionJson) {
@@ -43,4 +64,5 @@ class WebAudioApi {
     _setWebVolume(volume.toJS);
   }
 }
+
 

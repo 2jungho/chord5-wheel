@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../services/lyria/lyria_service.dart';
+import '../services/lyria/virtual_band_sequencer.dart';
 import '../audio/audio_manager.dart';
 import '../models/progression/progression_models.dart';
 import '../utils/theory_utils.dart';
-import '../utils/guitar_utils.dart';
 
 class LyriaState extends ChangeNotifier {
   LyriaService? _service;
@@ -24,9 +24,16 @@ class LyriaState extends ChangeNotifier {
   double _volume = 0.8;
   double _preMuteVolume = 0.8;
 
-  // Virtual Band Timer
-  Timer? _virtualBandTimer;
-  int _currentBlockIdx = 0;
+  // Instrument Toggles
+  bool _drumsEnabled = true;
+  bool _bassEnabled = true;
+  bool _keysEnabled = true;
+  bool _guitarEnabled = true;
+
+  // Virtual Band Sequencer
+  late final VirtualBandSequencer _sequencer;
+  int _activeBlockIndex = 0;
+  int _activeStepInBlock = 0;
 
   // Getters
   String get statusMessage => _statusMessage;
@@ -41,7 +48,33 @@ class LyriaState extends ChangeNotifier {
   double get volume => _volume;
   bool get isMuted => _volume <= 0.001;
 
+  bool get drumsEnabled => _drumsEnabled;
+  bool get bassEnabled => _bassEnabled;
+  bool get keysEnabled => _keysEnabled;
+  bool get guitarEnabled => _guitarEnabled;
+
+  int get activeBlockIndex => _activeBlockIndex;
+  int get activeStepInBlock => _activeStepInBlock;
+  int get activeBeat => (_activeStepInBlock ~/ 4) + 1;
+
   StreamSubscription? _statusSubscription;
+
+  LyriaState() {
+    _sequencer = VirtualBandSequencer(
+      bpm: _tempo,
+      style: _style,
+      volume: _volume,
+      drumsEnabled: _drumsEnabled,
+      bassEnabled: _bassEnabled,
+      keysEnabled: _keysEnabled,
+      guitarEnabled: _guitarEnabled,
+      onStep: (blockIdx, stepIdx, totalSteps) {
+        _activeBlockIndex = blockIdx;
+        _activeStepInBlock = stepIdx;
+        notifyListeners();
+      },
+    );
+  }
 
   void setApiKey(String key) {
     if (_apiKey == key) return;
@@ -77,12 +110,12 @@ class LyriaState extends ChangeNotifier {
       } else if (status.contains("Disconnected") || status.contains("Closed")) {
         _isConnected = false;
         _isReady = false;
-        if (_virtualBandTimer == null) {
+        if (!_sequencer.isRunning) {
           _isPlaying = false;
         }
         _currentMoodscapeMode = null;
       } else if (status.contains("Stopped")) {
-        if (_virtualBandTimer == null) {
+        if (!_sequencer.isRunning) {
           _isPlaying = false;
         }
         _currentMoodscapeMode = null;
@@ -140,7 +173,7 @@ class LyriaState extends ChangeNotifier {
   String _currentKey = 'C Major';
   String _currentProgression = 'C - Am - F - G';
 
-  /// Single-click Jam Session entry point: Connects and starts playing immediately
+  /// Single-click Jam Session entry point: Connects and starts playing full 4-piece band immediately
   Future<void> startJamSession({
     required String chordProgression,
     List<ChordBlock>? blocks,
@@ -172,14 +205,17 @@ class LyriaState extends ChangeNotifier {
         // Configure Tempo (BPM)
         _service?.setMusicGenerationConfig(bpm: _tempo.toInt(), temperature: 1.0);
 
-        // Build weighted prompts with style, key, and chords
-        final mainPrompt = "$_style backing track band for guitar in key of $_currentKey, "
-            "chord progression: $_currentProgression, "
-            "rhythm guitar, acoustic chords, electric bassline, steady groove drums, dynamic accompaniment";
+        // Build comprehensive 4-piece band prompt
+        final mainPrompt = "Full 4-piece rhythm section backing track in key of $_currentKey, chord progression: $_currentProgression. "
+            "1. Drums: Steady dynamic drum groove with punchy kick, snappy snare backbeat, and crisp hi-hat groove. "
+            "2. Bass: Deep warm electric bass guitar playing the chord root notes with melodic grooves. "
+            "3. Keyboard: Lush Fender Rhodes / Electric Piano chord voicings and rhythmic comping. "
+            "4. Guitar: Clean rhythmic acoustic and electric guitar accompaniment. "
+            "Style: $_style, Tempo: ${_tempo.toInt()} BPM. High fidelity studio backing track, no vocals, no lead guitar solo.";
 
         _service?.setWeightedPrompts([
           {"text": mainPrompt, "weight": 1.0},
-          {"text": "tight rhythmic backing band, no vocals, clear guitar backing", "weight": 0.7},
+          {"text": "tight rhythmic backing band with drums, bass, keys, and guitar", "weight": 0.8},
         ]);
 
         // Start playing the music stream
@@ -187,91 +223,56 @@ class LyriaState extends ChangeNotifier {
       }
     }
 
-    // 2. Set active state and start virtual rhythmic fallback loop
+    // 2. Set active state and start virtual multi-instrument sequencer
     _isConnecting = false;
     _isPlaying = true;
     _statusMessage = "Playing ($_style ${_tempo.toInt()} BPM)";
     notifyListeners();
 
-    // Run local audio generator alongside if needed or as fallback
-    _startVirtualLoop(blocks);
+    // Run procedural Virtual Band Sequencer
+    _sequencer.updateBpm(_tempo);
+    _sequencer.updateStyle(_style);
+    _sequencer.updateVolume(_volume);
+    _sequencer.setInstruments(
+      drums: _drumsEnabled,
+      bass: _bassEnabled,
+      keys: _keysEnabled,
+      guitar: _guitarEnabled,
+    );
+    _sequencer.start(blocks ?? []);
   }
 
   void startJam(String chordProgression, {String key = 'C Major'}) {
     startJamSession(chordProgression: chordProgression, key: key);
   }
 
-  void _startVirtualLoop(List<ChordBlock>? blocks) {
-    _stopVirtualLoop();
-
-    List<ChordBlock> activeBlocks = blocks ?? [];
-    if (activeBlocks.isEmpty) {
-      // Default 4-chord progression: C - Am - F - G
-      final defaultChords = ['C', 'Am', 'F', 'G'];
-      activeBlocks = defaultChords.map((sym) {
-        final analyzed = TheoryUtils.analyzeChord(sym);
-        final voicings = GuitarUtils.generateAllVoicings(analyzed.root, analyzed.quality);
-        return ChordBlock(
-          chordSymbol: sym,
-          functionTag: '',
-          duration: 4,
-          chordDetail: analyzed,
-          voicing: voicings.isNotEmpty ? voicings.first : null,
-        );
-      }).toList();
-    }
-
-    _currentBlockIdx = 0;
-
-    void playNextBlock() {
-      if (!_isPlaying) return;
-      if (activeBlocks.isEmpty) return;
-
-      final block = activeBlocks[_currentBlockIdx % activeBlocks.length];
-      _currentBlockIdx++;
-
-      final detail = block.chordDetail ?? TheoryUtils.analyzeChord(block.chordSymbol);
-
-      // Beat 1: Bass note (only if Lyria is not streaming directly to avoid clash)
-      if (_service == null || !_isReady) {
-        final rootNote = detail.root;
-        AudioManager().playNote(rootNote, 2);
-
-        // Beat 1: Main chord voicing or strum
-        if (block.voicing != null) {
-          AudioManager().playVoicing(block.voicing!, root: block.chordSymbol);
-        } else if (detail.notes.isNotEmpty) {
-          AudioManager().playStrum(detail.notes);
-        }
-      }
-
-      // Calculate timing based on BPM (1 beat = 60000 / _tempo ms)
-      final beatMs = (60000.0 / _tempo).round();
-      final totalBlockMs = (beatMs * block.duration).clamp(500, 10000);
-
-      // Beat 3: Add rhythmic syncopation / accent strum if bar is >= 4 beats
-      if (block.duration >= 4 && (_service == null || !_isReady)) {
-        Timer(Duration(milliseconds: beatMs * 2), () {
-          if (!_isPlaying) return;
-          if (block.voicing != null) {
-            AudioManager().playVoicing(block.voicing!, root: block.chordSymbol);
-          } else if (detail.notes.isNotEmpty) {
-            AudioManager().playStrum(detail.notes);
-          }
-        });
-      }
-
-      // Schedule next chord block
-      _virtualBandTimer = Timer(Duration(milliseconds: totalBlockMs), playNextBlock);
-    }
-
-    playNextBlock();
+  void _stopVirtualLoop() {
+    _sequencer.stop();
   }
 
-  void _stopVirtualLoop() {
-    _virtualBandTimer?.cancel();
-    _virtualBandTimer = null;
-    AudioManager().stopProgression();
+  void toggleInstrument(String instrument) {
+    switch (instrument.toLowerCase()) {
+      case 'drums':
+      case 'drum':
+        _drumsEnabled = !_drumsEnabled;
+        _sequencer.setInstruments(drums: _drumsEnabled);
+        break;
+      case 'bass':
+        _bassEnabled = !_bassEnabled;
+        _sequencer.setInstruments(bass: _bassEnabled);
+        break;
+      case 'keys':
+      case 'keyboard':
+      case 'piano':
+        _keysEnabled = !_keysEnabled;
+        _sequencer.setInstruments(keys: _keysEnabled);
+        break;
+      case 'guitar':
+        _guitarEnabled = !_guitarEnabled;
+        _sequencer.setInstruments(guitar: _guitarEnabled);
+        break;
+    }
+    notifyListeners();
   }
 
   Future<void> playModeMoodscape(
@@ -290,7 +291,8 @@ class LyriaState extends ChangeNotifier {
     if (!_isReady) {
       // Fallback: Play root note & modal chord
       final analyzed = TheoryUtils.analyzeChord(rootNote);
-      AudioManager().playNote(rootNote, 2);
+      AudioManager().playBassNote(rootNote, 2);
+      AudioManager().playKeyboardChord(analyzed.notes, octave: 3);
       AudioManager().playStrum(analyzed.notes);
       _statusMessage = "Playing $rootNote $modeName";
       _isPlaying = true;
@@ -309,16 +311,17 @@ class LyriaState extends ChangeNotifier {
     _service?.setMusicGenerationConfig(bpm: 80, scale: "$rootNote $modeName", temperature: 0.9);
     _service?.setWeightedPrompts([
       {
-        "text": "Ambient musical soundscape in $rootNote $modeName mode, atmospheric guitar textures, pad synth, emphasizing character note $characterNote",
+        "text": "Ambient musical soundscape in $rootNote $modeName mode, atmospheric guitar textures, pad synth, electric bass, subtle drum groove, emphasizing character note $characterNote",
         "weight": 1.0
       },
-      {"text": "peaceful meditative guitar backing, subtle rhythm", "weight": 0.5}
+      {"text": "peaceful meditative backing band, subtle rhythm", "weight": 0.6}
     ]);
     _service?.play();
   }
 
   void updateTempo(double newTempo) {
     _tempo = newTempo;
+    _sequencer.updateBpm(newTempo);
     notifyListeners();
 
     if (_isPlaying) {
@@ -328,15 +331,16 @@ class LyriaState extends ChangeNotifier {
 
   void updateStyle(String newStyle) {
     _style = newStyle;
+    _sequencer.updateStyle(newStyle);
     notifyListeners();
 
     if (_isPlaying) {
-      final promptText = "$newStyle guitar backing track in key of $_currentKey, "
+      final promptText = "Full 4-piece backing band ($newStyle style) in key of $_currentKey, "
           "chord progression: $_currentProgression, "
-          "rhythm guitar, bass, groove drums";
+          "drums, electric bass, keyboard/piano chords, rhythm guitar";
       _service?.setWeightedPrompts([
         {"text": promptText, "weight": 1.0},
-        {"text": "tight rhythmic backing band", "weight": 0.6}
+        {"text": "tight rhythmic backing band with drums, bass, keys, guitar", "weight": 0.7}
       ]);
     }
   }
@@ -346,6 +350,7 @@ class LyriaState extends ChangeNotifier {
     if (_volume > 0.001) {
       _preMuteVolume = _volume;
     }
+    _sequencer.updateVolume(_volume);
     _service?.setVolume(_volume);
     AudioManager().setVolume(_volume);
     notifyListeners();
@@ -368,3 +373,4 @@ class LyriaState extends ChangeNotifier {
     super.dispose();
   }
 }
+

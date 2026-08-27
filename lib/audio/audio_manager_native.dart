@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
 import '../models/chord_model.dart';
 import '../utils/theory_utils.dart';
+import 'virtual_band_synth.dart';
 
 /// This is the native (Android, iOS, Windows, macOS, Linux) implementation of AudioManager.
-/// It uses the flutter_soloud package for audio playback.
+/// It uses the flutter_soloud package for audio playback with procedural band synthesis.
 class AudioManager {
   static final AudioManager _instance = AudioManager._internal();
   factory AudioManager() => _instance;
@@ -14,6 +16,8 @@ class AudioManager {
   bool _isReady = false;
 
   final Map<String, AudioSource> _noteSounds = {};
+  final Map<DrumSound, AudioSource> _drumSounds = {};
+  final Map<String, AudioSource> _synthSounds = {};
 
   // Standard note names & file map
   static const Map<String, String> _noteNameToFileSafeMap = {
@@ -71,6 +75,7 @@ class AudioManager {
       await _soLoud!.init();
       _soLoud!.setGlobalVolume(1.0);
 
+      // 1. Load guitar sample assets
       for (final soundId in _availableSoundFiles) {
         final soundPath = 'assets/sounds/$soundId.mp3';
         try {
@@ -81,10 +86,136 @@ class AudioManager {
         }
       }
 
+      // 2. Synthesize and load Drum sounds into memory
+      await _initDrums();
+
       _isReady = true;
     } catch (e) {
       // Allow re-trying on next user action if init failed
       _isReady = false;
+    }
+  }
+
+  Future<void> _initDrums() async {
+    if (_soLoud == null) return;
+    try {
+      final kickWav = VirtualBandSynth.generateKick();
+      final snareWav = VirtualBandSynth.generateSnare();
+      final hihatClosedWav = VirtualBandSynth.generateHiHatClosed();
+      final hihatOpenWav = VirtualBandSynth.generateHiHatOpen();
+      final rimWav = VirtualBandSynth.generateRimshot();
+
+      _drumSounds[DrumSound.kick] = await _soLoud!.loadMem('kick', kickWav);
+      _drumSounds[DrumSound.snare] = await _soLoud!.loadMem('snare', snareWav);
+      _drumSounds[DrumSound.hiHatClosed] = await _soLoud!.loadMem('hh_c', hihatClosedWav);
+      _drumSounds[DrumSound.hiHatOpen] = await _soLoud!.loadMem('hh_o', hihatOpenWav);
+      _drumSounds[DrumSound.rimshot] = await _soLoud!.loadMem('rim', rimWav);
+    } catch (e) {
+      debugPrint("Error initializing drum sounds: $e");
+    }
+  }
+
+  /// Play drum sound
+  Future<void> playDrum(DrumSound sound, {double volume = 0.8}) async {
+    await _ensureReady();
+    if (!_isReady || _soLoud == null) return;
+
+    var source = _drumSounds[sound];
+    if (source == null) {
+      try {
+        Uint8List wav;
+        switch (sound) {
+          case DrumSound.kick:
+            wav = VirtualBandSynth.generateKick();
+            break;
+          case DrumSound.snare:
+            wav = VirtualBandSynth.generateSnare();
+            break;
+          case DrumSound.hiHatClosed:
+            wav = VirtualBandSynth.generateHiHatClosed();
+            break;
+          case DrumSound.hiHatOpen:
+            wav = VirtualBandSynth.generateHiHatOpen();
+            break;
+          case DrumSound.rimshot:
+            wav = VirtualBandSynth.generateRimshot();
+            break;
+        }
+        source = await _soLoud!.loadMem(sound.name, wav);
+        _drumSounds[sound] = source;
+      } catch (_) {
+        return;
+      }
+    }
+
+    try {
+      await _soLoud!.play(source, volume: volume.clamp(0.0, 1.0));
+    } catch (_) {}
+  }
+
+  /// Play electric bass note synthesized on demand / cached
+  Future<void> playBassNote(String noteName, int octave, {double volume = 0.75}) async {
+    await _ensureReady();
+    if (!_isReady || _soLoud == null) return;
+
+    final cleanNote = noteName.replaceAll('b', 'b').replaceAll('#', '#');
+    final key = 'bass_${cleanNote}_$octave';
+
+    var source = _synthSounds[key];
+    if (source == null) {
+      try {
+        final freq = VirtualBandSynth.noteToFrequency(cleanNote, octave);
+        final wav = VirtualBandSynth.generateBassNote(freq);
+        source = await _soLoud!.loadMem(key, wav);
+        _synthSounds[key] = source;
+      } catch (_) {
+        // Fallback to playing standard note
+        playNote(cleanNote, octave);
+        return;
+      }
+    }
+
+    try {
+      await _soLoud!.play(source, volume: volume.clamp(0.0, 1.0));
+    } catch (_) {}
+  }
+
+  /// Play electric piano / keyboard note
+  Future<void> playKeyboardNote(String noteName, int octave, {double volume = 0.65}) async {
+    await _ensureReady();
+    if (!_isReady || _soLoud == null) return;
+
+    final cleanNote = noteName.replaceAll('b', 'b').replaceAll('#', '#');
+    final key = 'keys_${cleanNote}_$octave';
+
+    var source = _synthSounds[key];
+    if (source == null) {
+      try {
+        final freq = VirtualBandSynth.noteToFrequency(cleanNote, octave);
+        final wav = VirtualBandSynth.generateKeyboardNote(freq);
+        source = await _soLoud!.loadMem(key, wav);
+        _synthSounds[key] = source;
+      } catch (_) {
+        playNote(cleanNote, octave);
+        return;
+      }
+    }
+
+    try {
+      await _soLoud!.play(source, volume: volume.clamp(0.0, 1.0));
+    } catch (_) {}
+  }
+
+  /// Play electric piano / keyboard chord
+  Future<void> playKeyboardChord(List<String> notes, {int octave = 3, double volume = 0.6}) async {
+    int currentOctave = octave;
+    int lastIndex = -1;
+
+    for (String note in notes) {
+      final idx = TheoryUtils.getNoteIndex(note);
+      if (idx <= lastIndex) currentOctave++;
+      playKeyboardNote(note, currentOctave, volume: volume);
+      lastIndex = idx;
     }
   }
 
@@ -205,7 +336,7 @@ class AudioManager {
     }
   }
 
-  // --- Phase 2: High Precision Scheduling ---
+  // --- High Precision Scheduling ---
   void startProgression(int bpm, String progressionJson) {}
 
   void stopProgression() {}
@@ -224,4 +355,5 @@ class AudioManager {
     } catch (_) {}
   }
 }
+
 
