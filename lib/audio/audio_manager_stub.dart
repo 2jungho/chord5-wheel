@@ -86,6 +86,62 @@ class AudioManager {
     }
   }
 
+  /// Play a single specific string from the voicing (stringIdx: 0=6th Low E, 5=1st High E)
+  void playVoicingString(ChordVoicing voicing, int stringIdx, {String? root, double volume = 0.75}) {
+    const openStringPitches = [28, 33, 38, 43, 47, 52];
+    if (stringIdx >= 0 && stringIdx < voicing.frets.length && voicing.frets[stringIdx] != -1) {
+      final fret = voicing.frets[stringIdx];
+      final absPitch = openStringPitches[stringIdx] + fret;
+      final octave = absPitch ~/ 12;
+      final noteIndex = absPitch % 12;
+      final noteName = TheoryUtils.getNoteName(noteIndex, !(root?.contains('b') ?? false));
+      playNote(noteName, octave);
+      return;
+    }
+
+    // Fallback to lowest active bass note if the requested string is muted
+    for (int i = 0; i < voicing.frets.length; i++) {
+      if (voicing.frets[i] != -1) {
+        final fret = voicing.frets[i];
+        final absPitch = openStringPitches[i] + fret;
+        final octave = absPitch ~/ 12;
+        final noteIndex = absPitch % 12;
+        final noteName = TheoryUtils.getNoteName(noteIndex, !(root?.contains('b') ?? false));
+        playNote(noteName, octave);
+        return;
+      }
+    }
+  }
+
+  /// Play 1st & 2nd treble strings together (Pinch picking)
+  Future<void> playVoicingPinch(ChordVoicing voicing, {String? root, double volume = 0.70}) async {
+    const openStringPitches = [28, 33, 38, 43, 47, 52];
+    // Check 1st string (index 5) and 2nd string (index 4)
+    if (voicing.frets.length >= 6) {
+      if (voicing.frets[4] != -1) {
+        final absPitch2 = openStringPitches[4] + voicing.frets[4];
+        playNote(TheoryUtils.getNoteName(absPitch2 % 12, !(root?.contains('b') ?? false)), absPitch2 ~/ 12);
+      }
+      if (voicing.frets[5] != -1) {
+        final absPitch1 = openStringPitches[5] + voicing.frets[5];
+        playNote(TheoryUtils.getNoteName(absPitch1 % 12, !(root?.contains('b') ?? false)), absPitch1 ~/ 12);
+      }
+    }
+  }
+
+  /// Quick tight funk staccato strum across active strings
+  Future<void> playStaccatoVoicing(ChordVoicing voicing, {String? root, double volume = 0.75}) async {
+    const openStringPitches = [28, 33, 38, 43, 47, 52];
+    for (int i = 0; i < 6 && i < voicing.frets.length; i++) {
+      final fret = voicing.frets[i];
+      if (fret != -1) {
+        final absPitch = openStringPitches[i] + fret;
+        playNote(TheoryUtils.getNoteName(absPitch % 12, !(root?.contains('b') ?? false)), absPitch ~/ 12);
+        await Future.delayed(const Duration(milliseconds: 8));
+      }
+    }
+  }
+
   void playChordBlock(List<String> notes) {
     int currentOctave = 3;
     int lastIndex = -1;
@@ -112,6 +168,7 @@ class AudioManager {
       await Future.delayed(const Duration(milliseconds: 40));
     }
   }
+
 
   // --- High Precision Scheduling ---
   void startProgression(int bpm, String progressionJson) {

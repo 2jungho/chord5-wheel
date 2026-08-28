@@ -51,11 +51,11 @@
         fallbackSynth = new Tone.PolySynth(Tone.Synth, {
           oscillator: { type: "triangle" },
           envelope: { attack: 0.005, decay: 0.3, sustain: 0.3, release: 0.8 },
-        }).toDestination();
-        fallbackSynth.volume.value = 0;
+        });
       } catch (e) {
         console.warn("Could not init fallback synth:", e);
       }
+
 
       window.setWebVolume = function (vol) {
         try {
@@ -79,7 +79,7 @@
 
       // Master Audio Processing Graph & Studio Effects
       let masterLimiter, masterCompressor, studioReverb, studioChorus;
-      let guitarFilter, guitarDistortion;
+      let guitarCabFilter, guitarChorus, guitarDrive;
       let drumKick, drumSnareBody, drumSnareNoise, snareFilter, drumHiHat, drumRim;
       let bassSynth, keysSynth;
 
@@ -113,10 +113,27 @@
         }).connect(studioReverb);
         studioChorus.start();
 
-        // Guitar Processing Channel (Filter + Overdrive + Reverb)
-        guitarDistortion = new Tone.Distortion({ distortion: 0.0, wet: 0.6 }).connect(masterCompressor);
-        guitarFilter = new Tone.Filter({ frequency: 12000, type: "lowpass" }).connect(guitarDistortion);
-        guitarFilter.connect(studioReverb);
+        // Authentic Guitar Processing Channel (Cab Filter -> Chorus -> Drive -> Master Reverb & Compressor)
+        guitarCabFilter = new Tone.Filter({
+          frequency: 16000,
+          type: "lowpass",
+          rolloff: -12,
+        }).connect(masterCompressor);
+        guitarCabFilter.connect(studioReverb);
+
+        guitarChorus = new Tone.Chorus({
+          frequency: 1.5,
+          delayTime: 3.2,
+          depth: 0.45,
+          wet: 0.0,
+        }).connect(guitarCabFilter);
+        guitarChorus.start();
+
+        guitarDrive = new Tone.Distortion({
+          distortion: 0.0,
+          oversample: "2x",
+          wet: 0.0,
+        }).connect(guitarChorus);
 
         sampler = new Tone.Sampler({
           urls: {
@@ -139,7 +156,13 @@
           onerror: (err) => {
             console.warn("Tone.Sampler failed to load some samples, using fallback:", err);
           },
-        }).connect(guitarFilter);
+        }).connect(guitarDrive);
+
+        if (fallbackSynth) {
+          fallbackSynth.connect(guitarDrive);
+        }
+
+
 
         // 1. Studio Punch Kick (Sub 40Hz with 120Hz transient click & soft tape saturation)
         drumKick = new Tone.MembraneSynth({
@@ -292,21 +315,26 @@
               });
             }
           } else if (category === "guitar") {
-            if (profileId === "guitar_nylon" && guitarFilter) {
-              guitarFilter.frequency.value = 2800;
-              if (guitarDistortion) guitarDistortion.distortion = 0.0;
-            } else if (profileId === "guitar_crunch" && guitarFilter) {
-              guitarFilter.frequency.value = 4500;
-              if (guitarDistortion) guitarDistortion.distortion = 0.28;
-            } else if (profileId === "guitar_clean" && guitarFilter) {
-              guitarFilter.frequency.value = 6000;
-              if (guitarDistortion) guitarDistortion.distortion = 0.04;
-            } else if (guitarFilter) {
+            if (profileId === "guitar_nylon") {
+              if (guitarCabFilter) guitarCabFilter.frequency.value = 5200;
+              if (guitarDrive) { guitarDrive.distortion = 0.0; guitarDrive.wet.value = 0.0; }
+              if (guitarChorus) guitarChorus.wet.value = 0.0;
+            } else if (profileId === "guitar_crunch") {
+              if (guitarCabFilter) guitarCabFilter.frequency.value = 3800;
+              if (guitarDrive) { guitarDrive.distortion = 0.06; guitarDrive.wet.value = 0.18; }
+              if (guitarChorus) guitarChorus.wet.value = 0.0;
+            } else if (profileId === "guitar_clean") {
+              if (guitarCabFilter) guitarCabFilter.frequency.value = 7200;
+              if (guitarDrive) { guitarDrive.distortion = 0.0; guitarDrive.wet.value = 0.0; }
+              if (guitarChorus) guitarChorus.wet.value = 0.32;
+            } else {
               // guitar_acoustic
-              guitarFilter.frequency.value = 12000;
-              if (guitarDistortion) guitarDistortion.distortion = 0.0;
+              if (guitarCabFilter) guitarCabFilter.frequency.value = 16000;
+              if (guitarDrive) { guitarDrive.distortion = 0.0; guitarDrive.wet.value = 0.0; }
+              if (guitarChorus) guitarChorus.wet.value = 0.0;
             }
           }
+
         } catch (e) {
           console.warn("setWebSoundProfile error:", e);
         }

@@ -398,71 +398,204 @@ class VirtualBandSequencer {
     final chordNotes = detail.notes.isNotEmpty ? detail.notes : [detail.root];
 
     switch (style) {
-      case 'Neo-Soul':
-      case 'Lofi Chill':
-        // Lush Rhodes comping on offbeat steps 2, 6, 10 + Sustained pad on step 0
+      case 'Acoustic Ballad':
+        // Elegant Piano Arpeggio:
+        // Step 0: Warm Root & 5th chord backing
+        // Step 6: Mid-voicing melody note
+        // Step 10: Treble melody sparkle
+        // Step 14: Harmonic transition note
         if (step == 0) {
           AudioManager().playKeyboardChord(chordNotes, octave: 3, volume: vol * 0.70);
-        } else if (step == 6 || step == 10) {
-          AudioManager().playKeyboardChord(chordNotes, octave: 4, volume: vol * 0.60);
-        }
-        break;
-
-      case 'Jazz Funk':
-        // Crisp rhythmic Rhodes stabs on steps 2, 6, 11
-        if (step == 2 || step == 6 || step == 11) {
-          AudioManager().playKeyboardChord(chordNotes, octave: 4, volume: vol * 0.65);
+        } else if (step == 6 && chordNotes.length >= 2) {
+          AudioManager().playKeyboardNote(chordNotes[1], 4, volume: vol * 0.55);
+        } else if (step == 10 && chordNotes.length >= 3) {
+          AudioManager().playKeyboardNote(chordNotes[2], 4, volume: vol * 0.60);
+        } else if (step == 14 && chordNotes.isNotEmpty) {
+          AudioManager().playKeyboardNote(chordNotes[0], 4, volume: vol * 0.45);
         }
         break;
 
       case 'City Pop':
-        // Bright syncopated 80s EP stabs on 0, 6, 12
-        if (step == 0 || step == 6 || step == 12) {
-          AudioManager().playKeyboardChord(chordNotes, octave: 4, volume: vol * 0.70);
+      case 'Jazz Funk':
+        // Syncopated 80s Rhodes / Synth Brass Stabs:
+        // Steps 3, 6, 11: Punchy offbeat stabs
+        if (step == 3 || step == 6 || step == 11) {
+          AudioManager().playKeyboardChord(chordNotes, octave: 4, volume: vol * 0.72);
         }
         break;
 
-      case 'Rock':
-        // Heavy sustained chords on 0 & 8
-        if (step == 0 || step == 8) {
+      case 'Neo-Soul':
+      case 'Lofi Chill':
+        // Lush Fender Rhodes Comping:
+        // Step 0: Deep warm root chord
+        // Step 6: Laid-back offbeat 9th/11th chord swell
+        // Step 10: High bell sparkle
+        if (step == 0) {
           AudioManager().playKeyboardChord(chordNotes, octave: 3, volume: vol * 0.65);
+        } else if (step == 6) {
+          AudioManager().playKeyboardChord(chordNotes, octave: 4, volume: vol * 0.60);
+        } else if (step == 10 && chordNotes.length >= 2) {
+          AudioManager().playKeyboardNote(chordNotes.last, 4, volume: vol * 0.55);
         }
         break;
 
       case 'Blues':
-        // Blues comping on 4 & 12 (Beat 2 & 4)
-        if (step == 4 || step == 12) {
-          AudioManager().playKeyboardChord(chordNotes, octave: 4, volume: vol * 0.65);
+        // Hammond Organ Backbeat & Leslie Swells on 4 & 12:
+        if (step == 0) {
+          AudioManager().playKeyboardChord(chordNotes, octave: 3, volume: vol * 0.60);
+        } else if (step == 4 || step == 12) {
+          AudioManager().playKeyboardChord(chordNotes, octave: 4, volume: vol * 0.75);
         }
         break;
 
-      case 'Acoustic Ballad':
+      case 'Rock':
       default:
-        // Lush sustained chord on beat 1 with high melody note on beat 3
-        if (step == 0) {
-          AudioManager().playKeyboardChord(chordNotes, octave: 3, volume: vol * 0.65);
-        } else if (step == 8 && chordNotes.length >= 2) {
-          AudioManager().playKeyboardNote(chordNotes[1], 4, volume: vol * 0.50);
+        // Heavy Rock Organ / Piano Wall of Sound on 0 & 8:
+        if (step == 0 || step == 8) {
+          AudioManager().playKeyboardChord(chordNotes, octave: 3, volume: vol * 0.70);
         }
         break;
     }
   }
 
-  // --- Guitar Accompaniment by Style ---
+  // --- Guitar Accompaniment with Style-Specific Fingerpicking & Chucking ---
   void _playGuitar(String style, int step, ChordBlock block, Chord detail, double vol) {
-    if (block.voicing != null) {
-      if (step == 0) {
-        AudioManager().playVoicing(block.voicing!, root: block.chordSymbol);
-      } else if (step == 8 && (style == 'Rock' || style == 'Neo-Soul' || style == 'City Pop')) {
-        AudioManager().playVoicing(block.voicing!, root: block.chordSymbol);
-      }
-    } else if (detail.notes.isNotEmpty) {
-      if (step == 0) {
-        AudioManager().playStrum(detail.notes);
-      } else if (step == 8 && (style == 'Rock' || style == 'Neo-Soul' || style == 'City Pop')) {
-        AudioManager().playStrum(detail.notes);
-      }
+    final voicing = block.voicing;
+    final notes = detail.notes.isNotEmpty ? detail.notes : [detail.root];
+    final rootSym = block.chordSymbol;
+
+    switch (style) {
+      case 'Acoustic Ballad':
+        // Real Travis / Folk Fingerpicking pattern:
+        // Step 0 (Beat 1): Root Bass Note (String 6 or 5)
+        // Step 4 (Beat 2): String 3 (G String picking)
+        // Step 8 (Beat 3): Treble Pinch (Strings 1 & 2 together)
+        // Step 12 (Beat 4): String 4 (D String middle fill)
+        if (step == 0) {
+          if (voicing != null) {
+            final bassStringIdx = (voicing.frets[0] != -1) ? 0 : 1;
+            AudioManager().playVoicingString(voicing, bassStringIdx, root: rootSym, volume: vol * 0.85);
+          } else {
+            AudioManager().playNote(notes[0], 2);
+          }
+        } else if (step == 4) {
+          if (voicing != null) {
+            AudioManager().playVoicingString(voicing, 3, root: rootSym, volume: vol * 0.70);
+          } else if (notes.length > 1) {
+            AudioManager().playNote(notes[1], 3);
+          }
+        } else if (step == 8) {
+          if (voicing != null) {
+            AudioManager().playVoicingPinch(voicing, root: rootSym, volume: vol * 0.75);
+          } else {
+            AudioManager().playStrum(notes.sublist(notes.length > 2 ? 1 : 0));
+          }
+        } else if (step == 12) {
+          if (voicing != null) {
+            AudioManager().playVoicingString(voicing, 2, root: rootSym, volume: vol * 0.65);
+          } else if (notes.length > 2) {
+            AudioManager().playNote(notes[2], 3);
+          }
+        }
+        break;
+
+      case 'City Pop':
+      case 'Jazz Funk':
+        // 16-Beat Syncopated Funk Chucking & Staccato Cutting:
+        // Steps 2, 6, 10, 14: Rhythmic Offbeat Chucks & Accents
+        // Step 0: Downbeat Push
+        if (step == 0) {
+          if (voicing != null) {
+            AudioManager().playStaccatoVoicing(voicing, root: rootSym, volume: vol * 0.75);
+          } else {
+            AudioManager().playStrum(notes);
+          }
+        } else if (step == 6 || step == 10) {
+          // Sharp Staccato Offbeat Cut
+          if (voicing != null) {
+            AudioManager().playStaccatoVoicing(voicing, root: rootSym, volume: vol * 0.80);
+          } else {
+            AudioManager().playStrum(notes);
+          }
+        } else if (step == 14) {
+          // Ghost 16th-note pick into next bar
+          if (voicing != null) {
+            AudioManager().playVoicingPinch(voicing, root: rootSym, volume: vol * 0.60);
+          }
+        }
+        break;
+
+      case 'Neo-Soul':
+      case 'Lofi Chill':
+        // Laid-Back Swinging Comping:
+        // Step 0: Soft Root Arpeggio / Voicing
+        // Step 6: Swing offbeat chord stab
+        // Step 10: High tension pinch
+        // Step 14: Soft passing strum
+        if (step == 0) {
+          if (voicing != null) {
+            AudioManager().playVoicing(voicing, root: rootSym);
+          } else {
+            AudioManager().playStrum(notes);
+          }
+        } else if (step == 6) {
+          if (voicing != null) {
+            AudioManager().playStaccatoVoicing(voicing, root: rootSym, volume: vol * 0.65);
+          } else {
+            AudioManager().playStrum(notes);
+          }
+        } else if (step == 10) {
+          if (voicing != null) {
+            AudioManager().playVoicingPinch(voicing, root: rootSym, volume: vol * 0.70);
+          }
+        } else if (step == 14) {
+          if (voicing != null) {
+            AudioManager().playVoicingString(voicing, 3, root: rootSym, volume: vol * 0.55);
+          }
+        }
+        break;
+
+      case 'Blues':
+        // Chicago Blues 12-bar Shuffle Strum:
+        // Step 4 (Beat 2) & Step 12 (Beat 4): Heavy Backbeat Strum
+        // Step 6 & Step 14: Swung Upbeat Ghost
+        if (step == 0) {
+          if (voicing != null) {
+            AudioManager().playVoicing(voicing, root: rootSym);
+          } else {
+            AudioManager().playStrum(notes);
+          }
+        } else if (step == 4 || step == 12) {
+          if (voicing != null) {
+            AudioManager().playVoicing(voicing, root: rootSym);
+          } else {
+            AudioManager().playStrum(notes);
+          }
+        } else if (step == 6 || step == 14) {
+          if (voicing != null) {
+            AudioManager().playVoicingPinch(voicing, root: rootSym, volume: vol * 0.60);
+          }
+        }
+        break;
+
+      case 'Rock':
+      default:
+        // Driving 8-beat down/up power rhythm:
+        // Step 0 (Beat 1), Step 4 (Beat 2), Step 8 (Beat 3), Step 10 (Syncopated Up), Step 12 (Beat 4)
+        if (step == 0 || step == 4 || step == 8 || step == 12) {
+          if (voicing != null) {
+            AudioManager().playVoicing(voicing, root: rootSym);
+          } else {
+            AudioManager().playStrum(notes);
+          }
+        } else if (step == 10) {
+          if (voicing != null) {
+            AudioManager().playStaccatoVoicing(voicing, root: rootSym, volume: vol * 0.70);
+          }
+        }
+        break;
     }
   }
 }
+
 
