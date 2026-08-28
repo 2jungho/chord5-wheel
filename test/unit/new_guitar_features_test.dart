@@ -65,5 +65,19 @@ void main() {
       studio.renameSection(0, 'Intro');
       expect(studio.session.sections[0].name, equals('Intro'));
     });
+
+    test('StudioState convertProgressionDensity converts between Triads and 7th chords', () {
+      final studio = StudioState();
+      studio.addProgressionFromText('C-Am-Dm-G', replace: true);
+      expect(studio.session.progression.map((b) => b.chordSymbol).toList(), ['C', 'Am', 'Dm', 'G']);
+
+      // Convert to 7th
+      studio.convertProgressionDensity(toSeventh: true);
+      expect(studio.session.progression.map((b) => b.chordSymbol).toList(), ['CMaj7', 'Am7', 'Dm7', 'G7']);
+
+      // Convert back to Triad
+      studio.convertProgressionDensity(toSeventh: false);
+      expect(studio.session.progression.map((b) => b.chordSymbol).toList(), ['C', 'Am', 'Dm', 'G']);
+    });
   });
 }

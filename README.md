@@ -214,6 +214,18 @@ firebase deploy --only hosting
 
 ## 📝 변경 이력 (Changelog)
 
+### v2.4.0 (2026-08-28 - Diatonic Triads vs 7th Chords Suite & Harmonic Density Converter)
+* **🎹 다이아토닉 3화음(Triad) / 7화음(7th) 원클릭 전환**:
+  * 5도권 탐색기 `Diatonic Chords` 헤더에 `[3화음 | 7화음]` 캡슐형 세그먼트 스위치 탑재.
+  * **3화음 모드**: 기본 3성부(1-3-5, e.g. `C, Dm, Em, F, G, Am, Bdim`) 및 프렛보드 트라이어드 마커/보이싱 실시간 연동.
+  * **7화음 모드**: 4성부(1-3-5-7, e.g. `Cmaj7, Dm7, Em7, Fmaj7, G7, Am7, Bm7b5`) 및 확장 텐션 보이싱 지원.
+  * 사용자의 선택 모드를 `SharedPreferences` 로컬 스토리지에 자동 저장하여 앱 재실행 시에도 유지.
+* **⚡ 타임라인 스튜디오 `3화음 ↔ 7화음 일괄 변환기` (Harmonic Density Converter)**:
+  * 타임라인 툴바에 **`화음 변환`** 팝업 메뉴 추가 (`7화음으로 확장(Enrich)` / `3화음으로 단순화(Simplify)`).
+  * 기존 타임라인 진행의 모든 코드를 원클릭으로 일괄 변환하고 음성 리딩 및 보이싱을 즉시 재계산.
+* **🎨 솔로 박스(Solo Box) 및 뷰 컨트롤 패널 시인성 최적화**:
+  * `[전체], [Box 1], [Box 2], [Box 3], [Box 4], [Box 5]` 버튼을 단일 행(Single Row) 가로 스크롤 레이아웃으로 개선하여 줄바꿈 끊김 현상 해소.
+
 ### v2.3.0 (2026-08-28 - Multi-AI Provider Architecture & Precision UI)
 * **🤖 Multi-AI Provider 통합 지원**:
   * **Google Gemini** (Gemini 3.7 Flash, 3.6 Flash, 3.5 Flash, 3.5 Flash Lite, 3.1 Pro, 2.5 Flash)

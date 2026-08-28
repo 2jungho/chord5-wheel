@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/music_constants.dart';
 import '../models/chord_model.dart';
 import '../models/scale_model.dart';
@@ -22,6 +23,9 @@ class MusicState extends ChangeNotifier with ViewControlStateMixin {
   // False: Major(Outer Ring), True: Minor(Inner Ring)
   bool _isInnerRingSelected = false;
 
+  // 다이아토닉 화음 모드: true = 7화음 (4음), false = 3화음 (Triad 3음)
+  bool _isSeventhMode = true;
+
   // 현재 선택된 다이아토닉 코드의 인덱스 (상세 정보를 보기 위함)
   int _selectedDiatonicIndex = 0;
 
@@ -39,12 +43,14 @@ class MusicState extends ChangeNotifier with ViewControlStateMixin {
   int get currentKeyIndex => _currentKeyIndex;
   int get currentModeIndex => _currentModeIndex;
   bool get isInnerRingSelected => _isInnerRingSelected;
+  bool get isSeventhMode => _isSeventhMode;
   int get selectedDiatonicIndex => _selectedDiatonicIndex;
   String? get selectedCagedPatternName => _selectedCagedPatternName;
 
   Scale get currentScale => _currentScale;
   List<Chord> get diatonicChords => _diatonicChords;
   ChordVoicing get mainChordVoicing => _mainChordVoicing;
+
 
   /// 현재 루트 노트 이름 (예: "C", "Am"에서 "A")
   /// Inner Ring(Minor)이 선택된 경우 Minor Key 이름을 반환하지만, 'm' 접미사는 제거합니다.
@@ -62,12 +68,41 @@ class MusicState extends ChangeNotifier with ViewControlStateMixin {
       ? _diatonicChords[_selectedDiatonicIndex % _diatonicChords.length]
       : const Chord(root: 'C', quality: 'Maj7'); // 폴백(Fallback)
 
-  // 생성자: 초기 상태 계산
+  // 생성자: 초기 상태 계산 및 저장된 설정 로드
   MusicState() {
     _calculateState();
+    _loadPreferences();
+  }
+
+  Future<void> _loadPreferences() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedIsSeventh = prefs.getBool('is_seventh_mode');
+      if (savedIsSeventh != null && savedIsSeventh != _isSeventhMode) {
+        _isSeventhMode = savedIsSeventh;
+        _calculateState();
+        notifyListeners();
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _savePreferences() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('is_seventh_mode', _isSeventhMode);
+    } catch (_) {}
   }
 
   // --- 액션 (Actions) / 상태 변경 메서드 ---
+
+  /// 다이아토닉 코드 모드 변경 (3화음 vs 7화음)
+  void setSeventhMode(bool isSeventh) {
+    if (_isSeventhMode == isSeventh) return;
+    _isSeventhMode = isSeventh;
+    _calculateState();
+    notifyListeners();
+    _savePreferences();
+  }
 
   /// Key 변경 (인덱스 기반)
   void changeKey(int index) {
@@ -176,8 +211,12 @@ class MusicState extends ChangeNotifier with ViewControlStateMixin {
       intervals: mode.formula.split(' '),
     );
 
-    // 3. 다이아토닉 코드 목록 생성
-    _diatonicChords = TheoryUtils.getDiatonicChords(scaleNotes, mode.name);
+    // 3. 다이아토닉 코드 목록 생성 (3화음 vs 7화음 반영)
+    _diatonicChords = TheoryUtils.getDiatonicChords(
+      scaleNotes,
+      mode.name,
+      isSeventh: _isSeventhMode,
+    );
 
     // 4. 기본 보이싱 계산 (Generic) - 먼저 초기화
     _calculateMainChordVoicing();

@@ -378,6 +378,83 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
     }
   }
 
+  /// 타임라인 진행의 모든 코드를 3화음(Triad) <-> 7화음(7th)으로 일괄 변환
+  void convertProgressionDensity({required bool toSeventh}) {
+    if (_session.progression.isEmpty) return;
+
+    ChordVoicing? lastVoicing;
+    final newProgression = _session.progression.map((block) {
+      final analyzed = TheoryUtils.analyzeChord(block.chordSymbol);
+      final root = analyzed.root;
+      final quality = analyzed.quality;
+
+      String newQuality = quality;
+
+      if (toSeventh) {
+        // 3화음 -> 7화음 확장
+        if (quality.isEmpty || quality == 'M') {
+          final tag = block.functionTag ?? '';
+          if (tag == 'V' || tag == '5' || tag == '57') {
+            newQuality = '7';
+          } else {
+            newQuality = 'Maj7';
+          }
+        } else if (quality == 'm' || quality == 'min') {
+          newQuality = 'm7';
+        } else if (quality == 'dim' || quality == 'o') {
+          newQuality = 'm7b5';
+        } else if (quality == 'aug' || quality == '+') {
+          newQuality = '7#5';
+        }
+      } else {
+        // 7화음/텐션 -> 기본 3화음으로 단순화
+        if (quality == 'Maj7' ||
+            quality == 'maj7' ||
+            quality == 'M7' ||
+            quality == '7' ||
+            quality == '9' ||
+            quality == 'Maj9' ||
+            quality == '6') {
+          newQuality = '';
+        } else if (quality == 'm7' ||
+            quality == 'min7' ||
+            quality == 'm9' ||
+            quality == 'm11' ||
+            quality == 'm6' ||
+            quality == 'mMaj7') {
+          newQuality = 'm';
+        } else if (quality == 'm7b5' ||
+            quality == 'dim7' ||
+            quality == 'dim' ||
+            quality == 'o7') {
+          newQuality = 'dim';
+        } else if (quality == '7#5' || quality == 'aug7') {
+          newQuality = 'aug';
+        }
+      }
+
+      final newSymbol = '$root$newQuality';
+      final newAnalyzed = TheoryUtils.analyzeChord(newSymbol);
+      final voicings = GuitarUtils.generateAllVoicings(
+          newAnalyzed.root, newAnalyzed.quality);
+      final newVoicing = _findBestVoicingForStyle(
+          voicings, _timelineVoicingStyle,
+          previousVoicing: lastVoicing);
+      lastVoicing = newVoicing;
+
+      return block.copyWith(
+        chordSymbol: newSymbol,
+        chordDetail: newAnalyzed,
+        voicing: newVoicing,
+      );
+    }).toList();
+
+    _session = _session.copyWith(progression: newProgression);
+    _calculateVoiceLeading();
+    notifyListeners();
+  }
+
+
   /// 새로운 코드 진행으로 전체를 교체합니다. (AI 검색 등에서 사용)
   void setProgression(List<ChordBlock> blocks,
       {String? key,

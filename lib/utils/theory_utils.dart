@@ -36,8 +36,9 @@ class TheoryUtils {
   static String getIntervalName(int st) => NoteUtils.getIntervalName(st);
 
   static List<Chord> getDiatonicChords(
-          List<String> scaleNotes, String modeName) =>
-      ChordUtils.getDiatonicChords(scaleNotes, modeName);
+          List<String> scaleNotes, String modeName,
+          {bool isSeventh = true}) =>
+      ChordUtils.getDiatonicChords(scaleNotes, modeName, isSeventh: isSeventh);
 
   static (List<String> intervals, String displayStr, bool isMinor)
       parseChordQuality(String q) => ChordUtils.parseChordQuality(q);

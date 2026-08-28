@@ -395,8 +395,9 @@ class ChordUtils {
 
   static List<Chord> getDiatonicChords(
     List<String> scaleNotes,
-    String modeName,
-  ) {
+    String modeName, {
+    bool isSeventh = true,
+  }) {
     if (scaleNotes.length != 7) return [];
 
     const modeOrder = [
@@ -411,37 +412,54 @@ class ChordUtils {
     final startIdx = modeOrder.indexOf(modeName);
     if (startIdx == -1) return [];
 
-    final majorChordQualities = ['Maj7', 'm7', 'm7', 'Maj7', '7', 'm7', 'm7b5'];
+    final majorChordQualities7th = ['Maj7', 'm7', 'm7', 'Maj7', '7', 'm7', 'm7b5'];
+    final majorChordQualitiesTriad = ['', 'm', 'm', '', '', 'm', 'dim'];
+
+    final qualities = isSeventh ? majorChordQualities7th : majorChordQualitiesTriad;
 
     final chords = <Chord>[];
     for (int i = 0; i < 7; i++) {
-      var quality = majorChordQualities[(startIdx + i) % 7];
+      var quality = qualities[(startIdx + i) % 7];
       String dLabel = (i + 1).toString();
 
-      if (quality.contains('Maj')) {
-        dLabel += 'M';
-      } else if (quality == 'm7b5') {
-        dLabel += 'dim';
-      } else if (quality.contains('m')) {
-        dLabel += 'm';
-      } else if (quality == '7') {
-        dLabel += '7';
+      if (!isSeventh) {
+        if (quality == 'dim') {
+          dLabel += 'dim';
+        } else if (quality == 'm') {
+          dLabel += 'm';
+        }
+      } else {
+        if (quality.contains('Maj')) {
+          dLabel += 'M';
+        } else if (quality == 'm7b5') {
+          dLabel += 'dim';
+        } else if (quality.contains('m')) {
+          dLabel += 'm';
+        } else if (quality == '7') {
+          dLabel += '7';
+        }
       }
 
       String displayQ = quality;
-      if (i == 0 && modeName == 'Lydian') displayQ = 'Maj7(#11)';
+      if (isSeventh && i == 0 && modeName == 'Lydian') displayQ = 'Maj7(#11)';
 
       if (i == 4 && modeName == 'Aeolian') {
-        quality = '7';
-        displayQ = '7';
+        quality = isSeventh ? '7' : '';
+        displayQ = isSeventh ? '7' : '';
       }
 
-      final notes = [
-        scaleNotes[i],
-        scaleNotes[(i + 2) % 7],
-        scaleNotes[(i + 4) % 7],
-        scaleNotes[(i + 6) % 7],
-      ];
+      final notes = isSeventh
+          ? [
+              scaleNotes[i],
+              scaleNotes[(i + 2) % 7],
+              scaleNotes[(i + 4) % 7],
+              scaleNotes[(i + 6) % 7],
+            ]
+          : [
+              scaleNotes[i],
+              scaleNotes[(i + 2) % 7],
+              scaleNotes[(i + 4) % 7],
+            ];
 
       if (i == 4 && modeName == 'Aeolian') {
         notes[1] = NoteUtils.transposeNote(notes[1], 1);

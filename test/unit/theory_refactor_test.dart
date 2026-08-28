@@ -52,6 +52,26 @@ void main() {
       expect(chord.quality, 'maj7');
       expect(chord.notes, containsAll(['C', 'E', 'G', 'B']));
     });
+
+    test('getDiatonicChords returns 3-note Triads when isSeventh is false', () {
+      final scaleNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+      final chords = ChordUtils.getDiatonicChords(scaleNotes, 'Ionian', isSeventh: false);
+      expect(chords.length, 7);
+      expect(chords.map((c) => c.name).toList(), ['C', 'Dm', 'Em', 'F', 'G', 'Am', 'Bdim']);
+      expect(chords.map((c) => c.degree).toList(), ['1', '2m', '3m', '4', '5', '6m', '7dim']);
+      expect(chords[0].notes, ['C', 'E', 'G']);
+      expect(chords[1].notes, ['D', 'F', 'A']);
+    });
+
+    test('getDiatonicChords returns 4-note 7th chords when isSeventh is true', () {
+      final scaleNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+      final chords = ChordUtils.getDiatonicChords(scaleNotes, 'Ionian', isSeventh: true);
+      expect(chords.length, 7);
+      expect(chords.map((c) => c.name).toList(), ['CMaj7', 'Dm7', 'Em7', 'FMaj7', 'G7', 'Am7', 'Bm7b5']);
+      expect(chords.map((c) => c.degree).toList(), ['1M', '2m', '3m', '4M', '57', '6m', '7dim']);
+      expect(chords[0].notes, ['C', 'E', 'G', 'B']);
+      expect(chords[1].notes, ['D', 'F', 'A', 'C']);
+    });
   });
 
   group('ProgressionUtils Tests', () {

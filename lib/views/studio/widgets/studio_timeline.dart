@@ -746,9 +746,94 @@ class _StudioTimelineState extends State<StudioTimeline> {
             ),
           ),
         ),
+        const SizedBox(height: 8),
+        _buildKeyPanelChordTypeToggle(context, studio),
       ],
     );
   }
+
+  Widget _buildKeyPanelChordTypeToggle(
+      BuildContext context, StudioState studio) {
+    final musicState = context.watch<MusicState>();
+    final isSeventh = musicState.isSeventhMode;
+    final theme = Theme.of(context);
+
+    return Container(
+      height: 28,
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: theme.dividerColor.withValues(alpha: 0.6),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildTogglePill(
+            context,
+            label: '3화음',
+            isSelected: !isSeventh,
+            onTap: () {
+              context.read<MusicState>().setSeventhMode(false);
+              studio.convertProgressionDensity(toSeventh: false);
+            },
+          ),
+          _buildTogglePill(
+            context,
+            label: '7화음',
+            isSelected: isSeventh,
+            onTap: () {
+              context.read<MusicState>().setSeventhMode(true);
+              studio.convertProgressionDensity(toSeventh: true);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTogglePill(
+    BuildContext context, {
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final theme = Theme.of(context);
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.colorScheme.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            color: isSelected
+                ? theme.colorScheme.onPrimary
+                : theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ),
+    );
+  }
+
 
   // _handleGenerateBackingTrack removed (Replaced by LyriaJamPanel)
 
@@ -846,6 +931,8 @@ class _StudioTimelineState extends State<StudioTimeline> {
         : [];
 
     final toolButtons = [
+      _buildKeyPanelChordTypeToggle(context, studio),
+      const SizedBox(width: 8),
 
       OutlinedButton.icon(
         onPressed: () {
