@@ -18,6 +18,11 @@ class VirtualBandSequencer {
   double bpm;
   String style;
   double volume;
+  double drumsVolume;
+  double bassVolume;
+  double keysVolume;
+  double guitarVolume;
+
   bool drumsEnabled;
   bool bassEnabled;
   bool keysEnabled;
@@ -35,6 +40,10 @@ class VirtualBandSequencer {
     this.bpm = 120.0,
     this.style = 'Neo-Soul',
     this.volume = 0.8,
+    this.drumsVolume = 0.85,
+    this.bassVolume = 0.85,
+    this.keysVolume = 0.75,
+    this.guitarVolume = 0.80,
     this.drumsEnabled = true,
     this.bassEnabled = true,
     this.keysEnabled = true,
@@ -93,6 +102,18 @@ class VirtualBandSequencer {
     volume = newVolume.clamp(0.0, 1.0);
   }
 
+  void setInstrumentVolumes({
+    double? drums,
+    double? bass,
+    double? keys,
+    double? guitar,
+  }) {
+    if (drums != null) drumsVolume = drums.clamp(0.0, 1.0);
+    if (bass != null) bassVolume = bass.clamp(0.0, 1.0);
+    if (keys != null) keysVolume = keys.clamp(0.0, 1.0);
+    if (guitar != null) guitarVolume = guitar.clamp(0.0, 1.0);
+  }
+
   void setInstruments({
     bool? drums,
     bool? bass,
@@ -118,24 +139,16 @@ class VirtualBandSequencer {
   }
 
   void _scheduleNextTick() {
-    if (!_isRunning || _blocks.isEmpty) return;
+    if (!_isRunning) return;
 
-    // Base 16th-note step interval in milliseconds: (60,000 / BPM / 4)
-    final baseStepMs = 60000.0 / bpm / 4.0;
-    final normalized = _normalizeStyle(style);
+    final baseStepMs = 60000.0 / bpm / 4.0; // 16th-note duration in ms
+    final isOddStep = (_currentStepInBlock % 2) == 1;
 
-    // Natural swing factor per style (0.50 = straight, 0.56 = neo-soul/lofi, 0.62 = blues shuffle)
-    double swingRatio = 0.50;
-    if (normalized == 'Neo-Soul' || normalized == 'Lofi Chill') {
-      swingRatio = 0.56;
-    } else if (normalized == 'Blues') {
-      swingRatio = 0.62;
-    } else if (normalized == 'Jazz Funk') {
-      swingRatio = 0.54;
-    }
+    // Apply micro-timing swing feel for specific genres
+    final swingRatio = (style == 'Neo-Soul' || style == 'Lofi Chill' || style == 'Blues' || style == 'Jazz Funk')
+        ? 0.58
+        : 0.50;
 
-    // Even 16th steps (0, 2, 4, ...) get the longer swung beat, odd 16th steps (1, 3, 5, ...) get the upbeat
-    final isOddStep = (_currentStepInBlock % 2) != 0;
     final stepDurationMs = isOddStep
         ? (baseStepMs * 2.0 * (1.0 - swingRatio)).round().clamp(30, 500)
         : (baseStepMs * 2.0 * swingRatio).round().clamp(30, 500);
@@ -159,26 +172,28 @@ class VirtualBandSequencer {
     // Notify UI
     onStep?.call(_currentBlockIndex, _currentStepInBlock, totalStepsInBlock);
 
-    final vol = volume;
-
     // 1. DRUMS SEQUENCING
-    if (drumsEnabled && vol > 0.01) {
-      _playDrums(normalized, stepInBar, vol);
+    final effectiveDrumsVol = volume * drumsVolume;
+    if (drumsEnabled && effectiveDrumsVol > 0.01) {
+      _playDrums(normalized, stepInBar, effectiveDrumsVol);
     }
 
     // 2. BASS SEQUENCING
-    if (bassEnabled && vol > 0.01) {
-      _playBass(normalized, stepInBar, detail, vol);
+    final effectiveBassVol = volume * bassVolume;
+    if (bassEnabled && effectiveBassVol > 0.01) {
+      _playBass(normalized, stepInBar, detail, effectiveBassVol);
     }
 
     // 3. KEYBOARD / ELECTRIC PIANO SEQUENCING
-    if (keysEnabled && vol > 0.01) {
-      _playKeys(normalized, stepInBar, detail, vol);
+    final effectiveKeysVol = volume * keysVolume;
+    if (keysEnabled && effectiveKeysVol > 0.01) {
+      _playKeys(normalized, stepInBar, detail, effectiveKeysVol);
     }
 
     // 4. GUITAR SEQUENCING
-    if (guitarEnabled && vol > 0.01) {
-      _playGuitar(normalized, stepInBar, block, detail, vol);
+    final effectiveGuitarVol = volume * guitarVolume;
+    if (guitarEnabled && effectiveGuitarVol > 0.01) {
+      _playGuitar(normalized, stepInBar, block, detail, effectiveGuitarVol);
     }
 
     // Advance step pointer

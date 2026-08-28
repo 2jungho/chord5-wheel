@@ -677,13 +677,15 @@ class _LyriaJamPanelState extends State<LyriaJamPanel> {
                   ],
                 ),
 
-                // 4 Instrument Sound Profile Selectors & Mute Toggles
+                // 4 Instrument Sound Profile Selectors & Mute Toggles & Track Volumes
                 _buildInstrumentToneSelector(
                   context: context,
                   category: BandInstrumentCategory.drums,
                   currentProfile: lyria.selectedDrums,
                   isActive: lyria.drumsEnabled,
+                  volume: lyria.drumsVolume,
                   onToggle: () => lyria.toggleInstrument("drums"),
+                  onVolumeChanged: (v) => lyria.updateInstrumentVolume("drums", v),
                   onProfileSelected: (p) => lyria.setSoundProfile(BandInstrumentCategory.drums, p),
                 ),
                 _buildInstrumentToneSelector(
@@ -691,7 +693,9 @@ class _LyriaJamPanelState extends State<LyriaJamPanel> {
                   category: BandInstrumentCategory.bass,
                   currentProfile: lyria.selectedBass,
                   isActive: lyria.bassEnabled,
+                  volume: lyria.bassVolume,
                   onToggle: () => lyria.toggleInstrument("bass"),
+                  onVolumeChanged: (v) => lyria.updateInstrumentVolume("bass", v),
                   onProfileSelected: (p) => lyria.setSoundProfile(BandInstrumentCategory.bass, p),
                 ),
                 _buildInstrumentToneSelector(
@@ -699,7 +703,9 @@ class _LyriaJamPanelState extends State<LyriaJamPanel> {
                   category: BandInstrumentCategory.keys,
                   currentProfile: lyria.selectedKeys,
                   isActive: lyria.keysEnabled,
+                  volume: lyria.keysVolume,
                   onToggle: () => lyria.toggleInstrument("keys"),
+                  onVolumeChanged: (v) => lyria.updateInstrumentVolume("keys", v),
                   onProfileSelected: (p) => lyria.setSoundProfile(BandInstrumentCategory.keys, p),
                 ),
                 _buildInstrumentToneSelector(
@@ -707,9 +713,12 @@ class _LyriaJamPanelState extends State<LyriaJamPanel> {
                   category: BandInstrumentCategory.guitar,
                   currentProfile: lyria.selectedGuitar,
                   isActive: lyria.guitarEnabled,
+                  volume: lyria.guitarVolume,
                   onToggle: () => lyria.toggleInstrument("guitar"),
+                  onVolumeChanged: (v) => lyria.updateInstrumentVolume("guitar", v),
                   onProfileSelected: (p) => lyria.setSoundProfile(BandInstrumentCategory.guitar, p),
                 ),
+
 
                 // Beat Metronome / Pulse Indicator
                 if (lyria.isPlaying) ...[
@@ -1019,7 +1028,9 @@ class _LyriaJamPanelState extends State<LyriaJamPanel> {
     required BandInstrumentCategory category,
     required SoundProfile currentProfile,
     required bool isActive,
+    required double volume,
     required VoidCallback onToggle,
+    required ValueChanged<double> onVolumeChanged,
     required Function(SoundProfile) onProfileSelected,
   }) {
     final theme = Theme.of(context);
@@ -1141,9 +1152,131 @@ class _LyriaJamPanelState extends State<LyriaJamPanel> {
               ),
             ),
           ),
+          // Individual Track Volume Button
+          InkWell(
+            onTap: () => _showTrackVolumeModal(context, category, volume, onVolumeChanged),
+            borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color: isActive
+                        ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                        : theme.dividerColor.withValues(alpha: 0.2),
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    volume < 0.05
+                        ? Icons.volume_off
+                        : (volume < 0.5 ? Icons.volume_down : Icons.volume_up),
+                    size: 12,
+                    color: isActive ? theme.colorScheme.primary : Colors.grey,
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    '${(volume * 100).toInt()}%',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: isActive
+                          ? theme.colorScheme.onSurface.withValues(alpha: 0.75)
+                          : Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
+
+  void _showTrackVolumeModal(
+    BuildContext context,
+    BandInstrumentCategory category,
+    double initialVolume,
+    ValueChanged<double> onVolumeChanged,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        double currentVol = initialVolume;
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF222634) : Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                boxShadow: const [
+                  BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, -2)),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(category.icon, size: 18, color: Theme.of(context).colorScheme.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        "${category.displayName} 볼륨 조절",
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                      const Spacer(),
+                      Text(
+                        "${(currentVol * 100).toInt()}%",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      trackHeight: 4,
+                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                    ),
+                    child: Slider(
+                      value: currentVol,
+                      min: 0.0,
+                      max: 1.0,
+                      divisions: 20,
+                      onChanged: (val) {
+                        setModalState(() => currentVol = val);
+                        onVolumeChanged(val);
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
 }
 

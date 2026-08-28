@@ -33,6 +33,12 @@ class LyriaState extends ChangeNotifier {
   bool _keysEnabled = true;
   bool _guitarEnabled = true;
 
+  // Instrument Track Volumes (0.0 to 1.0)
+  double _drumsVolume = 0.85;
+  double _bassVolume = 0.85;
+  double _keysVolume = 0.75;
+  double _guitarVolume = 0.80;
+
   // Instrument Sound Profiles
   SoundProfile _selectedDrums = BandSoundProfiles.drumsBrush;
   SoundProfile _selectedBass = BandSoundProfiles.bassJazz;
@@ -62,6 +68,11 @@ class LyriaState extends ChangeNotifier {
   bool get keysEnabled => _keysEnabled;
   bool get guitarEnabled => _guitarEnabled;
 
+  double get drumsVolume => _drumsVolume;
+  double get bassVolume => _bassVolume;
+  double get keysVolume => _keysVolume;
+  double get guitarVolume => _guitarVolume;
+
   SoundProfile get selectedDrums => _selectedDrums;
   SoundProfile get selectedBass => _selectedBass;
   SoundProfile get selectedKeys => _selectedKeys;
@@ -79,6 +90,10 @@ class LyriaState extends ChangeNotifier {
       bpm: _tempo,
       style: _style,
       volume: _volume,
+      drumsVolume: _drumsVolume,
+      bassVolume: _bassVolume,
+      keysVolume: _keysVolume,
+      guitarVolume: _guitarVolume,
       drumsEnabled: _drumsEnabled,
       bassEnabled: _bassEnabled,
       keysEnabled: _keysEnabled,
@@ -90,6 +105,7 @@ class LyriaState extends ChangeNotifier {
       },
     );
   }
+
 
   void setApiKey(String key) {
     if (_apiKey == key) return;
@@ -265,7 +281,34 @@ class LyriaState extends ChangeNotifier {
     _sequencer.stop();
   }
 
+  void updateInstrumentVolume(String instrument, double vol) {
+    final clamped = vol.clamp(0.0, 1.0);
+    switch (instrument.toLowerCase()) {
+      case 'drums':
+      case 'drum':
+        _drumsVolume = clamped;
+        _sequencer.setInstrumentVolumes(drums: _drumsVolume);
+        break;
+      case 'bass':
+        _bassVolume = clamped;
+        _sequencer.setInstrumentVolumes(bass: _bassVolume);
+        break;
+      case 'keys':
+      case 'keyboard':
+      case 'piano':
+        _keysVolume = clamped;
+        _sequencer.setInstrumentVolumes(keys: _keysVolume);
+        break;
+      case 'guitar':
+        _guitarVolume = clamped;
+        _sequencer.setInstrumentVolumes(guitar: _guitarVolume);
+        break;
+    }
+    notifyListeners();
+  }
+
   void toggleInstrument(String instrument) {
+
     switch (instrument.toLowerCase()) {
       case 'drums':
       case 'drum':
