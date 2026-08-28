@@ -1,7 +1,7 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../../models/music_constants.dart';
-import '../../../views/explorer/circle_of_fifths_wheel.dart';
+import 'circle_of_fifths_painter.dart';
+import 'circle_of_fifths_math_helper.dart';
 
 class InteractiveCircleOfFifths extends StatelessWidget {
   final double size;
@@ -58,7 +58,7 @@ class InteractiveCircleOfFifths extends StatelessWidget {
                 Text(
                   rootNote,
                   style: TextStyle(
-                    fontSize: 48,
+                    fontSize: size * 0.15,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.onSurface,
                     height: 1.0,
@@ -67,7 +67,7 @@ class InteractiveCircleOfFifths extends StatelessWidget {
                 Text(
                   displayMode,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: size * 0.045,
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
                     letterSpacing: 1.2,
@@ -82,7 +82,7 @@ class InteractiveCircleOfFifths extends StatelessWidget {
   }
 
   void _handleWheelTap(Offset localPosition) {
-    final result = _calculateSelection(localPosition);
+    final result = WheelMathHelper.calculateKeySelection(localPosition, size);
     if (result != null) {
       onKeySelected(result.index, result.isInner);
     }
@@ -90,39 +90,9 @@ class InteractiveCircleOfFifths extends StatelessWidget {
 
   void _handleWheelLongPress(Offset localPosition) {
     if (onKeyLongPressed == null) return;
-    final result = _calculateSelection(localPosition);
+    final result = WheelMathHelper.calculateKeySelection(localPosition, size);
     if (result != null) {
       onKeyLongPressed!(result.index, result.isInner);
     }
-  }
-
-  ({int index, bool isInner})? _calculateSelection(Offset localPosition) {
-    final center = size / 2;
-    final dx = localPosition.dx - center;
-    final dy = localPosition.dy - center;
-    final dist = sqrt(dx * dx + dy * dy);
-    final angle = atan2(dy, dx); // -pi to pi
-
-    // Radii (match Painter)
-    final rOuter = size * 0.45;
-    final rMiddle = size * 0.32;
-    final rInner = size * 0.15;
-
-    if (dist < rInner || dist > rOuter) return null; // Clicked hole or outside
-
-    bool isInner = false;
-    if (dist <= rMiddle) {
-      isInner = true;
-    } else {
-      isInner = false;
-    }
-
-    double deg = angle * 180 / pi;
-    double normalized = deg + 90;
-    if (normalized < 0) normalized += 360;
-
-    int index = (normalized / 30).floor() % 12;
-
-    return (index: index, isInner: isInner);
   }
 }

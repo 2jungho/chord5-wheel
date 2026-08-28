@@ -5,7 +5,7 @@ import '../models/chord_model.dart';
 import '../models/scale_model.dart';
 import '../utils/theory_utils.dart';
 import '../utils/guitar_utils.dart';
-import '../models/caged_model.dart';
+import '../services/music_theory_service.dart';
 import 'view_control_state_mixin.dart';
 
 /// 앱 전역에서 음악 이론 상태를 관리하는 Provider입니다.
@@ -241,51 +241,18 @@ class MusicState extends ChangeNotifier with ViewControlStateMixin {
     if (_diatonicChords.isEmpty) return;
 
     final chord = selectedChord;
-    final isMinor =
-        chord.quality.contains('m') && !chord.quality.contains('Maj');
-    final rootIdx = TheoryUtils.getNoteIndex(chord.root);
+    final result = MusicTheoryService.findBestCagedPattern(chord);
 
-    // E string Reference Fret (0-11)
-    int rootFretOnE = (rootIdx - 4 + 12) % 12;
-
-    final patterns = isMinor ? minorCagedPatterns : majorCagedPatterns;
-
-    // Find the one with lowest start fret
-    CagedPattern? bestPattern;
-    int bestStartFret = 999;
-
-    for (var pattern in patterns) {
-      int startFret = rootFretOnE + pattern.baseOffset;
-      while (startFret > 12) {
-        startFret -= 12;
-      }
-
-      // Simple calculation of minFret to ensure sorting matches CagedList
-      // (Real calculation needs dot logic but baseOffset + root is close enough for determining order usually)
-      // Let's use the same logic as CagedList roughly
-      // Or just prefer the one with smallest positive startFret
-
-      if (startFret < bestStartFret) {
-        bestStartFret = startFret;
-        bestPattern = pattern;
-      }
-    }
-
-    if (bestPattern != null) {
-      _selectedCagedPatternName = bestPattern.name;
+    if (result != null) {
+      _selectedCagedPatternName = result.$1;
 
       // Update Fretboard Highlight (selectCagedForm)
-      String form = bestPattern.cagedName;
+      String form = result.$2.name ?? '';
       String normalizedForm = form.split(' ')[0];
       if (normalizedForm.endsWith('m')) {
         normalizedForm = normalizedForm.substring(0, normalizedForm.length - 1);
       }
-      selectCagedForm(normalizedForm,
-          force:
-              true); // Do not notifyListeners inside helper called by calculateState?
-      // Actually selectCagedForm does NOT notifyListeners if mixed in?
-      // ViewControlStateMixin uses mutable state but usually expects consumer to pull.
-      // But _calculateState is called before notifyListeners in actions. So it's fine.
+      selectCagedForm(normalizedForm, force: true);
 
       // Update Main Chord Voicing to match this pattern
       // ONLY if safe (m7b5, dim, aug etc are not supported by simple CAGED dots logic)
@@ -295,38 +262,8 @@ class MusicState extends ChangeNotifier with ViewControlStateMixin {
           !chord.quality.contains('+');
 
       if (isSafe) {
-        _calculateVoicingForPattern(bestPattern, bestStartFret, isMinor);
+        _mainChordVoicing = result.$2;
       }
     }
-  }
-
-  void _calculateVoicingForPattern(
-      CagedPattern pattern, int startFret, bool isMinor) {
-    List<int> frets = [-1, -1, -1, -1, -1, -1];
-
-    for (var dot in pattern.dots) {
-      int strIdx = 6 - dot.s;
-      int realFret = startFret + dot.o;
-      if (frets[strIdx] == -1) {
-        frets[strIdx] = realFret;
-      }
-    }
-
-    // Calculate final start fret for display logic (similar to CagedList)
-    int minFret = 999;
-    for (int f in frets) {
-      if (f != -1 && f < minFret) minFret = f;
-    }
-
-    int displayStartFret =
-        minFret != 999 ? minFret : (startFret > 0 ? startFret : 1);
-    if (minFret == 0) displayStartFret = 1;
-
-    _mainChordVoicing = ChordVoicing(
-      frets: frets,
-      startFret: displayStartFret,
-      rootString: pattern.rootString,
-      name: pattern.cagedName,
-    );
   }
 }

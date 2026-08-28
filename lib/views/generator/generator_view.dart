@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 
 import '../../providers/generator_state.dart';
 import '../../providers/settings_state.dart';
-import '../../models/instrument_model.dart';
+import '../../models/chord_model.dart';
+import '../../models/fretboard_marker.dart';
+import '../../widgets/common/app_card_container.dart';
 import '../../widgets/common/fretboard/fretboard_section.dart';
 import '../../widgets/common/chord_info_section.dart';
 import '../../widgets/common/view_control_panel.dart';
@@ -12,212 +14,82 @@ import 'widgets/extended_analysis_section.dart';
 import 'widgets/related_scales_section.dart';
 import 'widgets/scale_visualization_section.dart';
 
-class GeneratorView extends StatefulWidget {
+class GeneratorView extends StatelessWidget {
   const GeneratorView({super.key});
 
   @override
-  State<GeneratorView> createState() => _GeneratorViewState();
-}
-
-class _GeneratorViewState extends State<GeneratorView> {
-  @override
   Widget build(BuildContext context) {
-    final generatorState = context.watch<GeneratorState>();
-    final selectedInstrument =
-        context.watch<SettingsState>().selectedInstrument;
+    return Selector<GeneratorState, bool>(
+      selector: (_, state) => state.hasAnalysisResult,
+      builder: (context, hasResult, _) {
+        return LayoutBuilder(builder: (context, constraints) {
+          final bool isNarrow = constraints.maxWidth < 900;
+          final bool isShort = constraints.maxHeight < 700;
 
-    return LayoutBuilder(builder: (context, constraints) {
-      final bool isNarrow = constraints.maxWidth < 900;
-      final bool isShort = constraints.maxHeight < 700;
+          if (!hasResult) {
+            return SingleChildScrollView(
+              child: SizedBox(
+                height: constraints.maxHeight > 200
+                    ? constraints.maxHeight - 100
+                    : 500,
+                child: _buildEmptyState(context),
+              ),
+            );
+          }
 
-      if (isNarrow || isShort) {
-        // --- Mobile/Short Layout (Single Scroll) ---
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (generatorState.hasAnalysisResult) ...[
-                // Dashboard Container
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Theme.of(context).dividerColor),
+          if (isNarrow || isShort) {
+            // --- Mobile/Short Layout (Single Scroll) ---
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AppCardContainer(
+                    padding: const EdgeInsets.all(12),
+                    child: const _GeneratorMobileDashboard(),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ChordInfoSection(
-                        root: generatorState.analyzedRoot,
-                        quality: generatorState.analyzedQuality,
-                        intervals: generatorState.analyzedIntervals,
-                        notes: generatorState.chordNotes,
-                        onPlay: () {
-                          final v = generatorState.generatedVoicings.isNotEmpty
-                              ? generatorState.generatedVoicings[
-                                  generatorState.selectedVoicingIndex ?? 0]
-                              : null;
-                          if (v != null && v.frets.any((f) => f != -1)) {
-                            generatorState.playVoicing(v);
-                          } else {
-                            generatorState.playChordStrum();
-                          }
-                        },
-                        onRestore: generatorState.canRestore
-                            ? generatorState.restoreInitialChord
-                            : null,
-                        voicing: generatorState.generatedVoicings.isNotEmpty
-                            ? generatorState.generatedVoicings[
-                                generatorState.selectedVoicingIndex ?? 0]
-                            : null,
-                        instrument: selectedInstrument,
-                      ),
-                      const SizedBox(height: 24),
-                      ChordVoicingSection(
-                        root: generatorState.analyzedRoot,
-                        quality: generatorState.analyzedQuality,
-                        notes: generatorState.chordNotes,
-                        voicings: generatorState.generatedVoicings,
-                        onPlayVoicing: generatorState.playVoicing,
-                        selectedStyle: generatorState.selectedVoicingStyle,
-                        onStyleSelected: generatorState.setVoicingStyle,
-                        selectedVoicingIndex:
-                            generatorState.selectedVoicingIndex,
-                        onVoicingSelected: generatorState.selectVoicing,
-                      ),
-                      const SizedBox(height: 16),
-                      RelatedScalesSection(
-                        root: generatorState.analyzedRoot,
-                        displayQuality: generatorState.analyzedQuality,
-                        relatedScales: generatorState.relatedScales,
-                        selectedScaleName: generatorState.selectedScaleName,
-                        onScaleSelected: (scaleName) =>
-                            generatorState.selectScale(scaleName),
-                        onChordTonesSelected: generatorState.selectChordTones,
-                        showHeader: false,
-                        hasContainer: false,
-                      ),
-                      const SizedBox(height: 12),
-                      ScaleVisualizationSection(
-                        root: generatorState.analyzedRoot,
-                        selectedScaleName: generatorState.selectedScaleName,
-                        baseScaleName: generatorState.relatedScales.isNotEmpty
-                            ? generatorState.relatedScales.first
-                            : null,
-                        isMinor: generatorState.isMinor,
-                        chordNotes: generatorState.chordNotes,
-                        chordIntervals: generatorState.chordIntervalList,
-                        onPlayScale: generatorState.playSelectedScale,
-                        onPlayChord: generatorState.playChordStrum,
-                        hasContainer: false,
-                      ),
-                      const SizedBox(height: 16),
-                      ExtendedAnalysisSection(
-                        root: generatorState.analyzedRoot,
-                        quality: generatorState.analyzedQuality,
-                        selectedScaleName: generatorState.selectedScaleName,
-                        onChordSelected: (val) => generatorState
-                            .analyzeChord(val, isNavigation: true),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Footer: Fretboard Map
-                // Footer: Fretboard Map
-                FretboardSection(
-                  highlightMap: generatorState.fretboardHighlights,
-                  rootNote: generatorState.analyzedRoot,
-                  selectedScaleName: generatorState.selectedScaleName,
-                  pentatonicName: generatorState.basePentatonicName,
-                  visibleIntervals: generatorState.visibleIntervals,
-                  focusCagedForm: generatorState.selectedCagedForm,
-                  isMinor: generatorState.isMinor,
-                  controlPanel: ViewControlPanel(
-                    visibleIntervals: generatorState.visibleIntervals,
-                    availableIntervals: generatorState.availableIntervals,
-                    selectedCagedForm: generatorState.selectedCagedForm,
-                    onToggleInterval: generatorState.toggleInterval,
-                    onSelectForm: generatorState.selectCagedForm,
-                    onReset: generatorState.resetViewFilters,
-                  ),
-                ),
-                const SizedBox(height: 40),
-              ] else ...[
-                // Empty State
-                SizedBox(
-                  height: constraints.maxHeight - 100,
-                  child: _buildEmptyState(context),
-                ),
-              ],
-            ],
-          ),
-        );
-      }
+                  const SizedBox(height: 16),
+                  const _GeneratorFretboardSection(),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            );
+          }
 
-      // --- Desktop Layout (Unified Scroll) ---
-      return SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (!generatorState.hasAnalysisResult)
-                SizedBox(height: 600, child: _buildEmptyState(context)),
-              if (generatorState.hasAnalysisResult) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Theme.of(context).dividerColor),
+          // --- Desktop Layout (Unified Scroll) ---
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AppCardContainer(
+                    padding: const EdgeInsets.all(12),
+                    child: LayoutBuilder(
+                      builder: (context, dashboardConstraints) {
+                        final isDashboardWide =
+                            dashboardConstraints.maxWidth > 1100;
+                        if (isDashboardWide) {
+                          return const _GeneratorDesktopDashboard();
+                        } else {
+                          return const _GeneratorMobileDashboardBody();
+                        }
+                      },
+                    ),
                   ),
-                  child: LayoutBuilder(
-                    builder: (context, dashboardConstraints) {
-                      final isDashboardWide =
-                          dashboardConstraints.maxWidth > 1100;
-                      if (isDashboardWide) {
-                        return _buildDesktopDashboard(
-                            context, generatorState, selectedInstrument);
-                      } else {
-                        // Tablet/Single Column Dashboard
-                        return _buildMobileDashboardBody(
-                            context, generatorState);
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(height: 8),
-                FretboardSection(
-                  highlightMap: generatorState.fretboardHighlights,
-                  rootNote: generatorState.analyzedRoot,
-                  selectedScaleName: generatorState.selectedScaleName,
-                  pentatonicName: generatorState.basePentatonicName,
-                  visibleIntervals: generatorState.visibleIntervals,
-                  focusCagedForm: generatorState.selectedCagedForm,
-                  isMinor: generatorState.isMinor,
-                  controlPanel: ViewControlPanel(
-                    visibleIntervals: generatorState.visibleIntervals,
-                    availableIntervals: generatorState.availableIntervals,
-                    selectedCagedForm: generatorState.selectedCagedForm,
-                    onToggleInterval: generatorState.toggleInterval,
-                    onSelectForm: generatorState.selectCagedForm,
-                    onReset: generatorState.resetViewFilters,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      );
-    });
+                  const SizedBox(height: 8),
+                  const _GeneratorFretboardSection(),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+          );
+        });
+      },
+    );
   }
 
-  // --- Helper Widgets to keep build clean ---
-
-  Widget _buildEmptyState(BuildContext context) {
+  static Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -225,8 +97,10 @@ class _GeneratorViewState extends State<GeneratorView> {
           Icon(
             Icons.music_note,
             size: 80,
-            color:
-                Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            color: Theme.of(context)
+                .colorScheme
+                .onSurfaceVariant
+                .withValues(alpha: 0.5),
           ),
           const SizedBox(height: 24),
           Text(
@@ -241,62 +115,215 @@ class _GeneratorViewState extends State<GeneratorView> {
       ),
     );
   }
+}
 
-  Widget _buildDesktopDashboard(BuildContext context,
-      GeneratorState generatorState, Instrument selectedInstrument) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 1. Info Section
-        Expanded(
-          flex: 2,
-          child: ChordInfoSection(
-            root: generatorState.analyzedRoot,
-            quality: generatorState.analyzedQuality,
-            intervals: generatorState.analyzedIntervals,
-            notes: generatorState.chordNotes,
-            onPlay: () {
-              final v = generatorState.generatedVoicings.isNotEmpty
-                  ? generatorState.generatedVoicings[
-                      generatorState.selectedVoicingIndex ?? 0]
-                  : null;
-              if (v != null && v.frets.any((f) => f != -1)) {
-                generatorState.playVoicing(v);
-              } else {
-                generatorState.playChordStrum();
-              }
-            },
-            onRestore: generatorState.canRestore
-                ? generatorState.restoreInitialChord
-                : null,
-            voicing: generatorState.generatedVoicings.isNotEmpty
-                ? generatorState
-                    .generatedVoicings[generatorState.selectedVoicingIndex ?? 0]
-                : null,
-            instrument: selectedInstrument,
-          ),
-        ),
-        const SizedBox(width: 32),
-        // 2. Middle Section
-        Expanded(
-          flex: 6,
-          child: _buildMobileDashboardBody(context, generatorState),
-        ),
-        const SizedBox(width: 32),
-        // 3. Right Section
-        Expanded(
-          flex: 3,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                '${generatorState.analyzedRoot}${generatorState.analyzedQuality} 코드입니다. 다양한 보이싱으로 연주해보세요.',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontSize: 13,
-                ),
+/// 모바일/작은 화면용 대시보드
+class _GeneratorMobileDashboard extends StatelessWidget {
+  const _GeneratorMobileDashboard();
+
+  @override
+  Widget build(BuildContext context) {
+    final instrument = context.watch<SettingsState>().selectedInstrument;
+
+    return Selector<
+        GeneratorState,
+        ({
+          String root,
+          String quality,
+          String intervals,
+          List<String> notes,
+          ChordVoicing? voicing,
+          bool canRestore,
+        })>(
+      selector: (_, s) => (
+        root: s.analyzedRoot,
+        quality: s.analyzedQuality,
+        intervals: s.analyzedIntervals,
+        notes: s.chordNotes,
+        voicing: s.generatedVoicings.isNotEmpty
+            ? s.generatedVoicings[s.selectedVoicingIndex ?? 0]
+            : null,
+        canRestore: s.canRestore,
+      ),
+      builder: (context, data, _) {
+        final state = context.read<GeneratorState>();
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ChordInfoSection(
+              root: data.root,
+              quality: data.quality,
+              intervals: data.intervals,
+              notes: data.notes,
+              onPlay: () {
+                if (data.voicing != null &&
+                    data.voicing!.frets.any((f) => f != -1)) {
+                  state.playVoicing(data.voicing!);
+                } else {
+                  state.playChordStrum();
+                }
+              },
+              onRestore: data.canRestore ? state.restoreInitialChord : null,
+              voicing: data.voicing,
+              instrument: instrument,
+            ),
+            const SizedBox(height: 24),
+            const _GeneratorMobileDashboardBody(),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// 데스크톱용 3분할 대시보드
+class _GeneratorDesktopDashboard extends StatelessWidget {
+  const _GeneratorDesktopDashboard();
+
+  @override
+  Widget build(BuildContext context) {
+    final instrument = context.watch<SettingsState>().selectedInstrument;
+
+    return Selector<
+        GeneratorState,
+        ({
+          String root,
+          String quality,
+          String intervals,
+          List<String> notes,
+          ChordVoicing? voicing,
+          bool canRestore,
+          String? selectedScaleName,
+        })>(
+      selector: (_, s) => (
+        root: s.analyzedRoot,
+        quality: s.analyzedQuality,
+        intervals: s.analyzedIntervals,
+        notes: s.chordNotes,
+        voicing: s.generatedVoicings.isNotEmpty
+            ? s.generatedVoicings[s.selectedVoicingIndex ?? 0]
+            : null,
+        canRestore: s.canRestore,
+        selectedScaleName: s.selectedScaleName,
+      ),
+      builder: (context, data, _) {
+        final state = context.read<GeneratorState>();
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 1. Info Section (Left)
+            Expanded(
+              flex: 2,
+              child: ChordInfoSection(
+                root: data.root,
+                quality: data.quality,
+                intervals: data.intervals,
+                notes: data.notes,
+                onPlay: () {
+                  if (data.voicing != null &&
+                      data.voicing!.frets.any((f) => f != -1)) {
+                    state.playVoicing(data.voicing!);
+                  } else {
+                    state.playChordStrum();
+                  }
+                },
+                onRestore: data.canRestore ? state.restoreInitialChord : null,
+                voicing: data.voicing,
+                instrument: instrument,
               ),
-              const SizedBox(height: 12),
+            ),
+            const SizedBox(width: 32),
+            // 2. Middle Section
+            const Expanded(
+              flex: 6,
+              child: _GeneratorMobileDashboardBody(),
+            ),
+            const SizedBox(width: 32),
+            // 3. Right Section
+            Expanded(
+              flex: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    '${data.root}${data.quality} 코드입니다. 다양한 보이싱으로 연주해보세요.',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ExtendedAnalysisSection(
+                    root: data.root,
+                    quality: data.quality,
+                    selectedScaleName: data.selectedScaleName,
+                    onChordSelected: (val) =>
+                        state.analyzeChord(val, isNavigation: true),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// 대시보드 공통 바디 (Voicing + Scales + Visualization)
+class _GeneratorMobileDashboardBody extends StatelessWidget {
+  const _GeneratorMobileDashboardBody();
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<GeneratorState>(
+      builder: (context, generatorState, _) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ChordVoicingSection(
+              root: generatorState.analyzedRoot,
+              quality: generatorState.analyzedQuality,
+              notes: generatorState.chordNotes,
+              voicings: generatorState.generatedVoicings,
+              onPlayVoicing: generatorState.playVoicing,
+              selectedStyle: generatorState.selectedVoicingStyle,
+              onStyleSelected: generatorState.setVoicingStyle,
+              selectedVoicingIndex: generatorState.selectedVoicingIndex,
+              onVoicingSelected: generatorState.selectVoicing,
+            ),
+            const SizedBox(height: 8),
+            Divider(color: Theme.of(context).dividerColor),
+            const SizedBox(height: 8),
+            RelatedScalesSection(
+              root: generatorState.analyzedRoot,
+              displayQuality: generatorState.analyzedQuality,
+              relatedScales: generatorState.relatedScales,
+              selectedScaleName: generatorState.selectedScaleName,
+              onScaleSelected: (scaleName) =>
+                  generatorState.selectScale(scaleName),
+              onChordTonesSelected: generatorState.selectChordTones,
+              showHeader: false,
+              hasContainer: false,
+            ),
+            const SizedBox(height: 16),
+            Divider(color: Theme.of(context).dividerColor),
+            const SizedBox(height: 12),
+            ScaleVisualizationSection(
+              root: generatorState.analyzedRoot,
+              selectedScaleName: generatorState.selectedScaleName,
+              baseScaleName: generatorState.relatedScales.isNotEmpty
+                  ? generatorState.relatedScales.first
+                  : null,
+              isMinor: generatorState.isMinor,
+              chordNotes: generatorState.chordNotes,
+              chordIntervals: generatorState.chordIntervalList,
+              onPlayScale: generatorState.playSelectedScale,
+              onPlayChord: generatorState.playChordStrum,
+              hasContainer: false,
+            ),
+            const SizedBox(height: 16),
+            if (MediaQuery.of(context).size.width <= 1100)
               ExtendedAnalysisSection(
                 root: generatorState.analyzedRoot,
                 quality: generatorState.analyzedQuality,
@@ -304,69 +331,61 @@ class _GeneratorViewState extends State<GeneratorView> {
                 onChordSelected: (val) =>
                     generatorState.analyzeChord(val, isNavigation: true),
               ),
-            ],
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
+}
 
-  Widget _buildMobileDashboardBody(
-      BuildContext context, GeneratorState generatorState) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ChordVoicingSection(
-          root: generatorState.analyzedRoot,
-          quality: generatorState.analyzedQuality,
-          notes: generatorState.chordNotes,
-          voicings: generatorState.generatedVoicings,
-          onPlayVoicing: generatorState.playVoicing,
-          selectedStyle: generatorState.selectedVoicingStyle,
-          onStyleSelected: generatorState.setVoicingStyle,
-          selectedVoicingIndex: generatorState.selectedVoicingIndex,
-          onVoicingSelected: generatorState.selectVoicing,
-        ),
-        const SizedBox(height: 8),
-        Divider(color: Theme.of(context).dividerColor),
-        const SizedBox(height: 8),
-        RelatedScalesSection(
-          root: generatorState.analyzedRoot,
-          displayQuality: generatorState.analyzedQuality,
-          relatedScales: generatorState.relatedScales,
-          selectedScaleName: generatorState.selectedScaleName,
-          onScaleSelected: (scaleName) => generatorState.selectScale(scaleName),
-          onChordTonesSelected: generatorState.selectChordTones,
-          showHeader: false,
-          hasContainer: false,
-        ),
-        const SizedBox(height: 16),
-        Divider(color: Theme.of(context).dividerColor),
-        const SizedBox(height: 12),
-        ScaleVisualizationSection(
-          root: generatorState.analyzedRoot,
-          selectedScaleName: generatorState.selectedScaleName,
-          baseScaleName: generatorState.relatedScales.isNotEmpty
-              ? generatorState.relatedScales.first
-              : null,
-          isMinor: generatorState.isMinor,
-          chordNotes: generatorState.chordNotes,
-          chordIntervals: generatorState.chordIntervalList,
-          onPlayScale: generatorState.playSelectedScale,
-          onPlayChord: generatorState.playChordStrum,
-          hasContainer: false,
-        ),
-        const SizedBox(height: 16),
-        // If narrow dashboard, show extended analysis too
-        if (MediaQuery.of(context).size.width <= 1100)
-          ExtendedAnalysisSection(
-            root: generatorState.analyzedRoot,
-            quality: generatorState.analyzedQuality,
-            selectedScaleName: generatorState.selectedScaleName,
-            onChordSelected: (val) =>
-                generatorState.analyzeChord(val, isNavigation: true),
+/// 프렛보드 영역 (Selector로 최적화)
+class _GeneratorFretboardSection extends StatelessWidget {
+  const _GeneratorFretboardSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Selector<
+        GeneratorState,
+        ({
+          Map<int, List<FretboardMarker>> fretboardHighlights,
+          String analyzedRoot,
+          String? selectedScaleName,
+          String? basePentatonicName,
+          Set<String> visibleIntervals,
+          String? selectedCagedForm,
+          bool isMinor,
+          Set<String> availableIntervals,
+        })>(
+      selector: (_, s) => (
+        fretboardHighlights: s.fretboardHighlights,
+        analyzedRoot: s.analyzedRoot,
+        selectedScaleName: s.selectedScaleName,
+        basePentatonicName: s.basePentatonicName,
+        visibleIntervals: s.visibleIntervals,
+        selectedCagedForm: s.selectedCagedForm,
+        isMinor: s.isMinor,
+        availableIntervals: s.availableIntervals,
+      ),
+      builder: (context, data, _) {
+        final state = context.read<GeneratorState>();
+        return FretboardSection(
+          highlightMap: data.fretboardHighlights,
+          rootNote: data.analyzedRoot,
+          selectedScaleName: data.selectedScaleName,
+          pentatonicName: data.basePentatonicName,
+          visibleIntervals: data.visibleIntervals,
+          focusCagedForm: data.selectedCagedForm,
+          isMinor: data.isMinor,
+          controlPanel: ViewControlPanel(
+            visibleIntervals: data.visibleIntervals,
+            availableIntervals: data.availableIntervals,
+            selectedCagedForm: data.selectedCagedForm,
+            onToggleInterval: state.toggleInterval,
+            onSelectForm: state.selectCagedForm,
+            onReset: state.resetViewFilters,
           ),
-      ],
+        );
+      },
     );
   }
 }

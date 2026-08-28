@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../../services/harmonic_suggestion_service.dart';
 import '../../../../audio/audio_manager.dart';
 
+import '../../../../widgets/common/dialogs/app_dialog_frame.dart';
+
 class ChordInsertDialog extends StatefulWidget {
   final String targetChord;
   final String currentKey;
@@ -61,79 +63,37 @@ class _ChordInsertDialogState extends State<ChordInsertDialog> {
     AudioManager().playStrum(suggestion.notes);
   }
 
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Dialog(
-      backgroundColor: theme.colorScheme.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        width: 540,
-        constraints: const BoxConstraints(maxHeight: 650),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.secondary.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(Icons.auto_awesome, color: theme.colorScheme.secondary, size: 24),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '화성 확장 & 경과 화음 삽입',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '\'${widget.targetChord}\' 코드로 자연스럽게 연결되는 텐션/경과 화음을 추천합니다.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close),
-                  tooltip: '닫기',
-                ),
-              ],
+    return AppDialogFrame(
+      title: '화성 확장 & 경과 화음 삽입',
+      subtitle: '\'${widget.targetChord}\' 코드로 자연스럽게 연결되는 텐션/경과 화음을 추천합니다.',
+      width: 560,
+      height: 650,
+      headerLeading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.secondary.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(Icons.auto_awesome,
+            color: theme.colorScheme.secondary, size: 24),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Suggestions List
+          Text(
+            '추천 경과 화음 (Harmonic Recommendations)',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
             ),
-
-            const SizedBox(height: 16),
-            const Divider(height: 1),
-            const SizedBox(height: 14),
-
-            // Suggestions List
-            Text(
-              '추천 경과 화음 (Harmonic Recommendations)',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 8),
+          ),
+          const SizedBox(height: 8),
 
             Expanded(
               child: ListView.separated(
@@ -288,7 +248,6 @@ class _ChordInsertDialogState extends State<ChordInsertDialog> {
             ),
           ],
         ),
-      ),
     );
   }
 }

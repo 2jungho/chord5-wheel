@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../models/progression/progression_presets.dart';
 
+import '../../../widgets/common/dialogs/app_dialog_frame.dart';
+
 class PresetSelectorDialog extends StatefulWidget {
   final Function(String) onSelected;
   final Function(String, String) onApply;
@@ -68,51 +70,19 @@ class _PresetSelectorDialogState extends State<PresetSelectorDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: 600,
-        height: 700,
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '코드 진행 프리셋 선택',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '원하는 스타일이나 장르를 선택하여 빠르게 진행을 입력하세요.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Search Bar
-            TextField(
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                hintText: '프리셋 이름, 설명, 코드 검색...',
+    return AppDialogFrame(
+      title: '코드 진행 프리셋 선택',
+      subtitle: '원하는 스타일이나 장르를 선택하여 빠르게 진행을 입력하세요.',
+      width: 600,
+      height: 700,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Search Bar
+          TextField(
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.search),
+              hintText: '프리셋 이름, 설명, 코드 검색...',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -285,7 +255,6 @@ class _PresetSelectorDialogState extends State<PresetSelectorDialog> {
             ),
           ],
         ),
-      ),
     );
   }
 }

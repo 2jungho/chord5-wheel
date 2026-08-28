@@ -5,14 +5,13 @@ import '../../../../services/ai_service.dart';
 import '../../../../services/prompt_templates.dart';
 import '../../../../models/progression/progression_models.dart';
 import '../../../../widgets/common/ai/quota_error_widget.dart';
+import '../../../widgets/common/dialogs/app_dialog_frame.dart';
 
 class AISongSearchDialog extends StatefulWidget {
-  final Function(List<ChordBlock> blocks, String key, String title) onApply;
+  final Function(List<ChordBlock> progression, String key, String title)
+      onApply;
 
-  const AISongSearchDialog({
-    super.key,
-    required this.onApply,
-  });
+  const AISongSearchDialog({super.key, required this.onApply});
 
   @override
   State<AISongSearchDialog> createState() => _AISongSearchDialogState();
@@ -110,9 +109,13 @@ class _AISongSearchDialogState extends State<AISongSearchDialog> {
     final hasApiKey = settings.currentApiKey.isNotEmpty;
 
     if (!hasApiKey) {
-      return AlertDialog(
-        title: const Text('API 키 필요'),
-        content: const Text('곡 검색 기능을 사용하려면 설정에서 AI API 키를 등록해주세요.'),
+      return AppDialogFrame(
+        title: 'API 키 필요',
+        width: 400,
+        height: 220,
+        body: const Center(
+          child: Text('곡 검색 기능을 사용하려면 설정에서 AI API 키를 등록해주세요.'),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -122,100 +125,13 @@ class _AISongSearchDialogState extends State<AISongSearchDialog> {
       );
     }
 
-    return AlertDialog(
-      title: Row(
-        children: [
-          Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
-          const SizedBox(width: 8),
-          const Text('AI 곡 진행 검색'),
-        ],
-      ),
-      content: SizedBox(
-        width: 550,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (_searchResult == null) ...[
-                const Text('곡 제목과 가수명을 입력하면 AI가 코드 진행을 분석합니다.'),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(
-                    labelText: '곡 제목 (필수)',
-                    hintText: '예: Let It Be, Dynamite',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: _artistController,
-                  decoration: const InputDecoration(
-                    labelText: '가수명 (선택)',
-                    hintText: '예: Beatles, BTS',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: _selectedSection,
-                  decoration: const InputDecoration(
-                    labelText: '요청 구간',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: _sections
-                      .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                      .toList(),
-                  onChanged: (val) => setState(() => _selectedSection = val!),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '⚠️ 최신곡이나 비주류 곡은 분석 결과가 부정확할 수 있습니다.',
-                  style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
-                ),
-              ] else ...[
-                // Search Result Preview
-                _buildSearchResultPreview(),
-              ],
-              if (_isSearching)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(24.0),
-                    child: Column(
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 16),
-                        Text('곡의 화성을 분석 중입니다...'),
-                      ],
-                    ),
-                  ),
-                )
-              else if (_errorMessage != null)
-                QuotaErrorWidget.isQuotaErrorDetected(_errorMessage!)
-                    ? QuotaErrorWidget(
-                        errorMessage: _errorMessage!, onRetry: _searchSong)
-                    : Container(
-                        margin: const EdgeInsets.only(top: 16),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.errorContainer,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          _errorMessage!,
-                          style: TextStyle(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onErrorContainer),
-                        ),
-                      ),
-            ],
-          ),
-        ),
-      ),
+    return AppDialogFrame(
+      title: 'AI 곡 진행 검색',
+      subtitle: '곡 제목과 가수명을 기반으로 AI가 코드 진행을 분석합니다.',
+      width: 580,
+      height: 680,
+      headerLeading: Icon(Icons.search,
+          color: Theme.of(context).colorScheme.primary),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -238,6 +154,89 @@ class _AISongSearchDialogState extends State<AISongSearchDialog> {
           ),
         ],
       ],
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (_searchResult == null) ...[
+              const Text('곡 제목과 가수명을 입력하면 AI가 코드 진행을 분석합니다.'),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _titleController,
+                decoration: const InputDecoration(
+                  labelText: '곡 제목 (필수)',
+                  hintText: '예: Let It Be, Dynamite',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _artistController,
+                decoration: const InputDecoration(
+                  labelText: '가수명 (선택)',
+                  hintText: '예: Beatles, BTS',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                initialValue: _selectedSection,
+                decoration: const InputDecoration(
+                  labelText: '요청 구간',
+                  border: OutlineInputBorder(),
+                ),
+                items: _sections
+                    .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                    .toList(),
+                onChanged: (val) => setState(() => _selectedSection = val!),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '⚠️ 최신곡이나 비주류 곡은 분석 결과가 부정확할 수 있습니다.',
+                style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant),
+              ),
+            ] else ...[
+              // Search Result Preview
+              _buildSearchResultPreview(),
+            ],
+            if (_isSearching)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24.0),
+                  child: Column(
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text('곡의 화성을 분석 중입니다...'),
+                    ],
+                  ),
+                ),
+              )
+            else if (_errorMessage != null)
+              QuotaErrorWidget.isQuotaErrorDetected(_errorMessage!)
+                  ? QuotaErrorWidget(
+                      errorMessage: _errorMessage!, onRetry: _searchSong)
+                  : Container(
+                      margin: const EdgeInsets.only(top: 16),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.errorContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onErrorContainer),
+                      ),
+                    ),
+          ],
+        ),
+      ),
     );
   }
 

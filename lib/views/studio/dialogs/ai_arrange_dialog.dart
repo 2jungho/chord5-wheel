@@ -5,14 +5,17 @@ import '../../../../services/ai_service.dart';
 import '../../../../services/prompt_templates.dart';
 import '../../../../models/progression/progression_models.dart';
 import '../../../../widgets/common/ai/quota_error_widget.dart'; // import QuotaErrorWidget
+import '../../../widgets/common/dialogs/app_dialog_frame.dart';
 
 class AIArrangeDialog extends StatefulWidget {
   final List<ChordBlock> currentProgression;
-  final Function(List<ChordBlock> blocks, String style) onApply;
+  final String currentKey;
+  final Function(List<ChordBlock> newProgression, String? style) onApply;
 
   const AIArrangeDialog({
     super.key,
     required this.currentProgression,
+    this.currentKey = 'C Major',
     required this.onApply,
   });
 
@@ -126,10 +129,13 @@ class _AIArrangeDialogState extends State<AIArrangeDialog> {
     // API Key Check (Prerequisite)
     final hasApiKey = context.read<SettingsState>().currentApiKey.isNotEmpty;
     if (!hasApiKey) {
-      return AlertDialog(
-        title: const Text('API 키 필요'),
-        content:
-            const Text('이 기능을 사용하려면 설정에서 AI API 키(Gemini/OpenAI)를 등록해주세요.'),
+      return AppDialogFrame(
+        title: 'API 키 필요',
+        width: 400,
+        height: 220,
+        body: const Center(
+          child: Text('이 기능을 사용하려면 설정에서 AI API 키(Gemini/OpenAI)를 등록해주세요.'),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -139,131 +145,13 @@ class _AIArrangeDialogState extends State<AIArrangeDialog> {
       );
     }
 
-    return AlertDialog(
-      title: Row(
-        children: [
-          Icon(Icons.auto_fix_high,
-              color: Theme.of(context).colorScheme.primary),
-          const SizedBox(width: 8),
-          const Text('AI 편곡 (Arrangement)'),
-        ],
-      ),
-      content: SizedBox(
-        width: 500,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '현재 코드 진행을 원하는 스타일로 재해석합니다.',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 16),
-              // Style Selector
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _styles.map((style) {
-                  final isSelected = _selectedStyle == style['name'];
-                  return ChoiceChip(
-                    label: Text(style['name']!),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      if (selected) {
-                        setState(() {
-                          _selectedStyle = style['name']!;
-                        });
-                      }
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 8),
-              if (_selectedStyle.isNotEmpty)
-                Text(
-                  _styles
-                      .firstWhere((s) => s['name'] == _selectedStyle)['desc']!,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              const Divider(height: 32),
-
-              // Result Area
-              if (_isGenerating)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(24.0),
-                    child: CircularProgressIndicator(),
-                  ),
-                )
-              else if (_errorMessage != null)
-                QuotaErrorWidget.isQuotaErrorDetected(_errorMessage!)
-                    ? QuotaErrorWidget(
-                        errorMessage: _errorMessage!,
-                        onRetry: _generateArrangement,
-                      )
-                    : Container(
-                        padding: const EdgeInsets.all(12),
-                        color: Theme.of(context).colorScheme.errorContainer,
-                        child: Text(
-                          _errorMessage!,
-                          style: TextStyle(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onErrorContainer),
-                        ),
-                      )
-              else if (_generatedProgression != null) ...[
-                Text('제안된 진행:',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.secondary)),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    _generatedProgression!
-                        .map((b) => b.chordSymbol)
-                        .join(' - '),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                if (_explanation != null && _explanation!.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Text('특이사항:',
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceVariant)),
-                  Text(
-                    _explanation!,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ]
-              ] else
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Text('스타일을 선택하고 생성 버튼을 누르세요.'),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
+    return AppDialogFrame(
+      title: 'AI 편곡 (Arrangement)',
+      subtitle: '현재 코드 진행을 원하는 장르/스타일로 재해석합니다.',
+      width: 540,
+      height: 680,
+      headerLeading: Icon(Icons.auto_fix_high,
+          color: Theme.of(context).colorScheme.primary),
       actions: [
         if (_generatedProgression == null || _errorMessage != null)
           TextButton(
@@ -290,10 +178,131 @@ class _AIArrangeDialogState extends State<AIArrangeDialog> {
               widget.onApply(_generatedProgression!, _selectedStyle);
               Navigator.of(context).pop();
             },
-            child: const Text('적용하기'),
+            child: const Text('타임라인에 적용'),
           ),
         ],
       ],
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '원하는 편곡 스타일을 선택하세요:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Style Selector
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _styles.map((style) {
+                final isSelected = _selectedStyle == style['name'];
+                return ChoiceChip(
+                  label: Text(style['name']!),
+                  selected: isSelected,
+                  onSelected: (selected) {
+                    if (selected) {
+                      setState(() {
+                        _selectedStyle = style['name']!;
+                      });
+                    }
+                  },
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 8),
+            if (_selectedStyle.isNotEmpty)
+              Text(
+                _styles.firstWhere((s) => s['name'] == _selectedStyle)['desc']!,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            const Divider(height: 28),
+
+            // Result Area
+            if (_isGenerating)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24.0),
+                  child: Column(
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text('AI 편곡을 생성하고 있습니다...'),
+                    ],
+                  ),
+                ),
+              )
+            else if (_errorMessage != null)
+              QuotaErrorWidget.isQuotaErrorDetected(_errorMessage!)
+                  ? QuotaErrorWidget(
+                      errorMessage: _errorMessage!,
+                      onRetry: _generateArrangement,
+                    )
+                  : Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.errorContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onErrorContainer),
+                      ),
+                    )
+            else if (_generatedProgression != null) ...[
+              Text('제안된 진행:',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.secondary)),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  _generatedProgression!.map((b) => b.chordSymbol).join(' - '),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              if (_explanation != null && _explanation!.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text('특이사항:',
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                const SizedBox(height: 4),
+                Text(
+                  _explanation!,
+                  style: const TextStyle(fontSize: 12, height: 1.4),
+                ),
+              ]
+            ] else
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: Text('스타일을 선택하고 생성 버튼을 누르세요.'),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

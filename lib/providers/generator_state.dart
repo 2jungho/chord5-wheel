@@ -242,24 +242,7 @@ class GeneratorState extends ChangeNotifier with ViewControlStateMixin {
 
   /// 특정 보이싱 재생 (Real Voicing)
   Future<void> playVoicing(ChordVoicing voicing) async {
-    // Standard Guitar Tuning Absolute Pitches (assuming C0 = 0)
-    // E2=28, A2=33, D3=38, G3=43, B3=47, E4=52
-    const openStringPitches = [28, 33, 38, 43, 47, 52];
-
-    for (int i = 0; i < 6; i++) {
-      final fret = voicing.frets[i];
-      if (fret != -1) {
-        final absPitch = openStringPitches[i] + fret;
-        final octave = absPitch ~/ 12; // integer division
-        final noteIndex = absPitch % 12;
-        final noteName = TheoryUtils.getNoteName(
-            noteIndex, !_analyzedRoot.contains('b')); // simple sharp/flat logic
-
-        _audioManager.playNote(noteName, octave);
-        await Future.delayed(
-            const Duration(milliseconds: 35)); // Fast arpeggio effect
-      }
-    }
+    await _audioManager.playVoicing(voicing, root: _analyzedRoot);
   }
 
   /// 프렛보드 맵 업데이트

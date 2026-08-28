@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../providers/settings_state.dart';
 import '../../../models/instrument_model.dart';
 import '../../../models/fretboard_marker.dart';
+import '../../../utils/theory_utils.dart';
 
 class FretboardSection extends StatefulWidget {
   final Map<int, List<FretboardMarker>> highlightMap;
@@ -161,35 +162,9 @@ class _FretboardSectionState extends State<FretboardSection> {
     });
   }
 
-  // --- Helper Methods for Zone Calculation (Simplified) ---
+  // --- Helper Methods for Zone Calculation ---
   int _getNoteIndex(String note) {
-    // TheoryUtils 의존성 없이 간단 구현 혹은 TheoryUtils 사용 가능하나
-    // 여기서는 문자열 처리로 간단히 매핑
-
-    String n = note.replaceAll('m', '');
-    // Flat 처리 등은 복잡하므로 단순 매핑 시도, 실패시 0
-    // 실제로는 TheoryUtils.getNoteIndex 권장
-    // 여기서는 간단히 하드코딩된 Map 사용
-    final map = {
-      'C': 0,
-      'C#': 1,
-      'Db': 1,
-      'D': 2,
-      'D#': 3,
-      'Eb': 3,
-      'E': 4,
-      'F': 5,
-      'F#': 6,
-      'Gb': 6,
-      'G': 7,
-      'G#': 8,
-      'Ab': 8,
-      'A': 9,
-      'A#': 10,
-      'Bb': 10,
-      'B': 11
-    };
-    return map[n] ?? 0;
+    return TheoryUtils.getNoteIndex(note);
   }
 
   List<({int min, int max})> _calculateZones(int rootIdx, String formName) {

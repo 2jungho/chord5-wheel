@@ -9,6 +9,8 @@ import '../../../../utils/theory_utils.dart';
 import '../../../../models/chord_model.dart';
 import '../../../../widgets/common/guitar/guitar_chord_widget.dart';
 
+import '../../../../widgets/common/dialogs/app_dialog_frame.dart';
+
 class ModulationDialog extends StatefulWidget {
   final String startKey;
   final String targetKey;
@@ -95,19 +97,12 @@ class _ModulationDialogState extends State<ModulationDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Row(
-        children: [
-          const Icon(Icons.shuffle, color: Colors.purpleAccent),
-          const SizedBox(width: 8),
-          const Text('Modulation Navigator'),
-        ],
-      ),
-      content: SizedBox(
-        width: 1050, // Wider for CAGED row
-        height: 750, // Increased to remove inner scrolling
-        child: _buildContent(),
-      ),
+    return AppDialogFrame(
+      title: 'Modulation Navigator',
+      subtitle: '${widget.startKey} → ${widget.targetKey} 최적 전조 경로 분석',
+      width: 1050,
+      height: 750,
+      headerLeading: const Icon(Icons.shuffle, color: Colors.purpleAccent),
       actions: [
         if (_errorMessage != null)
           TextButton(
@@ -119,6 +114,7 @@ class _ModulationDialogState extends State<ModulationDialog> {
           child: const Text('Close'),
         ),
       ],
+      body: _buildContent(),
     );
   }
 
