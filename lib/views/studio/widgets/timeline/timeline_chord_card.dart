@@ -10,7 +10,6 @@ import '../../../../widgets/common/guitar/guitar_chord_widget.dart';
 import '../../../../widgets/common/piano/piano_chord_widget.dart';
 import 'chord_insert_dialog.dart';
 
-
 class TimelineChordCard extends StatelessWidget {
   final ChordBlock block;
   final int index;
@@ -82,189 +81,216 @@ class TimelineChordCard extends StatelessWidget {
               AudioManager().playStrum(notes);
             }
           },
-          child: Stack(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                // Top Header Row: Bar Number (Left) & Action Buttons (Right)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Bar Number Label
+                    // Bar Number Badge
                     Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.only(bottom: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                       child: Text(
                         'Bar ${index + 1}',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 10,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context)
                               .colorScheme
                               .onSurface
-                              .withValues(alpha: 0.4),
+                              .withValues(alpha: 0.6),
                         ),
                       ),
                     ),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          Text(
-                            block.chordSymbol,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurface,
-                                ),
+                    // Action Buttons (Passing chord insert & Delete)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Tooltip(
+                          message: '앞에 경과 화음(화성 확장) 삽입',
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () {
+                              ChordInsertDialog.show(
+                                context,
+                                targetChord: block.chordSymbol,
+                                currentKey: studio.session.key,
+                                insertIndex: index,
+                                onInsert: (newChord, idx) {
+                                  studio.insertChordAt(idx, newChord);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          '\'$newChord\' 코드가 Bar ${idx + 1}에 삽입되었습니다.'),
+                                      duration:
+                                          const Duration(milliseconds: 1500),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(3.0),
+                              child: Icon(
+                                Icons.add_circle_outline,
+                                size: 15,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.9),
+                              ),
+                            ),
                           ),
-                          if (block.functionTag != null) ...[
-                            const SizedBox(width: 4),
-                            Text(
-                              '(${block.functionTag!})',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
+                        ),
+                        const SizedBox(width: 4),
+                        Tooltip(
+                          message: '삭제',
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () => studio.removeChord(index),
+                            child: Padding(
+                              padding: const EdgeInsets.all(3.0),
+                              child: Icon(
+                                Icons.close,
+                                size: 14,
                                 color: Theme.of(context)
                                     .colorScheme
                                     .onSurface
-                                    .withValues(alpha: 0.6),
+                                    .withValues(alpha: 0.4),
                               ),
                             ),
-                          ],
-                          if (block.chordDetail != null) ...[
-                            const SizedBox(width: 2),
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(12),
-                                onTap: () {
-                                  studio.selectBlock(index);
-                                  if (block.voicing != null &&
-                                      block.voicing!.frets
-                                          .any((f) => f != -1)) {
-                                    AudioManager().playVoicing(block.voicing!,
-                                        root: block.chordSymbol);
-                                  } else {
-                                    final notes = TheoryUtils.analyzeChord(
-                                            block.chordSymbol)
-                                        .notes;
-                                    AudioManager().playStrum(notes);
-                                  }
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Icon(
-                                    Icons.volume_up_rounded,
-                                    size: 14,
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .secondary
-                                        .withValues(alpha: 0.8),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    if (block.voicing != null)
-                      Expanded(
-                        child: FittedBox(
-                          fit: BoxFit.contain,
-                          child: Consumer<SettingsState>(
-                            builder: (context, settings, _) {
-                              if (settings.selectedInstrument.type ==
-                                  InstrumentType.piano) {
-                                return PianoChordWidget(
-                                  notes: TheoryUtils.analyzeChord(
-                                          block.chordSymbol)
-                                      .notes,
-                                  width: 130,
-                                  height: 80,
-                                  showLabels: true,
-                                );
-                              }
-                              return GuitarChordWidget(
-                                voicing: block.voicing!,
-                                width: 130,
-                                height: 100,
-                                stringCount:
-                                    settings.selectedInstrument.stringCount,
-                              );
-                            },
                           ),
                         ),
-                      )
-                    else
-                      const Expanded(
-                        child: Center(
-                          child: Icon(Icons.music_off,
-                              size: 24, color: Colors.grey),
-                        ),
-                      ),
+                      ],
+                    ),
                   ],
                 ),
-              ),
-              Positioned(
-                left: 2,
-                top: 0,
-                child: IconButton(
-                  icon: Icon(
-                    Icons.add_circle_outline,
-                    size: 15,
-                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 24,
-                    minHeight: 24,
-                  ),
-                  onPressed: () {
-                    ChordInsertDialog.show(
-                      context,
-                      targetChord: block.chordSymbol,
-                      currentKey: studio.session.key,
-                      insertIndex: index,
-                      onInsert: (newChord, idx) {
-                        studio.insertChordAt(idx, newChord);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('\'$newChord\' 코드가 Bar ${idx + 1}에 삽입되었습니다.'),
-                            duration: const Duration(milliseconds: 1500),
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  tooltip: '앞에 경과 화음(화성 확장) 삽입',
-                ),
-              ),
-              Positioned(
-                right: 0,
-                top: 0,
-                child: IconButton(
-                  icon: const Icon(Icons.close, size: 14),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 24,
-                    minHeight: 24,
-                  ),
-                  onPressed: () => studio.removeChord(index),
-                  tooltip: '삭제',
-                ),
-              ),
+                const SizedBox(height: 2),
 
-            ],
+                // Chord Symbol & Function Tag & Preview
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        block.chordSymbol,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface,
+                            ),
+                      ),
+                      if (block.functionTag != null) ...[
+                        const SizedBox(width: 4),
+                        Text(
+                          '(${block.functionTag!})',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ],
+                      if (block.chordDetail != null) ...[
+                        const SizedBox(width: 2),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () {
+                              studio.selectBlock(index);
+                              if (block.voicing != null &&
+                                  block.voicing!.frets
+                                      .any((f) => f != -1)) {
+                                AudioManager().playVoicing(block.voicing!,
+                                    root: block.chordSymbol);
+                              } else {
+                                final notes = TheoryUtils.analyzeChord(
+                                        block.chordSymbol)
+                                    .notes;
+                                AudioManager().playStrum(notes);
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(2.0),
+                              child: Icon(
+                                Icons.volume_up_rounded,
+                                size: 14,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .secondary
+                                    .withValues(alpha: 0.8),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 2),
+
+                // Instrument Voicing Diagram
+                if (block.voicing != null)
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: Consumer<SettingsState>(
+                        builder: (context, settings, _) {
+                          if (settings.selectedInstrument.type ==
+                              InstrumentType.piano) {
+                            return PianoChordWidget(
+                              notes: TheoryUtils.analyzeChord(
+                                      block.chordSymbol)
+                                  .notes,
+                              width: 130,
+                              height: 80,
+                              showLabels: true,
+                            );
+                          }
+                          return GuitarChordWidget(
+                            voicing: block.voicing!,
+                            width: 130,
+                            height: 100,
+                            stringCount:
+                                settings.selectedInstrument.stringCount,
+                          );
+                        },
+                      ),
+                    ),
+                  )
+                else
+                  const Expanded(
+                    child: Center(
+                      child: Icon(Icons.music_off,
+                          size: 24, color: Colors.grey),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
