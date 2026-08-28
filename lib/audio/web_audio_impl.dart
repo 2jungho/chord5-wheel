@@ -24,6 +24,9 @@ external void _setWebBPM(JSNumber bpm);
 @JS('setWebInstrument')
 external void _setWebInstrument(JSString id);
 
+@JS('setWebSoundProfile')
+external void _setWebSoundProfile(JSString category, JSString profileId);
+
 @JS('setWebVolume')
 external void _setWebVolume(JSNumber volume);
 
@@ -69,9 +72,14 @@ class WebAudioApi {
     _setWebInstrument(id.toJS);
   }
 
+  static void setSoundProfile(String category, String profileId) {
+    _setWebSoundProfile(category.toJS, profileId.toJS);
+  }
+
   static void setVolume(double volume) {
     _setWebVolume(volume.toJS);
   }
+
 
   static Future<bool> startRecording() async {
     try {

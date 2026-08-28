@@ -82,6 +82,8 @@ class TheoryUtils {
   static List<ChordBlock> parseProgressionText(String text, String key) =>
       ProgressionUtils.parseProgressionText(text, key);
 
+
+
   static String transposeNote(String note, int semitones) =>
       NoteUtils.transposeNote(note, semitones);
 

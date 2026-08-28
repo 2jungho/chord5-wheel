@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:guitar_theory_app/models/instrument_model.dart';
 import 'package:guitar_theory_app/models/progression/progression_models.dart';
 import 'package:guitar_theory_app/providers/studio_state.dart';
+import 'package:guitar_theory_app/services/prompt_templates.dart';
 import 'package:guitar_theory_app/utils/guitar_utils.dart';
+
 
 void main() {
   group('1. Custom & Drop Tunings Engine Tests', () {
@@ -80,4 +82,19 @@ void main() {
       expect(studio.session.progression.map((b) => b.chordSymbol).toList(), ['C', 'Am', 'Dm', 'G']);
     });
   });
+
+  group('4. AI Jam Track Mood Prompt Tests', () {
+    test('PromptTemplates generates valid system and user prompt for Jam Mood', () {
+      final sysPrompt = PromptTemplates.getJamPromptSystemPrompt('Test Persona');
+      expect(sysPrompt, contains('당신은 최고의 음악 프로듀서'));
+      expect(sysPrompt, contains('Neo-Soul'));
+      expect(sysPrompt, contains('Lofi Chill'));
+
+      final userPrompt = PromptTemplates.getJamPromptUserPrompt('비 오는 새벽 로파이', 'C Major');
+      expect(userPrompt, contains('비 오는 새벽 로파이'));
+      expect(userPrompt, contains('C Major'));
+    });
+  });
 }
+
+

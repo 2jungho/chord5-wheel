@@ -378,6 +378,8 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
     }
   }
 
+
+
   /// 타임라인 진행의 모든 코드를 3화음(Triad) <-> 7화음(7th)으로 일괄 변환
   void convertProgressionDensity({required bool toSeventh}) {
     if (_session.progression.isEmpty) return;
@@ -545,6 +547,8 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
     selectBlock(safeIndex);
     notifyListeners();
   }
+
+
 
   void applyTransposedChords(List<String> newChordSymbols) {
     if (newChordSymbols.isEmpty) return;

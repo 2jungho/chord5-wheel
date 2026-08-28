@@ -4,8 +4,13 @@ import '../../../providers/lyria_state.dart';
 import '../../../providers/studio_state.dart';
 import '../../../providers/settings_state.dart';
 import '../../../widgets/common/dialogs/settings_dialog.dart';
-
 import '../../../audio/audio_recorder_service.dart';
+import '../../../services/ai_service.dart';
+import '../../../services/prompt_templates.dart';
+import '../../../models/progression/progression_models.dart';
+import '../../../models/audio/band_sound_profile.dart';
+import '../../../widgets/common/ai/quota_error_widget.dart';
+
 
 class LyriaJamPanel extends StatefulWidget {
   const LyriaJamPanel({super.key});
@@ -17,6 +22,170 @@ class LyriaJamPanel extends StatefulWidget {
 class _LyriaJamPanelState extends State<LyriaJamPanel> {
   bool _isRecording = false;
   bool _hasRecorded = false;
+
+  // AI Mood Prompt State
+  final TextEditingController _promptController = TextEditingController();
+  bool _isGeneratingJam = false;
+  String? _aiJamPromptError;
+  String? _aiJamTitle;
+  String? _aiJamExplanation;
+
+  final List<({String label, String prompt, IconData icon})> _moodPresets = const [
+    (
+      label: '🌧️ 비 오는 로파이',
+      prompt: '비 오는 날 새벽 창밖을 보며 연주하는 감성적인 칠 로파이 비트',
+      icon: Icons.water_drop_outlined,
+    ),
+    (
+      label: '🌆 시티팝 드라이브',
+      prompt: '80년대 레트로 시티팝 느낌의 세련되고 경쾌한 드라이브 그루브',
+      icon: Icons.location_city_outlined,
+    ),
+    (
+      label: '🎸 슬로우 블루스',
+      prompt: '존 메이어 스타일의 따뜻하고 그루비한 슬로우 템포 블루스 잼',
+      icon: Icons.electric_bolt_outlined,
+    ),
+    (
+      label: '☕ 감성 어쿠스틱',
+      prompt: '따뜻한 통기타와 부드러운 건반이 어우러진 잔잔한 카페 발라드',
+      icon: Icons.coffee_outlined,
+    ),
+    (
+      label: '✨ 네오소울 그루브',
+      prompt: '세련된 텐션 코드와 펑키한 드럼 스윙이 돋보이는 네오소울 잼',
+      icon: Icons.auto_awesome,
+    ),
+    (
+      label: '⚡ 80s 펑키 록',
+      prompt: '강렬한 베이스 리프와 직선적인 드럼 비트의 신나는 펑크 록',
+      icon: Icons.flash_on,
+    ),
+  ];
+
+  @override
+  void dispose() {
+    _promptController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _generateJamFromPrompt(String promptText) async {
+    final trimmed = promptText.trim();
+    if (trimmed.isEmpty) return;
+
+    final settings = context.read<SettingsState>();
+    if (!settings.hasApiKey) {
+      showDialog(
+        context: context,
+        builder: (_) => const SettingsDialog(),
+      );
+      return;
+    }
+
+    final studio = context.read<StudioState>();
+    final lyria = context.read<LyriaState>();
+    final currentKey = studio.session.key.isNotEmpty ? studio.session.key : 'C Major';
+
+    setState(() {
+      _isGeneratingJam = true;
+      _aiJamPromptError = null;
+      _aiJamTitle = null;
+      _aiJamExplanation = null;
+    });
+
+    try {
+      final systemPrompt = PromptTemplates.getJamPromptSystemPrompt(settings.systemPrompt);
+      final userPrompt = PromptTemplates.getJamPromptUserPrompt(trimmed, currentKey);
+
+      final aiService = AIService(
+        apiKey: settings.currentApiKey,
+        provider: settings.aiProvider,
+        modelName: settings.currentModelId,
+        systemPrompt: systemPrompt,
+        thinkingLevel: settings.thinkingLevel,
+        customBaseUrl: settings.customBaseUrl,
+      );
+
+      final buffer = StringBuffer();
+      await for (final chunk in aiService.sendMessageStream(userPrompt)) {
+        buffer.write(chunk);
+      }
+
+      final responseText = buffer.toString();
+      final result = AIService.extractJson(responseText);
+
+      final style = result['style'] as String? ?? 'Neo-Soul';
+      final tempoRaw = result['tempo'] ?? 100;
+      final double tempo = (tempoRaw is num) ? tempoRaw.toDouble() : 100.0;
+      final key = result['key'] as String? ?? currentKey;
+      final title = result['title'] as String? ?? trimmed;
+      final explanation = result['explanation'] as String? ?? '';
+      final audioPrompt = result['audio_prompt'] as String?;
+      final progressionList = result['progression'] as List<dynamic>? ?? [];
+
+      final List<ChordBlock> blocks = [];
+      for (var item in progressionList) {
+        if (item is Map) {
+          final chord = item['chord'] ?? 'C';
+          final durationRaw = item['duration'] ?? 4;
+          final int duration = (durationRaw is num) ? durationRaw.toInt() : 4;
+          blocks.add(ChordBlock(chordSymbol: chord, duration: duration));
+        }
+      }
+
+      if (blocks.isEmpty) {
+        blocks.add(ChordBlock(chordSymbol: 'C', duration: 4));
+        blocks.add(ChordBlock(chordSymbol: 'Am', duration: 4));
+        blocks.add(ChordBlock(chordSymbol: 'Dm', duration: 4));
+        blocks.add(ChordBlock(chordSymbol: 'G7', duration: 4));
+      }
+
+      // Update Studio Progression & Key
+      studio.updateKey(key);
+      studio.applyTransposedChords(blocks.map((b) => b.chordSymbol).toList());
+
+      // Parse instrument toggles if returned
+      Map<String, bool>? instMap;
+      if (result['instruments'] is Map) {
+        final rawInst = result['instruments'] as Map;
+        instMap = {
+          'drums': rawInst['drums'] == true,
+          'bass': rawInst['bass'] == true,
+          'keys': rawInst['keys'] == true,
+          'guitar': rawInst['guitar'] == true,
+        };
+      }
+
+      // Start Jam Session with AI parameters
+      lyria.applyAiJamConfig(
+        style: style,
+        tempo: tempo,
+        key: key,
+        blocks: blocks,
+        instruments: instMap,
+        audioPrompt: audioPrompt,
+      );
+
+      if (mounted) {
+        setState(() {
+          _aiJamTitle = '$title ($style • ${tempo.toInt()} BPM)';
+          _aiJamExplanation = explanation;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _aiJamPromptError = e.toString();
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGeneratingJam = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +327,7 @@ class _LyriaJamPanelState extends State<LyriaJamPanel> {
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
-                      "내장 가상 밴드(드럼/베이스/건반/기타)로 즉시 연주됩니다. (AI 실시간 생성은 설정에서 키 등록)",
+                      "내장 가상 밴드(드럼/베이스/건반/기타)로 즉시 연주됩니다. (AI 프롬프트 생성은 설정에서 API 키 등록)",
                       style: TextStyle(fontSize: 12),
                     ),
                   ),
@@ -271,7 +440,6 @@ class _LyriaJamPanelState extends State<LyriaJamPanel> {
                         _isRecording = true;
                       });
                       if (!lyria.isPlaying) {
-                        // 녹음 시작 시 가상 밴드도 함께 자동 재생
                         final session = studio.session;
                         String chords = "Key: ${session.key}\n";
                         if (session.progression.isEmpty) {
@@ -298,110 +466,100 @@ class _LyriaJamPanelState extends State<LyriaJamPanel> {
                 icon: Icon(
                   _isRecording ? Icons.stop_circle : Icons.fiber_manual_record,
                   size: 15,
-                  color: _isRecording ? Colors.redAccent : Colors.red,
+                  color: _isRecording ? Colors.red : Colors.redAccent,
                 ),
                 label: Text(
                   _isRecording ? "녹음 중지" : "REC",
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: _isRecording ? Colors.redAccent : null,
+                    color: _isRecording ? Colors.red : null,
                   ),
                 ),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   visualDensity: VisualDensity.compact,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   side: BorderSide(
                     color: _isRecording
-                        ? Colors.redAccent
+                        ? Colors.red
                         : Theme.of(context).dividerColor,
                   ),
                 ),
               );
 
-              final downloadRecordButton = _hasRecorded
-                  ? IconButton(
-                      tooltip: '녹음 파일 다운로드 (.webm)',
-                      icon: const Icon(Icons.download, size: 18, color: Colors.cyan),
-                      onPressed: () {
-                        AudioRecorderService.downloadRecording();
-                      },
-                    )
-                  : const SizedBox.shrink();
+              final downloadRecordButton = IconButton(
+                tooltip: '녹음된 연주 파일 다운로드 (WAV)',
+                onPressed: () {
+                  AudioRecorderService.downloadRecording();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('녹음된 오디오가 다운로드되었습니다.')),
+                  );
+                },
+                icon: const Icon(Icons.download, size: 18, color: Colors.green),
+                visualDensity: VisualDensity.compact,
+              );
 
-              final tempoSlider = Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              final tempoSlider = Row(
                 children: [
                   Text(
                     "Tempo: ${lyria.tempo.toInt()} BPM",
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.7),
-                    ),
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                   ),
-                  SizedBox(
-                    height: 24,
-                    child: Slider(
-                      value: lyria.tempo,
-                      min: 60,
-                      max: 180,
-                      divisions: 24,
-                      onChanged: (val) => lyria.updateTempo(val),
+                  Expanded(
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 3,
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                      ),
+                      child: Slider(
+                        value: lyria.tempo,
+                        min: 60.0,
+                        max: 180.0,
+                        divisions: 120,
+                        onChanged: (val) => lyria.updateTempo(val),
+                      ),
                     ),
                   ),
                 ],
               );
 
-              final volumeSlider = Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              final volumeSlider = Row(
                 children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      InkWell(
-                        onTap: () => lyria.toggleMute(),
-                        borderRadius: BorderRadius.circular(4),
-                        child: Icon(
-                          lyria.isMuted
-                              ? Icons.volume_off_rounded
-                              : (lyria.volume < 0.5
-                                  ? Icons.volume_down_rounded
-                                  : Icons.volume_up_rounded),
-                          size: 14,
-                          color: lyria.isMuted
-                              ? Colors.redAccent
-                              : Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        "Vol: ${(lyria.volume * 100).round()}%",
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.7),
-                        ),
-                      ),
-                    ],
+                  IconButton(
+                    icon: Icon(
+                      lyria.isMuted
+                          ? Icons.volume_off
+                          : (lyria.volume < 0.5 ? Icons.volume_down : Icons.volume_up),
+                      size: 16,
+                      color: lyria.isMuted ? Colors.grey : Theme.of(context).colorScheme.primary,
+                    ),
+                    onPressed: () => lyria.toggleMute(),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                    visualDensity: VisualDensity.compact,
                   ),
-                  SizedBox(
-                    height: 24,
-                    child: Slider(
-                      value: lyria.volume,
-                      min: 0.0,
-                      max: 1.0,
-                      divisions: 20,
-                      activeColor: lyria.isMuted
-                          ? Colors.grey
-                          : Theme.of(context).colorScheme.secondary,
-                      onChanged: (val) => lyria.updateVolume(val),
+                  Text(
+                    "Vol: ${(lyria.volume * 100).toInt()}%",
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
+                  Expanded(
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 3,
+                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                      ),
+                      child: Slider(
+                        value: lyria.volume,
+                        min: 0.0,
+                        max: 1.0,
+                        divisions: 20,
+                        activeColor: lyria.isMuted
+                            ? Colors.grey
+                            : Theme.of(context).colorScheme.secondary,
+                        onChanged: (val) => lyria.updateVolume(val),
+                      ),
                     ),
                   ),
                 ],
@@ -488,7 +646,7 @@ class _LyriaJamPanelState extends State<LyriaJamPanel> {
 
           const SizedBox(height: 14),
 
-          // Instrument Mixer & Beat Visualizer
+          // Instrument Mixer & Tone Profile Selectors
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
@@ -498,52 +656,60 @@ class _LyriaJamPanelState extends State<LyriaJamPanel> {
                 color: Theme.of(context).dividerColor.withValues(alpha: 0.2),
               ),
             ),
-            child: Row(
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                const Text(
-                  "Band Mixer:",
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
-                  ),
+                const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.tune_rounded, size: 14, color: Colors.grey),
+                    SizedBox(width: 4),
+                    Text(
+                      "Band Tone:",
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
 
-                // 4 Instrument Toggle Chips
-                _buildInstrumentChip(
+                // 4 Instrument Sound Profile Selectors & Mute Toggles
+                _buildInstrumentToneSelector(
                   context: context,
-                  label: "Drums",
-                  icon: Icons.album_outlined,
+                  category: BandInstrumentCategory.drums,
+                  currentProfile: lyria.selectedDrums,
                   isActive: lyria.drumsEnabled,
-                  onTap: () => lyria.toggleInstrument("drums"),
+                  onToggle: () => lyria.toggleInstrument("drums"),
+                  onProfileSelected: (p) => lyria.setSoundProfile(BandInstrumentCategory.drums, p),
                 ),
-                const SizedBox(width: 6),
-                _buildInstrumentChip(
+                _buildInstrumentToneSelector(
                   context: context,
-                  label: "Bass",
-                  icon: Icons.graphic_eq,
+                  category: BandInstrumentCategory.bass,
+                  currentProfile: lyria.selectedBass,
                   isActive: lyria.bassEnabled,
-                  onTap: () => lyria.toggleInstrument("bass"),
+                  onToggle: () => lyria.toggleInstrument("bass"),
+                  onProfileSelected: (p) => lyria.setSoundProfile(BandInstrumentCategory.bass, p),
                 ),
-                const SizedBox(width: 6),
-                _buildInstrumentChip(
+                _buildInstrumentToneSelector(
                   context: context,
-                  label: "Keys",
-                  icon: Icons.piano,
+                  category: BandInstrumentCategory.keys,
+                  currentProfile: lyria.selectedKeys,
                   isActive: lyria.keysEnabled,
-                  onTap: () => lyria.toggleInstrument("keys"),
+                  onToggle: () => lyria.toggleInstrument("keys"),
+                  onProfileSelected: (p) => lyria.setSoundProfile(BandInstrumentCategory.keys, p),
                 ),
-                const SizedBox(width: 6),
-                _buildInstrumentChip(
+                _buildInstrumentToneSelector(
                   context: context,
-                  label: "Guitar",
-                  icon: Icons.music_note,
+                  category: BandInstrumentCategory.guitar,
+                  currentProfile: lyria.selectedGuitar,
                   isActive: lyria.guitarEnabled,
-                  onTap: () => lyria.toggleInstrument("guitar"),
+                  onToggle: () => lyria.toggleInstrument("guitar"),
+                  onProfileSelected: (p) => lyria.setSoundProfile(BandInstrumentCategory.guitar, p),
                 ),
-
-                const Spacer(),
 
                 // Beat Metronome / Pulse Indicator
                 if (lyria.isPlaying) ...[
@@ -582,55 +748,400 @@ class _LyriaJamPanelState extends State<LyriaJamPanel> {
               ],
             ),
           ),
+
+
+          const SizedBox(height: 14),
+
+          // --- AI Jam Mood Prompt Section ---
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.chat_bubble_outline,
+                      size: 15,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      "AI 분위기 & 사운드 프롬프트 (Mood Prompt)",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (_aiJamTitle != null)
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            _aiJamTitle = null;
+                            _aiJamExplanation = null;
+                            _aiJamPromptError = null;
+                          });
+                        },
+                        child: const Row(
+                          children: [
+                            Icon(Icons.close, size: 14, color: Colors.grey),
+                            SizedBox(width: 2),
+                            Text("해설 닫기", style: TextStyle(fontSize: 11, color: Colors.grey)),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                // Prompt Input Field
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _promptController,
+                        style: const TextStyle(fontSize: 13),
+                        decoration: InputDecoration(
+                          hintText: "원하는 곡 분위기나 스타일을 입력하세요 (예: 비 오는 새벽 로파이, 존 메이어 블루스)",
+                          hintStyle: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                          ),
+                          prefixIcon: const Icon(Icons.music_note, size: 16),
+                          suffixIcon: _promptController.text.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear, size: 16),
+                                  onPressed: () => setState(() => _promptController.clear()),
+                                )
+                              : null,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).dividerColor,
+                            ),
+                          ),
+                        ),
+                        onSubmitted: (val) => _generateJamFromPrompt(val),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton.icon(
+                      onPressed: _isGeneratingJam || _promptController.text.trim().isEmpty
+                          ? null
+                          : () => _generateJamFromPrompt(_promptController.text),
+                      icon: _isGeneratingJam
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : const Icon(Icons.auto_awesome, size: 15),
+                      label: const Text("잼 생성", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      style: FilledButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+
+                // Quick Mood Presets
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: _moodPresets.map((preset) {
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: InkWell(
+                          onTap: _isGeneratingJam
+                              ? null
+                              : () {
+                                  _promptController.text = preset.prompt;
+                                  _generateJamFromPrompt(preset.prompt);
+                                },
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                              ),
+                            ),
+                            child: Text(
+                              preset.label,
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+
+                // AI Generation Loading State
+                if (_isGeneratingJam) ...[
+                  const SizedBox(height: 12),
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          SizedBox(width: 10),
+                          Text(
+                            "AI가 분위기를 분석하여 맞춤형 잼트랙과 코드 진행을 조율 중입니다...",
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+
+                // Error Message
+                if (_aiJamPromptError != null) ...[
+                  const SizedBox(height: 10),
+                  QuotaErrorWidget.isQuotaErrorDetected(_aiJamPromptError!)
+                      ? QuotaErrorWidget(
+                          errorMessage: _aiJamPromptError!,
+                          onRetry: () => _generateJamFromPrompt(_promptController.text),
+                        )
+                      : Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.errorContainer,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _aiJamPromptError!,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Theme.of(context).colorScheme.onErrorContainer,
+                            ),
+                          ),
+                        ),
+                ],
+
+                // AI Insight & Explanation Card
+                if (_aiJamTitle != null && _aiJamExplanation != null) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.library_music, size: 15, color: Colors.amber),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                _aiJamTitle!,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                "타임라인 자동 적용됨",
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (_aiJamExplanation!.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            _aiJamExplanation!,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              height: 1.4,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildInstrumentChip({
+  Widget _buildInstrumentToneSelector({
     required BuildContext context,
-    required String label,
-    required IconData icon,
+    required BandInstrumentCategory category,
+    required SoundProfile currentProfile,
     required bool isActive,
-    required VoidCallback onTap,
+    required VoidCallback onToggle,
+    required Function(SoundProfile) onProfileSelected,
   }) {
     final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
+    final profiles = BandSoundProfiles.getProfilesForCategory(category);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isActive
+            ? theme.colorScheme.primary.withValues(alpha: 0.12)
+            : Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
           color: isActive
-              ? theme.colorScheme.primary.withValues(alpha: 0.15)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isActive
-                ? theme.colorScheme.primary.withValues(alpha: 0.5)
-                : theme.dividerColor.withValues(alpha: 0.4),
-          ),
+              ? theme.colorScheme.primary.withValues(alpha: 0.45)
+              : theme.dividerColor.withValues(alpha: 0.35),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 13,
-              color: isActive ? theme.colorScheme.primary : Colors.grey,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                color: isActive ? theme.colorScheme.primary : Colors.grey,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Toggle Mute/Unmute
+          InkWell(
+            onTap: onToggle,
+            borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    currentProfile.icon,
+                    size: 13,
+                    color: isActive ? theme.colorScheme.primary : Colors.grey,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    category.displayName,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                      color: isActive ? theme.colorScheme.primary : Colors.grey,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+          // Tone Dropdown Selector
+          PopupMenuButton<SoundProfile>(
+            tooltip: '${category.displayName} 사운드 프로파일 변경',
+            padding: EdgeInsets.zero,
+            initialValue: currentProfile,
+            onSelected: onProfileSelected,
+            itemBuilder: (context) => profiles.map((p) {
+              final isSel = p.id == currentProfile.id;
+              return PopupMenuItem<SoundProfile>(
+                value: p,
+                child: Row(
+                  children: [
+                    Icon(p.icon, size: 16, color: isSel ? theme.colorScheme.primary : null),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            p.name,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                              color: isSel ? theme.colorScheme.primary : null,
+                            ),
+                          ),
+                          Text(
+                            p.description,
+                            style: const TextStyle(fontSize: 10, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (isSel)
+                      Icon(Icons.check, size: 14, color: theme.colorScheme.primary),
+                  ],
+                ),
+              );
+            }).toList(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(
+                    color: isActive
+                        ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                        : theme.dividerColor.withValues(alpha: 0.2),
+                  ),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    currentProfile.shortName,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: isActive
+                          ? theme.colorScheme.onSurface.withValues(alpha: 0.85)
+                          : Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(
+                    Icons.arrow_drop_down,
+                    size: 14,
+                    color: isActive ? theme.colorScheme.primary : Colors.grey,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

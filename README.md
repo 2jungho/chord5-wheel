@@ -214,6 +214,24 @@ firebase deploy --only hosting
 
 ## 📝 변경 이력 (Changelog)
 
+### v2.6.0 (2026-08-28 - AI Prompt Jam Track Generator & Mood Vibe Suite)
+* **✨ AI 잼트랙 분위기 프롬프트 주입기 (AI Mood-Driven Jam Generator)**:
+  * 잼트랙 패널에 자연어 무드 프롬프트 입력창 탑재 ("비 오는 새벽 로파이", "시티팝 드라이브", "존 메이어 블루스" 등).
+  * 멀티 AI(Gemini, GPT-4o, Claude)를 통해 자연어 분위기를 7가지 밴드 스타일, BPM 템포, 4~8마디 맞춤형 코드 진행, 악기 믹서 밸런스로 실시간 변환.
+  * AI가 도출한 코드 진행이 스튜디오 타임라인에 자동 배치되고 4인조 가상 밴드(드럼, 베이스, 건반, 기타)가 즉시 연주 시작.
+  * 6가지 대표 추천 무드 칩(`🌧️ 비 오는 로파이`, `🌆 시티팝`, `🎸 슬로우 블루스`, `☕ 감성 어쿠스틱`, `✨ 네오소울`, `⚡ 펑키 록`) 및 AI 음악 해설 배지 제공.
+* **품질 보증**: 44개 전체 단위/위젯 테스트 100% 통과 및 정적 분석 0개 이슈 달성.
+
+### v2.5.0 (2026-08-28 - YouTube Link Chord Extractor & 5th Wheel Density Suite)
+* **📺 YouTube 링크 기반 코드 진행 자동 추출기 (YouTube Chord Extractor)**:
+  * YouTube oEmbed 비동기 파싱 엔진(`YouTubeMetadataService`) 구현 (`youtu.be`, `watch?v=`, `shorts` 지원).
+  * 유튜브 URL 입력 시 썸네일, 영상 제목, 채널명 실시간 감지 및 멀티 AI(Gemini, GPT-4o, Claude)를 통한 정밀 화성학 코드 진행 분석.
+  * `AI 곡 진행 검색` 다이얼로그에 `[유튜브 링크 입력 | 곡명/가수 검색]` 탭 탑재 및 타임라인 원클릭 동기화.
+* **🎹 3화음(Triad) / 7화음(7th) 전 영역 통일 스위치**:
+  * 5도권 휠 탐색기(Explorer), 스튜디오 Key Center 패널, 타임라인 툴바 전 영역에 `[3화음 | 7화음]` 스위치 통일 배치.
+  * 타임라인 코드 진행 일괄 확장(`CMaj7 - Am7 - Dm7 - G7`) 및 단순화(`C - Am - Dm - G`) 실시간 지원.
+* **품질 보증**: 43개 전체 단위/위젯 테스트 100% 통과 및 정적 분석 0개 이슈 달성.
+
 ### v2.4.0 (2026-08-28 - Diatonic Triads vs 7th Chords Suite & Harmonic Density Converter)
 * **🎹 다이아토닉 3화음(Triad) / 7화음(7th) 원클릭 전환**:
   * 5도권 탐색기 `Diatonic Chords` 헤더에 `[3화음 | 7화음]` 캡슐형 세그먼트 스위치 탑재.

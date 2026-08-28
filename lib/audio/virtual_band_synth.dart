@@ -62,8 +62,9 @@ class VirtualBandSynth {
   // --- Drum Synthesizers ---
 
   /// Punchy Kick Drum (Pitch envelope 150Hz -> 42Hz + Click transient)
+  /// Punchy Kick Drum (Pitch envelope 140Hz -> 38Hz + Click transient + Analog Saturation)
   static Uint8List generateKick() {
-    const double duration = 0.28;
+    const double duration = 0.32;
     final int totalSamples = (sampleRate * duration).round();
     final samples = List<double>.filled(totalSamples, 0.0);
 
@@ -74,32 +75,32 @@ class VirtualBandSynth {
       final t = i / sampleRate;
       final progress = t / duration;
 
-      // Exponential pitch drop
-      final freq = 42.0 + 110.0 * exp(-18.0 * progress);
+      // Exponential pitch drop from 140Hz down to deep 38Hz sub
+      final freq = 38.0 + 102.0 * exp(-22.0 * progress);
       phase += 2.0 * pi * freq / sampleRate;
 
-      // Amplitude envelope
-      final ampEnv = exp(-9.0 * progress);
+      // Amplitude envelope: snappy punch + smooth sub decay
+      final ampEnv = exp(-7.5 * progress);
 
-      // Body sine wave with gentle soft clipping/warmth
+      // Body sine wave with analog warmth
       double s = sin(phase) * ampEnv;
 
-      // Add click attack at the very beginning (first 5ms)
-      if (t < 0.008) {
-        final clickEnv = 1.0 - (t / 0.008);
-        s += (random.nextDouble() * 2.0 - 1.0) * 0.4 * clickEnv;
+      // Add click attack at the very beginning (first 6ms) for acoustic beater slap
+      if (t < 0.006) {
+        final clickEnv = 1.0 - (t / 0.006);
+        s += (random.nextDouble() * 2.0 - 1.0) * 0.45 * clickEnv;
       }
 
-      // Soft distortion for punch
-      samples[i] = (s * 1.3).clamp(-0.95, 0.95);
+      // Soft tape distortion for punchy low-end
+      samples[i] = (s * 1.35 / (1.0 + (s.abs() * 0.35))).clamp(-0.95, 0.95);
     }
 
     return createWav(samples);
   }
 
-  /// Snappy Snare Drum (Tuned body 185Hz + Filtered white noise burst)
+  /// Snappy Snare Drum (Tuned shell 190Hz + Filtered warm snare wire sizzle)
   static Uint8List generateSnare() {
-    const double duration = 0.22;
+    const double duration = 0.24;
     final int totalSamples = (sampleRate * duration).round();
     final samples = List<double>.filled(totalSamples, 0.0);
 
@@ -111,30 +112,31 @@ class VirtualBandSynth {
       final t = i / sampleRate;
       final progress = t / duration;
 
-      // Tone part (decaying 185Hz -> 130Hz)
-      final toneFreq = 130.0 + 55.0 * exp(-20.0 * progress);
+      // Shell body tone (190Hz -> 135Hz)
+      final toneFreq = 135.0 + 55.0 * exp(-24.0 * progress);
       tonePhase += 2.0 * pi * toneFreq / sampleRate;
-      final toneAmp = exp(-18.0 * progress) * 0.6;
+      final toneAmp = exp(-16.0 * progress) * 0.65;
       final toneSample = sin(tonePhase) * toneAmp;
 
-      // Noise part (white noise through high-pass filter)
+      // Snare wire sizzle (Pink/High-pass filtered noise)
       final rawNoise = random.nextDouble() * 2.0 - 1.0;
-      final noiseHp = 0.7 * (rawNoise - lastNoise);
+      final noiseHp = 0.72 * (rawNoise - lastNoise);
       lastNoise = rawNoise;
 
-      final noiseAmp = exp(-12.0 * progress) * 0.75;
+      final noiseAmp = exp(-11.0 * progress) * 0.70;
       final noiseSample = noiseHp * noiseAmp;
 
-      // Combine
-      samples[i] = (toneSample + noiseSample).clamp(-0.95, 0.95);
+      // Combine body + wires
+      final combined = toneSample + noiseSample;
+      samples[i] = (combined / (1.0 + (combined.abs() * 0.25))).clamp(-0.95, 0.95);
     }
 
     return createWav(samples);
   }
 
-  /// Crisp Closed Hi-Hat (Metallic high frequency burst)
+  /// Crisp Closed Hi-Hat (Metallic inharmonic cluster with crisp high-end)
   static Uint8List generateHiHatClosed() {
-    const double duration = 0.055;
+    const double duration = 0.050;
     final int totalSamples = (sampleRate * duration).round();
     final samples = List<double>.filled(totalSamples, 0.0);
 
@@ -146,26 +148,26 @@ class VirtualBandSynth {
       final t = i / sampleRate;
       final progress = t / duration;
 
-      // Metallic ring frequencies (inharmonic)
+      // Metallic inharmonic frequencies
       p1 += 2.0 * pi * 5870.0 / sampleRate;
       p2 += 2.0 * pi * 8450.0 / sampleRate;
       p3 += 2.0 * pi * 11200.0 / sampleRate;
 
-      final metallic = (sin(p1) + sin(p2) * 0.7 + sin(p3) * 0.5) * 0.3;
+      final metallic = (sin(p1) + sin(p2) * 0.7 + sin(p3) * 0.5) * 0.32;
       final rawNoise = random.nextDouble() * 2.0 - 1.0;
-      final noise = (rawNoise - lastNoise) * 0.7;
+      final noise = (rawNoise - lastNoise) * 0.75;
       lastNoise = rawNoise;
 
-      final amp = exp(-40.0 * progress);
+      final amp = exp(-45.0 * progress);
       samples[i] = ((metallic + noise) * amp * 0.85).clamp(-0.95, 0.95);
     }
 
     return createWav(samples);
   }
 
-  /// Open Hi-Hat (Sustained metallic cymbal sizzle)
+  /// Open Hi-Hat (Sustained shimmering cymbal sizzle)
   static Uint8List generateHiHatOpen() {
-    const double duration = 0.35;
+    const double duration = 0.38;
     final int totalSamples = (sampleRate * duration).round();
     final samples = List<double>.filled(totalSamples, 0.0);
 
@@ -181,21 +183,21 @@ class VirtualBandSynth {
       p2 += 2.0 * pi * 8450.0 / sampleRate;
       p3 += 2.0 * pi * 11200.0 / sampleRate;
 
-      final metallic = (sin(p1) + sin(p2) * 0.7 + sin(p3) * 0.5) * 0.25;
+      final metallic = (sin(p1) + sin(p2) * 0.7 + sin(p3) * 0.5) * 0.28;
       final rawNoise = random.nextDouble() * 2.0 - 1.0;
       final noise = (rawNoise - lastNoise) * 0.75;
       lastNoise = rawNoise;
 
-      final amp = exp(-8.0 * progress);
-      samples[i] = ((metallic + noise) * amp * 0.75).clamp(-0.95, 0.95);
+      final amp = exp(-7.5 * progress);
+      samples[i] = ((metallic + noise) * amp * 0.80).clamp(-0.95, 0.95);
     }
 
     return createWav(samples);
   }
 
-  /// Rimshot / Percussion click
+  /// Rimshot / Acoustic Cross-stick click
   static Uint8List generateRimshot() {
-    const double duration = 0.07;
+    const double duration = 0.065;
     final int totalSamples = (sampleRate * duration).round();
     final samples = List<double>.filled(totalSamples, 0.0);
 
@@ -206,9 +208,9 @@ class VirtualBandSynth {
       final t = i / sampleRate;
       final progress = t / duration;
 
-      phase += 2.0 * pi * 800.0 / sampleRate;
-      final woodTone = sin(phase) * exp(-30.0 * progress) * 0.6;
-      final noise = (random.nextDouble() * 2.0 - 1.0) * exp(-45.0 * progress) * 0.4;
+      phase += 2.0 * pi * 880.0 / sampleRate;
+      final woodTone = sin(phase) * exp(-35.0 * progress) * 0.65;
+      final noise = (random.nextDouble() * 2.0 - 1.0) * exp(-50.0 * progress) * 0.35;
 
       samples[i] = (woodTone + noise).clamp(-0.95, 0.95);
     }
@@ -218,8 +220,8 @@ class VirtualBandSynth {
 
   // --- Bass Synthesizer ---
 
-  /// Rich Electric Bass Note (Warm fundamental + 2nd & 3rd harmonics + smooth envelope)
-  static Uint8List generateBassNote(double freqHz, {double duration = 0.6}) {
+  /// Rich Electric Bass Note (Warm fundamental + 2nd & 3rd harmonics + analog warmth)
+  static Uint8List generateBassNote(double freqHz, {double duration = 0.65}) {
     final int totalSamples = (sampleRate * duration).round();
     final samples = List<double>.filled(totalSamples, 0.0);
 
@@ -232,21 +234,21 @@ class VirtualBandSynth {
       p2 += 2.0 * pi * (freqHz * 2.0) / sampleRate;
       p3 += 2.0 * pi * (freqHz * 3.0) / sampleRate;
 
-      // ADSR Envelope: Fast attack (10ms), decay to sustain, smooth release
+      // ADSR Envelope: Fast attack (8ms), decay to rich warm sustain
       double env;
-      if (t < 0.012) {
-        env = t / 0.012;
+      if (t < 0.008) {
+        env = t / 0.008;
       } else {
-        env = exp(-3.2 * (t - 0.012));
+        env = exp(-2.8 * (t - 0.008));
       }
 
       // Harmonic content: strong fundamental + warm octaves
-      final raw = sin(p1) * 0.75 + sin(p2) * 0.35 + sin(p3) * 0.12;
+      final raw = sin(p1) * 0.80 + sin(p2) * 0.32 + sin(p3) * 0.10;
 
-      // Soft saturation for analog bass warmth
-      final saturated = raw / (1.0 + (raw.abs() * 0.4));
+      // Soft saturation for vintage tube bass warmth
+      final saturated = raw / (1.0 + (raw.abs() * 0.35));
 
-      samples[i] = (saturated * env * 0.9).clamp(-0.95, 0.95);
+      samples[i] = (saturated * env * 0.92).clamp(-0.95, 0.95);
     }
 
     return createWav(samples);
@@ -254,21 +256,21 @@ class VirtualBandSynth {
 
   // --- Keyboard / Electric Piano (Rhodes Style) Synthesizer ---
 
-  /// Bell-like FM Electric Piano chord note (Carrier + Modulator + warm release)
-  static Uint8List generateKeyboardNote(double freqHz, {double duration = 1.0}) {
+  /// Bell-like FM Electric Piano chord note (Carrier + Modulator + warm stereo chime)
+  static Uint8List generateKeyboardNote(double freqHz, {double duration = 1.2}) {
     final int totalSamples = (sampleRate * duration).round();
     final samples = List<double>.filled(totalSamples, 0.0);
 
     double modPhase = 0.0;
     double carPhase = 0.0;
-    final modFreq = freqHz * 2.0; // 2:1 FM ratio for Rhodes chime
+    final modFreq = freqHz * 2.0; // 2:1 FM ratio for classic Rhodes bell chime
 
     for (int i = 0; i < totalSamples; i++) {
       final t = i / sampleRate;
       final progress = t / duration;
 
-      // FM Modulation index decays over time (bright attack -> warm mellow sustain)
-      final modIndex = 1.6 * exp(-5.0 * progress);
+      // FM Modulation index decays over time (sparkling attack -> mellow warm sustain)
+      final modIndex = 1.4 * exp(-4.5 * progress);
       modPhase += 2.0 * pi * modFreq / sampleRate;
       final modSample = sin(modPhase) * modIndex;
 
@@ -278,20 +280,21 @@ class VirtualBandSynth {
 
       // Amplitude Envelope
       double env;
-      if (t < 0.015) {
-        env = t / 0.015;
+      if (t < 0.012) {
+        env = t / 0.012;
       } else {
-        env = exp(-2.2 * (t - 0.015));
+        env = exp(-1.9 * (t - 0.012));
       }
 
-      // Add gentle acoustic overtone
-      final overtone = sin(carPhase * 3.0) * 0.08 * exp(-6.0 * progress);
+      // Add gentle warm overtone
+      final overtone = sin(carPhase * 3.0) * 0.06 * exp(-5.0 * progress);
 
-      samples[i] = ((carSample * 0.8 + overtone) * env * 0.85).clamp(-0.95, 0.95);
+      samples[i] = ((carSample * 0.82 + overtone) * env * 0.88).clamp(-0.95, 0.95);
     }
 
     return createWav(samples);
   }
+
 
   /// Note name to Frequency helper (A4 = 440Hz)
   static double noteToFrequency(String noteName, int octave) {

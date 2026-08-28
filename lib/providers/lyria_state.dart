@@ -6,6 +6,9 @@ import '../audio/audio_manager.dart';
 import '../models/progression/progression_models.dart';
 import '../utils/theory_utils.dart';
 
+import '../models/audio/band_sound_profile.dart';
+import '../audio/web_audio_api.dart';
+
 class LyriaState extends ChangeNotifier {
   LyriaService? _service;
   String _apiKey = '';
@@ -30,6 +33,12 @@ class LyriaState extends ChangeNotifier {
   bool _keysEnabled = true;
   bool _guitarEnabled = true;
 
+  // Instrument Sound Profiles
+  SoundProfile _selectedDrums = BandSoundProfiles.drumsBrush;
+  SoundProfile _selectedBass = BandSoundProfiles.bassJazz;
+  SoundProfile _selectedKeys = BandSoundProfiles.keysRhodes;
+  SoundProfile _selectedGuitar = BandSoundProfiles.guitarClean;
+
   // Virtual Band Sequencer
   late final VirtualBandSequencer _sequencer;
   int _activeBlockIndex = 0;
@@ -52,6 +61,12 @@ class LyriaState extends ChangeNotifier {
   bool get bassEnabled => _bassEnabled;
   bool get keysEnabled => _keysEnabled;
   bool get guitarEnabled => _guitarEnabled;
+
+  SoundProfile get selectedDrums => _selectedDrums;
+  SoundProfile get selectedBass => _selectedBass;
+  SoundProfile get selectedKeys => _selectedKeys;
+  SoundProfile get selectedGuitar => _selectedGuitar;
+
 
   int get activeBlockIndex => _activeBlockIndex;
   int get activeStepInBlock => _activeStepInBlock;
@@ -329,9 +344,52 @@ class LyriaState extends ChangeNotifier {
     }
   }
 
-  void updateStyle(String newStyle) {
+  void setSoundProfile(BandInstrumentCategory category, SoundProfile profile) {
+    switch (category) {
+      case BandInstrumentCategory.drums:
+        _selectedDrums = profile;
+        WebAudioApi.setSoundProfile('drums', profile.id);
+        break;
+      case BandInstrumentCategory.bass:
+        _selectedBass = profile;
+        WebAudioApi.setSoundProfile('bass', profile.id);
+        break;
+      case BandInstrumentCategory.keys:
+        _selectedKeys = profile;
+        WebAudioApi.setSoundProfile('keys', profile.id);
+        break;
+      case BandInstrumentCategory.guitar:
+        _selectedGuitar = profile;
+        WebAudioApi.setSoundProfile('guitar', profile.id);
+        break;
+    }
+    notifyListeners();
+  }
+
+  void updateStyle(String newStyle, {bool autoMatchInstruments = true}) {
     _style = newStyle;
     _sequencer.updateStyle(newStyle);
+
+    if (autoMatchInstruments) {
+      final recommended = BandSoundProfiles.getRecommendedProfilesForStyle(newStyle);
+      if (recommended.containsKey(BandInstrumentCategory.drums)) {
+        _selectedDrums = recommended[BandInstrumentCategory.drums]!;
+        WebAudioApi.setSoundProfile('drums', _selectedDrums.id);
+      }
+      if (recommended.containsKey(BandInstrumentCategory.bass)) {
+        _selectedBass = recommended[BandInstrumentCategory.bass]!;
+        WebAudioApi.setSoundProfile('bass', _selectedBass.id);
+      }
+      if (recommended.containsKey(BandInstrumentCategory.keys)) {
+        _selectedKeys = recommended[BandInstrumentCategory.keys]!;
+        WebAudioApi.setSoundProfile('keys', _selectedKeys.id);
+      }
+      if (recommended.containsKey(BandInstrumentCategory.guitar)) {
+        _selectedGuitar = recommended[BandInstrumentCategory.guitar]!;
+        WebAudioApi.setSoundProfile('guitar', _selectedGuitar.id);
+      }
+    }
+
     notifyListeners();
 
     if (_isPlaying) {
@@ -365,6 +423,47 @@ class LyriaState extends ChangeNotifier {
     }
   }
 
+  void applyAiJamConfig({
+    required String style,
+    required double tempo,
+    required String key,
+    required List<ChordBlock> blocks,
+    Map<String, bool>? instruments,
+    String? audioPrompt,
+  }) {
+    updateStyle(style);
+    updateTempo(tempo);
+    _currentKey = key;
+    _currentProgression = blocks.map((b) => b.chordSymbol).join(" - ");
+
+    if (instruments != null) {
+      if (instruments.containsKey('drums')) _drumsEnabled = instruments['drums']!;
+      if (instruments.containsKey('bass')) _bassEnabled = instruments['bass']!;
+      if (instruments.containsKey('keys')) _keysEnabled = instruments['keys']!;
+      if (instruments.containsKey('guitar')) _guitarEnabled = instruments['guitar']!;
+      _sequencer.setInstruments(
+        drums: _drumsEnabled,
+        bass: _bassEnabled,
+        keys: _keysEnabled,
+        guitar: _guitarEnabled,
+      );
+    }
+
+    if (audioPrompt != null && audioPrompt.isNotEmpty && _service != null) {
+      _service?.setWeightedPrompts([
+        {"text": audioPrompt, "weight": 1.0},
+        {"text": "tight 4-piece backing band ($style, ${tempo.toInt()} BPM)", "weight": 0.7}
+      ]);
+    }
+
+    startJamSession(
+      chordProgression: _currentProgression,
+      blocks: blocks,
+      key: key,
+    );
+
+  }
+
   @override
   void dispose() {
     _stopVirtualLoop();
@@ -373,4 +472,5 @@ class LyriaState extends ChangeNotifier {
     super.dispose();
   }
 }
+
 

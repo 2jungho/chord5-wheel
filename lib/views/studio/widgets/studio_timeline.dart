@@ -1244,6 +1244,8 @@ class _StudioTimelineState extends State<StudioTimeline> {
               child: const Icon(Icons.close, size: 14, color: Colors.grey),
             ),
           ],
+
+
         ],
       ),
     );

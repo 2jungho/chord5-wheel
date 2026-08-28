@@ -77,7 +77,47 @@
         currentInstrument = id;
       };
 
+      // Master Audio Processing Graph & Studio Effects
+      let masterLimiter, masterCompressor, studioReverb, studioChorus;
+      let guitarFilter, guitarDistortion;
+      let drumKick, drumSnareBody, drumSnareNoise, snareFilter, drumHiHat, drumRim;
+      let bassSynth, keysSynth;
+
+      let currentProfiles = {
+        drums: "drums_acoustic",
+        bass: "bass_jazz",
+        keys: "keys_rhodes",
+        guitar: "guitar_acoustic",
+      };
+
       try {
+        masterLimiter = new Tone.Limiter(-0.3).toDestination();
+        masterCompressor = new Tone.Compressor({
+          threshold: -18,
+          ratio: 3.2,
+          attack: 0.02,
+          release: 0.22,
+        }).connect(masterLimiter);
+
+        studioReverb = new Tone.Reverb({
+          decay: 1.6,
+          preDelay: 0.015,
+          wet: 0.20,
+        }).connect(masterCompressor);
+
+        studioChorus = new Tone.Chorus({
+          frequency: 1.8,
+          delayTime: 3.5,
+          depth: 0.55,
+          wet: 0.35,
+        }).connect(studioReverb);
+        studioChorus.start();
+
+        // Guitar Processing Channel (Filter + Overdrive + Reverb)
+        guitarDistortion = new Tone.Distortion({ distortion: 0.0, wet: 0.6 }).connect(masterCompressor);
+        guitarFilter = new Tone.Filter({ frequency: 12000, type: "lowpass" }).connect(guitarDistortion);
+        guitarFilter.connect(studioReverb);
+
         sampler = new Tone.Sampler({
           urls: {
             E2: "assets/assets/sounds/E2.mp3",
@@ -99,82 +139,209 @@
           onerror: (err) => {
             console.warn("Tone.Sampler failed to load some samples, using fallback:", err);
           },
-        }).toDestination();
-      } catch (e) {
-        console.warn("Tone.Sampler init error:", e);
-      }
+        }).connect(guitarFilter);
 
-      // Drums, Bass, and Keys Synthesizers
-      let drumKick, drumSnare, drumHiHat, drumRim;
-      let bassSynth, keysSynth;
-
-      try {
+        // 1. Studio Punch Kick (Sub 40Hz with 120Hz transient click & soft tape saturation)
         drumKick = new Tone.MembraneSynth({
-          pitchDecay: 0.05,
-          octaves: 6,
+          pitchDecay: 0.035,
+          octaves: 5.5,
           oscillator: { type: "sine" },
-          envelope: { attack: 0.001, decay: 0.35, sustain: 0.01, release: 0.35 }
-        }).toDestination();
+          envelope: { attack: 0.002, decay: 0.32, sustain: 0.01, release: 0.32 },
+        }).connect(masterCompressor);
 
-        drumSnare = new Tone.NoiseSynth({
-          noise: { type: "white" },
-          envelope: { attack: 0.001, decay: 0.22, sustain: 0 }
-        }).toDestination();
-
-        drumHiHat = new Tone.MetalSynth({
-          frequency: 250,
-          envelope: { attack: 0.001, decay: 0.06, release: 0.06 },
-          harmonicity: 5.1,
-          modulationIndex: 32,
-          resonance: 4000,
-          octaves: 1.5
-        }).toDestination();
-
-        drumRim = new Tone.MembraneSynth({
-          pitchDecay: 0.01,
-          octaves: 2,
+        // 2. Realistic Dual-layer Snare (Acoustic 190Hz wood body + High-cut wire sizzle)
+        drumSnareBody = new Tone.MembraneSynth({
+          pitchDecay: 0.015,
+          octaves: 2.2,
           oscillator: { type: "triangle" },
-          envelope: { attack: 0.001, decay: 0.08, sustain: 0, release: 0.08 }
-        }).toDestination();
+          envelope: { attack: 0.001, decay: 0.14, sustain: 0.0, release: 0.14 },
+        }).connect(masterCompressor);
 
-        bassSynth = new Tone.MonoSynth({
-          oscillator: { type: "sawtooth" },
-          filter: { Q: 2, type: "lowpass", rolloff: -24 },
-          filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.4, baseFrequency: 55, octaves: 2.5 },
-          envelope: { attack: 0.01, decay: 0.4, sustain: 0.5, release: 0.5 }
-        }).toDestination();
+        snareFilter = new Tone.Filter({ frequency: 4800, type: "lowpass" }).connect(masterCompressor);
+        snareFilter.connect(studioReverb);
+        drumSnareNoise = new Tone.NoiseSynth({
+          noise: { type: "pink" },
+          envelope: { attack: 0.002, decay: 0.18, sustain: 0.0, release: 0.18 },
+        }).connect(snareFilter);
 
-        keysSynth = new Tone.PolySynth(Tone.FMSynth, {
-          harmonicity: 2,
-          modulationIndex: 1.5,
+        // 3. Crisp Hi-Hat / Cymbal with bandpass acoustic tone
+        const hihatFilter = new Tone.Filter({ frequency: 6500, type: "highpass" }).connect(masterCompressor);
+        hihatFilter.connect(studioReverb);
+        drumHiHat = new Tone.MetalSynth({
+          frequency: 240,
+          envelope: { attack: 0.001, decay: 0.05, release: 0.05 },
+          harmonicity: 4.8,
+          modulationIndex: 28,
+          resonance: 3800,
+          octaves: 1.2,
+        }).connect(hihatFilter);
+
+        // 4. Snappy Cross-stick Rimshot
+        drumRim = new Tone.MembraneSynth({
+          pitchDecay: 0.008,
+          octaves: 1.8,
           oscillator: { type: "sine" },
-          envelope: { attack: 0.015, decay: 0.8, sustain: 0.4, release: 1.2 },
+          envelope: { attack: 0.001, decay: 0.06, sustain: 0.0, release: 0.06 },
+        }).connect(masterCompressor);
+        drumRim.connect(studioReverb);
+
+        // 5. Warm Vintage P-Bass / Jazz Bass (Analog sub-lowpass + subtle tube saturation)
+        bassSynth = new Tone.MonoSynth({
+          oscillator: { type: "triangle" },
+          filter: { Q: 1.8, type: "lowpass", rolloff: -24 },
+          filterEnvelope: {
+            attack: 0.008,
+            decay: 0.25,
+            sustain: 0.35,
+            release: 0.45,
+            baseFrequency: 45,
+            octaves: 2.2,
+          },
+          envelope: { attack: 0.008, decay: 0.35, sustain: 0.6, release: 0.5 },
+        }).connect(masterCompressor);
+
+        // 6. Lush Fender Rhodes / E.Piano (FM Bell chime + stereo chorus + reverb)
+        keysSynth = new Tone.PolySynth(Tone.FMSynth, {
+          harmonicity: 2.0,
+          modulationIndex: 1.3,
+          oscillator: { type: "sine" },
+          envelope: { attack: 0.012, decay: 0.9, sustain: 0.45, release: 1.4 },
           modulation: { type: "triangle" },
-          modulationEnvelope: { attack: 0.01, decay: 0.5, sustain: 0.2, release: 0.8 }
-        }).toDestination();
+          modulationEnvelope: { attack: 0.008, decay: 0.45, sustain: 0.15, release: 0.9 },
+        }).connect(studioChorus);
       } catch (e) {
         console.warn("Could not init backing band synths:", e);
       }
 
+      window.setWebSoundProfile = function (category, profileId) {
+        if (!category || !profileId) return;
+        currentProfiles[category] = profileId;
+
+        try {
+          if (category === "drums") {
+            if (profileId === "drums_lofi") {
+              if (drumKick) { drumKick.pitchDecay = 0.05; drumKick.octaves = 4.0; }
+              if (snareFilter) { snareFilter.frequency.value = 3000; }
+            } else if (profileId === "drums_brush") {
+              if (drumKick) { drumKick.pitchDecay = 0.022; drumKick.octaves = 3.2; }
+              if (snareFilter) { snareFilter.frequency.value = 2400; }
+            } else if (profileId === "drums_electronic") {
+              if (drumKick) { drumKick.pitchDecay = 0.045; drumKick.octaves = 7.0; }
+              if (snareFilter) { snareFilter.frequency.value = 6500; }
+            } else {
+              // drums_acoustic
+              if (drumKick) { drumKick.pitchDecay = 0.035; drumKick.octaves = 5.5; }
+              if (snareFilter) { snareFilter.frequency.value = 4800; }
+            }
+          } else if (category === "bass") {
+            if (profileId === "bass_slap" && bassSynth) {
+              bassSynth.set({
+                oscillator: { type: "sawtooth" },
+                filter: { Q: 3.2, type: "lowpass" },
+                filterEnvelope: { baseFrequency: 65, octaves: 3.2, attack: 0.005, decay: 0.16 }
+              });
+            } else if (profileId === "bass_upright" && bassSynth) {
+              bassSynth.set({
+                oscillator: { type: "sine" },
+                filter: { Q: 1.2, type: "lowpass" },
+                filterEnvelope: { baseFrequency: 38, octaves: 1.6, attack: 0.02, decay: 0.42 }
+              });
+            } else if (profileId === "bass_synth" && bassSynth) {
+              bassSynth.set({
+                oscillator: { type: "sawtooth8" },
+                filter: { Q: 4.2, type: "lowpass" },
+                filterEnvelope: { baseFrequency: 55, octaves: 4.0, attack: 0.005, decay: 0.28 }
+              });
+            } else if (bassSynth) {
+              // bass_jazz
+              bassSynth.set({
+                oscillator: { type: "triangle" },
+                filter: { Q: 1.8, type: "lowpass" },
+                filterEnvelope: { baseFrequency: 45, octaves: 2.2, attack: 0.008, decay: 0.25 }
+              });
+            }
+          } else if (category === "keys") {
+            if (profileId === "keys_piano" && keysSynth) {
+              keysSynth.set({
+                harmonicity: 1.0,
+                modulationIndex: 0.4,
+                oscillator: { type: "triangle" },
+                envelope: { attack: 0.005, decay: 0.8, sustain: 0.2, release: 0.8 }
+              });
+            } else if (profileId === "keys_organ" && keysSynth) {
+              keysSynth.set({
+                harmonicity: 3.0,
+                modulationIndex: 2.2,
+                oscillator: { type: "sine" },
+                envelope: { attack: 0.01, decay: 1.2, sustain: 0.8, release: 0.5 }
+              });
+            } else if (profileId === "keys_pad" && keysSynth) {
+              keysSynth.set({
+                harmonicity: 1.5,
+                modulationIndex: 1.8,
+                oscillator: { type: "sawtooth" },
+                envelope: { attack: 0.12, decay: 1.5, sustain: 0.7, release: 2.0 }
+              });
+            } else if (keysSynth) {
+              // keys_rhodes
+              keysSynth.set({
+                harmonicity: 2.0,
+                modulationIndex: 1.3,
+                oscillator: { type: "sine" },
+                envelope: { attack: 0.012, decay: 0.9, sustain: 0.45, release: 1.4 }
+              });
+            }
+          } else if (category === "guitar") {
+            if (profileId === "guitar_nylon" && guitarFilter) {
+              guitarFilter.frequency.value = 2800;
+              if (guitarDistortion) guitarDistortion.distortion = 0.0;
+            } else if (profileId === "guitar_crunch" && guitarFilter) {
+              guitarFilter.frequency.value = 4500;
+              if (guitarDistortion) guitarDistortion.distortion = 0.28;
+            } else if (profileId === "guitar_clean" && guitarFilter) {
+              guitarFilter.frequency.value = 6000;
+              if (guitarDistortion) guitarDistortion.distortion = 0.04;
+            } else if (guitarFilter) {
+              // guitar_acoustic
+              guitarFilter.frequency.value = 12000;
+              if (guitarDistortion) guitarDistortion.distortion = 0.0;
+            }
+          }
+        } catch (e) {
+          console.warn("setWebSoundProfile error:", e);
+        }
+      };
+
+
       window.playWebDrum = async function (type, volume) {
         try {
           if (Tone.context.state !== "running") await Tone.start();
-          const vol = volume !== undefined ? volume : 0.8;
+          const vol = volume !== undefined ? Math.max(0.01, volume) : 0.8;
+          const gainDb = Tone.gainToDb(vol);
+
           if (type === "kick" && drumKick) {
-            drumKick.volume.value = Tone.gainToDb(vol);
+            drumKick.volume.value = gainDb;
             drumKick.triggerAttackRelease("C1", "8n");
-          } else if (type === "snare" && drumSnare) {
-            drumSnare.volume.value = Tone.gainToDb(vol * 0.9);
-            drumSnare.triggerAttackRelease("8n");
+          } else if (type === "snare") {
+            if (drumSnareBody) {
+              drumSnareBody.volume.value = Tone.gainToDb(vol * 0.85);
+              drumSnareBody.triggerAttackRelease("G2", "16n");
+            }
+            if (drumSnareNoise) {
+              drumSnareNoise.volume.value = Tone.gainToDb(vol * 0.9);
+              drumSnareNoise.triggerAttackRelease("16n");
+            }
           } else if (type === "hiHatClosed" && drumHiHat) {
-            drumHiHat.volume.value = Tone.gainToDb(vol * 0.6);
+            drumHiHat.volume.value = Tone.gainToDb(vol * 0.65);
+            drumHiHat.envelope.decay = 0.045;
             drumHiHat.triggerAttackRelease("32n");
           } else if (type === "hiHatOpen" && drumHiHat) {
-            drumHiHat.volume.value = Tone.gainToDb(vol * 0.7);
+            drumHiHat.volume.value = Tone.gainToDb(vol * 0.75);
+            drumHiHat.envelope.decay = 0.32;
             drumHiHat.triggerAttackRelease("8n");
           } else if (type === "rimshot" && drumRim) {
-            drumRim.volume.value = Tone.gainToDb(vol * 0.7);
-            drumRim.triggerAttackRelease("G2", "16n");
+            drumRim.volume.value = Tone.gainToDb(vol * 0.8);
+            drumRim.triggerAttackRelease("A3", "32n");
           }
         } catch (e) {
           console.warn("playWebDrum error:", e);
@@ -186,7 +353,8 @@
           if (Tone.context.state !== "running") await Tone.start();
           const pitch = (note || "C").replace("CSharp", "C#").replace("DSharp", "D#").replace("FSharp", "F#").replace("GSharp", "G#").replace("ASharp", "A#") + (octave || 2);
           if (bassSynth) {
-            bassSynth.volume.value = Tone.gainToDb(volume !== undefined ? volume : 0.75);
+            const vol = volume !== undefined ? Math.max(0.01, volume) : 0.75;
+            bassSynth.volume.value = Tone.gainToDb(vol);
             bassSynth.triggerAttackRelease(pitch, "4n");
           }
         } catch (e) {
@@ -199,13 +367,15 @@
           if (Tone.context.state !== "running") await Tone.start();
           const pitch = (note || "C").replace("CSharp", "C#").replace("DSharp", "D#").replace("FSharp", "F#").replace("GSharp", "G#").replace("ASharp", "A#") + (octave || 3);
           if (keysSynth) {
-            keysSynth.volume.value = Tone.gainToDb(volume !== undefined ? volume : 0.65);
+            const vol = volume !== undefined ? Math.max(0.01, volume) : 0.65;
+            keysSynth.volume.value = Tone.gainToDb(vol);
             keysSynth.triggerAttackRelease(pitch, "2n");
           }
         } catch (e) {
           console.warn("playWebKeys error:", e);
         }
       };
+
 
       window.playWebGuitarNote = async function (note, octave) {
         try {

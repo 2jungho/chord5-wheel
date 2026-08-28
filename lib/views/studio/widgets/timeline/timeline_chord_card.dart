@@ -5,6 +5,8 @@ import '../../../../models/instrument_model.dart';
 import '../../../../models/progression/progression_models.dart';
 import '../../../../providers/settings_state.dart';
 import '../../../../providers/studio_state.dart';
+
+
 import '../../../../utils/theory_utils.dart';
 import '../../../../widgets/common/guitar/guitar_chord_widget.dart';
 import '../../../../widgets/common/piano/piano_chord_widget.dart';
@@ -142,6 +144,7 @@ class TimelineChordCard extends StatelessWidget {
                                   );
                                 },
                               );
+
                             },
                             child: Padding(
                               padding: const EdgeInsets.all(3.0),

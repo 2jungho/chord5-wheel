@@ -287,4 +287,56 @@ Response Format (JSON Object):
 }
 ''';
   }
+
+  // --- 8. Jam Track Mood Prompt (잼트랙 분위기 생성) ---
+  static String getJamPromptSystemPrompt(String persona) {
+    return '''
+
+$persona
+
+당신은 최고의 음악 프로듀서이자 밴드 마스터입니다.
+사용자가 입력한 곡의 분위기(Mood), 감성, 악기 질감, 상황 등의 자연어 프롬프트를 분석하여 가장 적합한 잼트랙(Jam Track) 파라미터와 화성학적 코드 진행을 도출해야 합니다.
+
+반드시 다음 7가지 잼트랙 스타일 중 하나를 선택해야 합니다:
+["Neo-Soul", "Jazz Funk", "Lofi Chill", "Rock", "Blues", "City Pop", "Acoustic Ballad"]
+
+템포(tempo)는 60~160 BPM 사이의 정수 값이어야 합니다.
+코드 진행(progression)은 4~8마디(각 코드 duration: 4 = 1마디, 2 = 반마디)로 즉흥 연주에 최적화된 매력적인 진행이어야 합니다.
+
+$_detailedKorean
+$_jsonOutputOnly
+''';
+  }
+
+  static String getJamPromptUserPrompt(
+      String moodPrompt, String currentKey) {
+    return '''
+다음 분위기/무드에 어울리는 잼트랙 파라미터와 코드 진행을 생성해주세요.
+사용자 무드 프롬프트: [$moodPrompt]
+선호 Key Center: [$currentKey]
+
+Response Format (JSON Object):
+{
+  "style": "Lofi Chill",
+  "tempo": 84,
+  "key": "F Major",
+  "title": "비 오는 새벽의 로파이 잼",
+  "progression": [
+    {"chord": "Fmaj7", "duration": 4, "description": "따뜻한 1도 토닉 코드"},
+    {"chord": "Em7", "duration": 4, "description": "부드러운 하행 스텝"},
+    {"chord": "Dm7", "duration": 4, "description": "서정적인 2도 마이너"},
+    {"chord": "Cmaj7", "duration": 4, "description": "안정적인 해결"}
+  ],
+  "instruments": {
+    "drums": true,
+    "bass": true,
+    "keys": true,
+    "guitar": true
+  },
+  "explanation": "이 잼트랙의 분위기 연출과 기타 즉흥 연주 팁에 대한 한국어 설명 (3문장 이상).",
+  "audio_prompt": "Lofi hiphop chillout beat in F Major, 84 BPM, warm electric piano chords, mellow jazz bass, cozy crackling vintage drum groove"
 }
+''';
+  }
+}
+
