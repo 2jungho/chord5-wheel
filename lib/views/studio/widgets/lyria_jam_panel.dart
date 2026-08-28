@@ -5,8 +5,18 @@ import '../../../providers/studio_state.dart';
 import '../../../providers/settings_state.dart';
 import '../../../widgets/common/dialogs/settings_dialog.dart';
 
-class LyriaJamPanel extends StatelessWidget {
+import '../../../audio/audio_recorder_service.dart';
+
+class LyriaJamPanel extends StatefulWidget {
   const LyriaJamPanel({super.key});
+
+  @override
+  State<LyriaJamPanel> createState() => _LyriaJamPanelState();
+}
+
+class _LyriaJamPanelState extends State<LyriaJamPanel> {
+  bool _isRecording = false;
+  bool _hasRecorded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -183,6 +193,13 @@ class LyriaJamPanel extends StatelessWidget {
                     : () {
                         if (lyria.isPlaying) {
                           lyria.stopPlayback();
+                          if (_isRecording) {
+                            AudioRecorderService.stopRecording();
+                            setState(() {
+                              _isRecording = false;
+                              _hasRecorded = true;
+                            });
+                          }
                         } else {
                           final session = studio.session;
                           String chords = "Key: ${session.key}\n";
@@ -230,6 +247,87 @@ class LyriaJamPanel extends StatelessWidget {
                   ),
                 ),
               );
+
+              final recordButton = OutlinedButton.icon(
+                onPressed: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  if (_isRecording) {
+                    AudioRecorderService.stopRecording();
+                    setState(() {
+                      _isRecording = false;
+                      _hasRecorded = true;
+                    });
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('마이크 녹음이 완료되었습니다. [다운로드] 버튼을 눌러 저장하세요.'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  } else {
+                    final success = await AudioRecorderService.startRecording();
+                    if (!mounted) return;
+                    if (success) {
+                      setState(() {
+                        _isRecording = true;
+                      });
+                      if (!lyria.isPlaying) {
+                        // 녹음 시작 시 가상 밴드도 함께 자동 재생
+                        final session = studio.session;
+                        String chords = "Key: ${session.key}\n";
+                        if (session.progression.isEmpty) {
+                          chords += "Progression: C - Am - F - G";
+                        } else {
+                          chords +=
+                              "Progression: ${session.progression.map((b) => b.chordSymbol).join(" - ")}";
+                        }
+                        lyria.startJamSession(
+                          chordProgression: chords,
+                          blocks: session.progression,
+                          key: session.key.isNotEmpty ? session.key : 'C Major',
+                        );
+                      }
+                    } else {
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('마이크 권한을 확인해주세요.'),
+                        ),
+                      );
+                    }
+                  }
+                },
+                icon: Icon(
+                  _isRecording ? Icons.stop_circle : Icons.fiber_manual_record,
+                  size: 15,
+                  color: _isRecording ? Colors.redAccent : Colors.red,
+                ),
+                label: Text(
+                  _isRecording ? "녹음 중지" : "REC",
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: _isRecording ? Colors.redAccent : null,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  visualDensity: VisualDensity.compact,
+                  side: BorderSide(
+                    color: _isRecording
+                        ? Colors.redAccent
+                        : Theme.of(context).dividerColor,
+                  ),
+                ),
+              );
+
+              final downloadRecordButton = _hasRecorded
+                  ? IconButton(
+                      tooltip: '녹음 파일 다운로드 (.webm)',
+                      icon: const Icon(Icons.download, size: 18, color: Colors.cyan),
+                      onPressed: () {
+                        AudioRecorderService.downloadRecording();
+                      },
+                    )
+                  : const SizedBox.shrink();
 
               final tempoSlider = Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -346,6 +444,12 @@ class LyriaJamPanel extends StatelessWidget {
                     Row(
                       children: [
                         startButton,
+                        const SizedBox(width: 8),
+                        recordButton,
+                        if (_hasRecorded) ...[
+                          const SizedBox(width: 4),
+                          downloadRecordButton,
+                        ],
                         const Spacer(),
                         styleDropdown,
                       ],
@@ -365,6 +469,12 @@ class LyriaJamPanel extends StatelessWidget {
               return Row(
                 children: [
                   startButton,
+                  const SizedBox(width: 8),
+                  recordButton,
+                  if (_hasRecorded) ...[
+                    const SizedBox(width: 4),
+                    downloadRecordButton,
+                  ],
                   const SizedBox(width: 16),
                   Expanded(flex: 3, child: tempoSlider),
                   const SizedBox(width: 16),

@@ -27,6 +27,15 @@ external void _setWebInstrument(JSString id);
 @JS('setWebVolume')
 external void _setWebVolume(JSNumber volume);
 
+@JS('startWebRecording')
+external JSPromise<JSBoolean> _startWebRecording();
+
+@JS('stopWebRecording')
+external JSBoolean _stopWebRecording();
+
+@JS('downloadWebRecording')
+external JSBoolean _downloadWebRecording(JSString filename);
+
 class WebAudioApi {
   static void playNote(String note, int octave) {
     _playWebGuitarNote(note.toJS, octave.toJS);
@@ -62,6 +71,31 @@ class WebAudioApi {
 
   static void setVolume(double volume) {
     _setWebVolume(volume.toJS);
+  }
+
+  static Future<bool> startRecording() async {
+    try {
+      final res = await _startWebRecording().toDart;
+      return res.toDart;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static bool stopRecording() {
+    try {
+      return _stopWebRecording().toDart;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static bool downloadRecording(String filename) {
+    try {
+      return _downloadWebRecording(filename.toJS).toDart;
+    } catch (_) {
+      return false;
+    }
   }
 }
 

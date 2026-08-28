@@ -190,6 +190,56 @@ class ChordBlock {
   }
 }
 
+class SongSection {
+  final String id;
+  final String name; // 'Intro', 'Verse', 'Chorus', 'Bridge', 'Outro'
+  final List<ChordBlock> progression;
+  final String? key; // 전조(Modulation) 시 섹션별 키
+  final int repeatCount;
+
+  const SongSection({
+    required this.id,
+    required this.name,
+    this.progression = const [],
+    this.key,
+    this.repeatCount = 1,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'progression': progression.map((c) => c.toJson()).toList(),
+        'key': key,
+        'repeatCount': repeatCount,
+      };
+
+  factory SongSection.fromJson(Map<String, dynamic> json) => SongSection(
+        id: json['id'] ?? 'sec_main',
+        name: json['name'] ?? 'Verse',
+        progression: (json['progression'] as List? ?? [])
+            .map((c) => ChordBlock.fromJson(c))
+            .toList(),
+        key: json['key'],
+        repeatCount: json['repeatCount'] ?? 1,
+      );
+
+  SongSection copyWith({
+    String? id,
+    String? name,
+    List<ChordBlock>? progression,
+    String? key,
+    int? repeatCount,
+  }) {
+    return SongSection(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      progression: progression ?? this.progression,
+      key: key ?? this.key,
+      repeatCount: repeatCount ?? this.repeatCount,
+    );
+  }
+}
+
 class ProgressionSession {
   final String title;
   final String? arrangementStyle;
@@ -197,6 +247,8 @@ class ProgressionSession {
   final String key;
   final List<ChordBlock> progression;
   final RhythmPattern rhythmPattern;
+  final List<SongSection> sections;
+  final int activeSectionIndex;
 
   const ProgressionSession({
     this.title = 'Untitled Progression',
@@ -205,7 +257,17 @@ class ProgressionSession {
     required this.key,
     this.progression = const [],
     required this.rhythmPattern,
+    this.sections = const [],
+    this.activeSectionIndex = 0,
   });
+
+  /// 현재 활성화된 섹션 반환 (없으면 메인 progression 기반 기본 섹션)
+  SongSection get currentSection {
+    if (sections.isNotEmpty && activeSectionIndex >= 0 && activeSectionIndex < sections.length) {
+      return sections[activeSectionIndex];
+    }
+    return SongSection(id: 'main', name: 'Main', progression: progression, key: key);
+  }
 
   Map<String, dynamic> toJson() => {
         'projectTitle': title,
@@ -214,19 +276,38 @@ class ProgressionSession {
         'key': key,
         'progression': progression.map((c) => c.toJson()).toList(),
         'rhythmPattern': rhythmPattern.toJson(),
+        'sections': sections.map((s) => s.toJson()).toList(),
+        'activeSectionIndex': activeSectionIndex,
       };
 
-  factory ProgressionSession.fromJson(Map<String, dynamic> json) =>
-      ProgressionSession(
-        title: json['projectTitle'],
-        arrangementStyle: json['arrangementStyle'],
-        bpm: json['bpm'],
-        key: json['key'],
-        progression: (json['progression'] as List)
-            .map((c) => ChordBlock.fromJson(c))
-            .toList(),
-        rhythmPattern: RhythmPattern.fromJson(json['rhythmPattern']),
-      );
+  factory ProgressionSession.fromJson(Map<String, dynamic> json) {
+    final progList = (json['progression'] as List? ?? [])
+        .map((c) => ChordBlock.fromJson(c))
+        .toList();
+    final rawSections = json['sections'] as List?;
+    List<SongSection> parsedSections = [];
+    if (rawSections != null && rawSections.isNotEmpty) {
+      parsedSections =
+          rawSections.map((s) => SongSection.fromJson(s)).toList();
+    } else {
+      parsedSections = [
+        SongSection(id: 'main', name: 'Main', progression: progList)
+      ];
+    }
+
+    return ProgressionSession(
+      title: json['projectTitle'] ?? 'Untitled Progression',
+      arrangementStyle: json['arrangementStyle'],
+      bpm: json['bpm'] ?? 120,
+      key: json['key'] ?? 'C Major',
+      progression: progList,
+      rhythmPattern: json['rhythmPattern'] != null
+          ? RhythmPattern.fromJson(json['rhythmPattern'])
+          : RhythmPattern.presets.first,
+      sections: parsedSections,
+      activeSectionIndex: json['activeSectionIndex'] ?? 0,
+    );
+  }
 
   ProgressionSession copyWith({
     String? title,
@@ -235,6 +316,8 @@ class ProgressionSession {
     String? key,
     List<ChordBlock>? progression,
     RhythmPattern? rhythmPattern,
+    List<SongSection>? sections,
+    int? activeSectionIndex,
     bool clearArrangement = false,
   }) {
     return ProgressionSession(
@@ -245,6 +328,9 @@ class ProgressionSession {
       key: key ?? this.key,
       progression: progression ?? this.progression,
       rhythmPattern: rhythmPattern ?? this.rhythmPattern,
+      sections: sections ?? this.sections,
+      activeSectionIndex: activeSectionIndex ?? this.activeSectionIndex,
     );
   }
 }
+

@@ -9,6 +9,8 @@ import '../../providers/settings_state.dart';
 import '../../providers/generator_state.dart';
 import '../../providers/music_state.dart';
 import '../../providers/chat_state.dart';
+import '../../models/ai_provider_config.dart';
+import '../../models/gemini_model.dart';
 
 import 'chat_message_bubble.dart';
 
@@ -183,14 +185,16 @@ class _AIChatPanelState extends State<AIChatPanel> {
 
   void _handleRegenerate() async {
     final settings = context.read<SettingsState>();
-    final provider = settings.aiProvider;
-    final modelName = provider == 'gemini' ? settings.geminiModel.id : null;
+    final modelName = settings.currentModelId;
     final systemPrompt = settings.systemPrompt;
 
     await context.read<ChatState>().regenerateLastMessage(
-        contextData: _getContextData(),
-        modelName: modelName,
-        systemPrompt: systemPrompt);
+          contextData: _getContextData(),
+          modelName: modelName,
+          systemPrompt: systemPrompt,
+          thinkingLevel: settings.thinkingLevel,
+          customBaseUrl: settings.customBaseUrl,
+        );
 
     // AI 명령 파싱 및 실행
     if (mounted) {
@@ -246,19 +250,21 @@ class _AIChatPanelState extends State<AIChatPanel> {
               final newText = editController.text.trim();
               if (newText.isNotEmpty && newText != currentText) {
                 final settings = context.read<SettingsState>();
-                final provider = settings.aiProvider;
-                final modelName =
-                    provider == 'gemini' ? settings.geminiModel.id : null;
+                final modelName = settings.currentModelId;
                 final systemPrompt = settings.systemPrompt;
 
                 final chatState = context.read<ChatState>();
                 Navigator.pop(context); // Close dialog first
 
-                await chatState.editMessage(index, newText,
-                    contextData: _getContextData(),
-                    modelName: modelName,
-                    systemPrompt: systemPrompt,
-                    thinkingLevel: settings.thinkingLevel);
+                await chatState.editMessage(
+                  index,
+                  newText,
+                  contextData: _getContextData(),
+                  modelName: modelName,
+                  systemPrompt: systemPrompt,
+                  thinkingLevel: settings.thinkingLevel,
+                  customBaseUrl: settings.customBaseUrl,
+                );
 
                 // AI 명령 파싱 및 실행
                 if (!mounted) return;
@@ -289,24 +295,28 @@ class _AIChatPanelState extends State<AIChatPanel> {
     final settings = context.read<SettingsState>();
 
     final provider = settings.aiProvider;
-    final apiKey =
-        provider == 'gemini' ? settings.geminiApiKey : settings.openAiApiKey;
+    final apiKey = settings.currentApiKey;
     final systemPrompt = settings.systemPrompt;
 
-    if (apiKey.isEmpty) {
+    if (!settings.hasApiKey) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(
-                '${provider == 'gemini' ? 'Gemini' : 'OpenAI'} API Key가 설정되지 않았습니다.')),
+                '${settings.aiProviderType.label} API Key가 설정되지 않았습니다. 설정창에서 키를 등록해주세요.')),
       );
       return;
     }
 
-    await context.read<ChatState>().sendMessage(text, apiKey, provider,
-        contextData: _getContextData(),
-        modelName: provider == 'gemini' ? settings.geminiModel.id : null,
-        systemPrompt: systemPrompt,
-        thinkingLevel: settings.thinkingLevel);
+    await context.read<ChatState>().sendMessage(
+          text,
+          apiKey,
+          provider,
+          contextData: _getContextData(),
+          modelName: settings.currentModelId,
+          systemPrompt: systemPrompt,
+          thinkingLevel: settings.thinkingLevel,
+          customBaseUrl: settings.customBaseUrl,
+        );
 
     // AI 명령 파싱 및 실행
     if (mounted) {
@@ -378,12 +388,16 @@ class _AIChatPanelState extends State<AIChatPanel> {
     );
   }
 
-  Future<void> _launchExternalWeb(String provider) async {
+  Future<void> _launchExternalWeb(AIProviderType provider) async {
     final chatState = context.read<ChatState>();
+    final settings = context.read<SettingsState>();
     final messages = chatState.messages;
-    final url = provider == 'gemini'
-        ? 'https://gemini.google.com/'
-        : 'https://chatgpt.com/';
+    final url = switch (provider) {
+      AIProviderType.gemini => 'https://gemini.google.com/',
+      AIProviderType.openai => 'https://chatgpt.com/',
+      AIProviderType.claude => 'https://claude.ai/',
+      AIProviderType.custom => settings.customBaseUrl,
+    };
     final uri = Uri.parse(url);
 
     void launchSite() async {
@@ -514,65 +528,222 @@ class _AIChatPanelState extends State<AIChatPanel> {
               children: [
                 Expanded(
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.auto_awesome,
-                          color: Theme.of(context).colorScheme.tertiary,
-                          size: 20),
-                      const SizedBox(width: 8),
-                      Flexible(
-                        child: Text(
-                          // AI Tutor Label
-                          settings.aiProvider == 'openai'
-                              ? 'ChatGPT'
-                              : 'Gemini',
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.notoSansKr(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Theme.of(context).colorScheme.onSurface),
-                        ),
+                      Icon(
+                        settings.aiProviderType == AIProviderType.openai
+                            ? Icons.psychology
+                            : settings.aiProviderType == AIProviderType.claude
+                                ? Icons.wb_incandescent_outlined
+                                : settings.aiProviderType == AIProviderType.custom
+                                    ? Icons.terminal
+                                    : Icons.auto_awesome,
+                        color: Theme.of(context).colorScheme.tertiary,
+                        size: 20,
                       ),
-                      if (settings.aiProvider == 'gemini') ...[
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
+                      const SizedBox(width: 8),
+                      Text(
+                        // AI Tutor Label
+                        switch (settings.aiProviderType) {
+                          AIProviderType.gemini => 'Gemini',
+                          AIProviderType.openai => 'ChatGPT',
+                          AIProviderType.claude => 'Claude',
+                          AIProviderType.custom => 'Custom AI',
+                        },
+                        style: GoogleFonts.notoSansKr(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: Theme.of(context).colorScheme.onSurface),
+                      ),
+                      const SizedBox(width: 8),
+                      // Interactive Model Selector (PopupMenuButton - No clipping, full width)
+                      if (settings.aiProviderType != AIProviderType.custom)
+                        Theme(
+                          data: Theme.of(context).copyWith(
+                            popupMenuTheme: PopupMenuThemeData(
                               color: Theme.of(context)
                                   .colorScheme
-                                  .surfaceContainerHigh,
-                              borderRadius: BorderRadius.circular(12),
+                                  .surfaceContainerHighest,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(
+                                  color: Theme.of(context)
+                                      .dividerColor
+                                      .withValues(alpha: 0.5),
+                                ),
+                              ),
+                              elevation: 10,
                             ),
-                            child: Text(
-                              '${settings.geminiModel.label.replaceFirst('Gemini ', '')} · ${settings.thinkingLevel.id}',
-                              style: GoogleFonts.robotoMono(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
+                          ),
+                          child: PopupMenuButton<String>(
+                            tooltip: 'AI 모델 변경',
+                            initialValue: settings.currentModelId,
+                            position: PopupMenuPosition.under,
+                            constraints: const BoxConstraints(
+                              minWidth: 200,
+                              maxWidth: 260,
+                            ),
+                            padding: EdgeInsets.zero,
+                            onSelected: (newModelId) {
+                              switch (settings.aiProviderType) {
+                                case AIProviderType.gemini:
+                                  settings.setGeminiModel(
+                                      GeminiModel.fromId(newModelId));
+                                  break;
+                                case AIProviderType.openai:
+                                  settings.setOpenAiModelId(newModelId);
+                                  break;
+                                case AIProviderType.claude:
+                                  settings.setClaudeModelId(newModelId);
+                                  break;
+                                case AIProviderType.custom:
+                                  settings.setCustomModelName(newModelId);
+                                  break;
+                              }
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'AI 모델이 ${AIModelInfo.fromId(newModelId).label}(으)로 변경되었습니다.'),
+                                  duration: const Duration(seconds: 1),
+                                ),
+                              );
+                            },
+                            itemBuilder: (context) {
+                              final models = AIModelInfo.getModelsForProvider(
+                                  settings.aiProviderType);
+                              return models.map((m) {
+                                final isSelected =
+                                    m.id == settings.currentModelId;
+                                return PopupMenuItem<String>(
+                                  value: m.id,
+                                  height: 38,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        isSelected
+                                            ? Icons.check_circle
+                                            : Icons.circle_outlined,
+                                        size: 16,
+                                        color: isSelected
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .primary
+                                            : Theme.of(context).hintColor,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Text(
+                                          m.label,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: isSelected
+                                                ? FontWeight.bold
+                                                : FontWeight.w500,
+                                            color: isSelected
+                                                ? Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                : Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? Theme.of(context)
+                                                  .colorScheme
+                                                  .primary
+                                                  .withValues(alpha: 0.15)
+                                              : Theme.of(context)
+                                                  .colorScheme
+                                                  .surfaceContainerLow,
+                                          borderRadius:
+                                              BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          m.shortLabel,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: isSelected
+                                                ? Theme.of(context)
+                                                    .colorScheme
+                                                    .primary
+                                                : Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurfaceVariant,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList();
+                            },
+                            child: Container(
+                              height: 28,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHighest
+                                    .withValues(alpha: 0.7),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
                                   color: Theme.of(context)
                                       .colorScheme
-                                      .onSurfaceVariant),
+                                      .primary
+                                      .withValues(alpha: 0.35),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    settings.currentModelInfo.shortLabel,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(
+                                    Icons.arrow_drop_down,
+                                    size: 16,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ],
                     ],
                   ),
                 ),
                 if (!isMobile) ...[
                   const SizedBox(width: 8),
                   InkWell(
-                    onTap: () => _launchExternalWeb(settings.aiProvider),
+                    onTap: () => _launchExternalWeb(settings.aiProviderType),
                     borderRadius: BorderRadius.circular(8),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Opacity(
                         opacity: 0.7,
                         child: Image.asset(
-                          settings.aiProvider == 'gemini'
-                              ? 'assets/images/icons8-gemini.png'
-                              : 'assets/images/icons8-chatgpt.png',
+                          settings.aiProvider == 'openai'
+                              ? 'assets/images/icons8-chatgpt.png'
+                              : 'assets/images/icons8-gemini.png',
                           width: 24,
                           height: 24,
                         ),

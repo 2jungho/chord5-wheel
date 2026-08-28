@@ -55,10 +55,11 @@ class _ModulationDialogState extends State<ModulationDialog> {
       final aiService = AIService(
         apiKey: settings.currentApiKey,
         provider: settings.aiProvider,
-        modelName: settings.geminiModel.id,
+        modelName: settings.currentModelId,
         systemPrompt:
             PromptTemplates.getModulationSystemPrompt(settings.systemPrompt),
         thinkingLevel: settings.thinkingLevel,
+        customBaseUrl: settings.customBaseUrl,
       );
 
       final prompt = PromptTemplates.getModulationUserPrompt(

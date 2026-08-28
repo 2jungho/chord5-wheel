@@ -79,9 +79,10 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
       final aiService = AIService(
           apiKey: apiKey,
           provider: provider,
-          modelName: settings.geminiModel.id,
+          modelName: settings.currentModelId,
           systemPrompt: systemPrompt,
-          thinkingLevel: settings.thinkingLevel);
+          thinkingLevel: settings.thinkingLevel,
+          customBaseUrl: settings.customBaseUrl);
 
       // 스트림 응답 수신 및 누적
       final stream = aiService.sendMessageStream(userPrompt);

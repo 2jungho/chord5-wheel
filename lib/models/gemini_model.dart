@@ -33,6 +33,16 @@ enum GeminiModel {
 
   const GeminiModel(this.id, this.label, this.defaultThinking);
 
+  /// UI 배지용 컴팩트 약어 라벨 (예: 3.7F, 3.5F, 3.5FL, 3.1P)
+  String get shortLabel {
+    return label
+        .replaceFirst('Gemini ', '')
+        .replaceFirst('Flash Lite', 'FL')
+        .replaceFirst('Flash', 'F')
+        .replaceFirst('Pro', 'P')
+        .replaceAll(' ', '');
+  }
+
   static GeminiModel fromId(String id) {
     if (id == 'gemini-3-flash-preview') return GeminiModel.flash37;
     if (id == 'gemini-2.5-flash-lite') return GeminiModel.flash35Lite;

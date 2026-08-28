@@ -2,6 +2,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/music_state.dart';
+import '../../providers/settings_state.dart';
+import '../../models/instrument_model.dart';
 import '../../models/music_constants.dart';
 import '../../widgets/common/wheel/interactive_circle_of_fifths.dart';
 
@@ -186,6 +188,9 @@ class ExplorerView extends StatelessWidget {
   }
 
   Widget _buildFretboardSection(BuildContext context) {
+    final settings = context.watch<SettingsState>();
+    final tuning = settings.tuningPreset;
+
     return Selector<
         MusicState,
         ({
@@ -226,7 +231,8 @@ class ExplorerView extends StatelessWidget {
               root: root,
               notes: chordTones,
               ghostNotes: otherNotes,
-              scaleNameForIntervals: modeName);
+              scaleNameForIntervals: modeName,
+              tuning: tuning.notes);
         }
 
         final availableIntervals = map.values
@@ -250,6 +256,8 @@ class ExplorerView extends StatelessWidget {
             onReset: context.read<MusicState>().resetViewFilters,
             selectedPentatonicBox: data.selectedPentatonicBox,
             onSelectPentatonicBox: context.read<MusicState>().selectPentatonicBox,
+            tuningPreset: tuning,
+            onSelectTuning: (newPreset) => settings.setTuningPreset(newPreset),
           ),
         );
       },

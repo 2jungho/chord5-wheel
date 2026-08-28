@@ -2,24 +2,78 @@ import 'dart:convert';
 import 'providers/ai_provider_interface.dart';
 import 'providers/gemini_provider.dart';
 import 'providers/openai_provider.dart';
+import 'providers/claude_provider.dart';
+import 'providers/openai_compatible_provider.dart';
 import '../models/gemini_model.dart';
 
 class AIService {
   late final AIProvider _provider;
 
-  AIService(
-      {required String apiKey,
-      required String provider,
-      String? modelName,
-      String? systemPrompt,
-      ThinkingLevel? thinkingLevel}) {
-    if (provider == 'gemini') {
-      _provider = GeminiProvider(apiKey.trim(),
+  AIService({
+    required String apiKey,
+    required String provider,
+    String? modelName,
+    String? systemPrompt,
+    ThinkingLevel? thinkingLevel,
+    String? customBaseUrl,
+  }) {
+    switch (provider.toLowerCase()) {
+      case 'gemini':
+        _provider = GeminiProvider(
+          apiKey.trim(),
           modelName: modelName ?? GeminiModel.flash37.id,
           systemPrompt: systemPrompt,
-          thinkingLevel: thinkingLevel);
-    } else {
-      _provider = OpenAIProvider(apiKey.trim(), systemPrompt: systemPrompt);
+          thinkingLevel: thinkingLevel,
+        );
+        break;
+
+      case 'openai':
+        _provider = OpenAIProvider(
+          apiKey.trim(),
+          modelName: modelName ?? 'gpt-4o',
+          systemPrompt: systemPrompt,
+        );
+        break;
+
+      case 'claude':
+        _provider = ClaudeProvider(
+          apiKey.trim(),
+          modelName: modelName ?? 'claude-3-7-sonnet-20250219',
+          systemPrompt: systemPrompt,
+          thinkingLevel: thinkingLevel,
+        );
+        break;
+
+      case 'deepseek':
+        _provider = OpenAICompatibleProvider(
+          apiKey: apiKey.trim(),
+          baseUrl: 'https://api.deepseek.com/v1',
+          modelName: modelName ?? 'deepseek-chat',
+          systemPrompt: systemPrompt,
+          providerLabel: 'DeepSeek',
+        );
+        break;
+
+      case 'custom':
+        _provider = OpenAICompatibleProvider(
+          apiKey: apiKey.trim().isNotEmpty ? apiKey.trim() : 'custom-key',
+          baseUrl: (customBaseUrl != null && customBaseUrl.trim().isNotEmpty)
+              ? customBaseUrl.trim()
+              : 'http://localhost:11434/v1',
+          modelName: modelName ?? 'llama3',
+          systemPrompt: systemPrompt,
+          providerLabel: 'Custom AI',
+        );
+        break;
+
+      default:
+        _provider = GeminiProvider(
+          apiKey.trim(),
+          modelName: modelName ?? GeminiModel.flash37.id,
+          systemPrompt: systemPrompt,
+          thinkingLevel: thinkingLevel,
+        );
+        break;
     }
   }
 

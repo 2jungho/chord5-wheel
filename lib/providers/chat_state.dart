@@ -73,6 +73,7 @@ class ChatState with ChangeNotifier {
     String? modelName,
     String? systemPrompt,
     ThinkingLevel? thinkingLevel,
+    String? customBaseUrl,
   }) async {
     if (index < 0 || index >= _messages.length || _isLoading) return;
 
@@ -95,7 +96,8 @@ class ChatState with ChangeNotifier {
         contextData: contextData,
         modelName: modelName,
         systemPrompt: systemPrompt,
-        thinkingLevel: thinkingLevel);
+        thinkingLevel: thinkingLevel,
+        customBaseUrl: customBaseUrl);
   }
 
   // 마지막 메시지 재생성
@@ -104,6 +106,7 @@ class ChatState with ChangeNotifier {
     String? modelName,
     String? systemPrompt,
     ThinkingLevel? thinkingLevel,
+    String? customBaseUrl,
   }) async {
     if (_messages.isEmpty || _isLoading) return;
 
@@ -130,7 +133,8 @@ class ChatState with ChangeNotifier {
         contextData: contextData,
         modelName: modelName,
         systemPrompt: systemPrompt,
-        thinkingLevel: thinkingLevel);
+        thinkingLevel: thinkingLevel,
+        customBaseUrl: customBaseUrl);
   }
 
   // 메시지 추가 및 API 호출 (Public)
@@ -138,7 +142,8 @@ class ChatState with ChangeNotifier {
       {Map<String, dynamic>? contextData,
       String? modelName,
       String? systemPrompt,
-      ThinkingLevel? thinkingLevel}) async {
+      ThinkingLevel? thinkingLevel,
+      String? customBaseUrl}) async {
     if (text.trim().isEmpty) return;
 
     // 1. 사용자 메시지 추가
@@ -150,7 +155,8 @@ class ChatState with ChangeNotifier {
         contextData: contextData,
         modelName: modelName,
         systemPrompt: systemPrompt,
-        thinkingLevel: thinkingLevel);
+        thinkingLevel: thinkingLevel,
+        customBaseUrl: customBaseUrl);
   }
 
   // 실제 AI 요청 로직 (Private)
@@ -158,7 +164,8 @@ class ChatState with ChangeNotifier {
       {Map<String, dynamic>? contextData,
       String? modelName,
       String? systemPrompt,
-      ThinkingLevel? thinkingLevel}) async {
+      ThinkingLevel? thinkingLevel,
+      String? customBaseUrl}) async {
     _isLoading = true;
     notifyListeners();
 
@@ -174,7 +181,8 @@ class ChatState with ChangeNotifier {
           provider: provider,
           modelName: modelName,
           systemPrompt: systemPrompt,
-          thinkingLevel: thinkingLevel);
+          thinkingLevel: thinkingLevel,
+          customBaseUrl: customBaseUrl);
       _currentApiKey = apiKey;
       _currentProvider = provider;
       _currentModel = modelName;

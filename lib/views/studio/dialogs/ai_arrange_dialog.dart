@@ -63,9 +63,10 @@ class _AIArrangeDialogState extends State<AIArrangeDialog> {
       final aiService = AIService(
         apiKey: apiKey,
         provider: settings.aiProvider,
-        modelName: settings.geminiModel.id,
+        modelName: settings.currentModelId,
         systemPrompt: systemPrompt,
         thinkingLevel: settings.thinkingLevel,
+        customBaseUrl: settings.customBaseUrl,
       );
 
       final buffer = StringBuffer();

@@ -1,23 +1,35 @@
+import '../theory/note_utils.dart';
+
 class TuningUtils {
   static const tuningNotes = ['E', 'A', 'D', 'G', 'B', 'E'];
   // ignore: constant_identifier_names
   static const TUNING_NOTES = tuningNotes;
 
-  static int get6thStringFret(String noteName) {
-    const map = {
-      'E': 0, 'F': 1, 'F#': 2, 'Gb': 2, 'G': 3, 'G#': 4, 'Ab': 4,
-      'A': 5, 'A#': 6, 'Bb': 6, 'B': 7, 'C': 8, 'C#': 9, 'Db': 9,
-      'D': 10, 'D#': 11, 'Eb': 11,
-    };
-    return map[noteName] ?? 0;
+  static int get6thStringFret(String noteName, [List<String>? currentTuning]) {
+    final openNote = currentTuning != null && currentTuning.isNotEmpty
+        ? currentTuning[0]
+        : 'E';
+    final openVal = NoteUtils.getNoteIndex(openNote);
+    final targetVal = NoteUtils.getNoteIndex(noteName);
+    return (targetVal - openVal + 12) % 12;
   }
 
-  static int get5thStringFret(String noteName) {
-    const map = {
-      'A': 0, 'A#': 1, 'Bb': 1, 'B': 2, 'C': 3, 'C#': 4, 'Db': 4,
-      'D': 5, 'D#': 6, 'Eb': 6, 'E': 7, 'F': 8, 'F#': 9, 'Gb': 9,
-      'G': 10, 'G#': 11, 'Ab': 11,
-    };
-    return map[noteName] ?? 0;
+  static int get5thStringFret(String noteName, [List<String>? currentTuning]) {
+    final openNote = currentTuning != null && currentTuning.length > 1
+        ? currentTuning[1]
+        : 'A';
+    final openVal = NoteUtils.getNoteIndex(openNote);
+    final targetVal = NoteUtils.getNoteIndex(noteName);
+    return (targetVal - openVal + 12) % 12;
+  }
+
+  /// 특정 줄의 개방현에 맞춰 타겟 노트의 프렛 번호를 반환 (0~11)
+  static int getStringFret(int stringIndex, String noteName, [List<String>? currentTuning]) {
+    final tuning = currentTuning ?? TUNING_NOTES;
+    if (stringIndex < 0 || stringIndex >= tuning.length) return 0;
+    final openVal = NoteUtils.getNoteIndex(tuning[stringIndex]);
+    final targetVal = NoteUtils.getNoteIndex(noteName);
+    return (targetVal - openVal + 12) % 12;
   }
 }
+

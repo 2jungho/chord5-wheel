@@ -5,9 +5,11 @@ import 'ai_provider_interface.dart';
 class OpenAIProvider implements AIProvider {
   final List<OpenAIChatCompletionChoiceMessageModel> _history = [];
   final String? _systemPrompt;
+  final String _modelName;
 
-  OpenAIProvider(String apiKey, {String? systemPrompt})
-      : _systemPrompt = systemPrompt {
+  OpenAIProvider(String apiKey, {String? modelName, String? systemPrompt})
+      : _modelName = modelName ?? 'gpt-4o',
+        _systemPrompt = systemPrompt {
     OpenAI.apiKey = apiKey;
   }
 
@@ -46,9 +48,8 @@ $userMessage
     ));
 
     try {
-      // Using gpt-4o-mini for speed and cost efficiency
       final stream = OpenAI.instance.chat.createStream(
-        model: "gpt-4o-mini",
+        model: _modelName,
         messages: _history,
       );
 

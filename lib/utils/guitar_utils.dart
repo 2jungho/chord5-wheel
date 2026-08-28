@@ -50,6 +50,7 @@ class GuitarUtils {
     List<String> ghostNotes = const [],
     String? scaleNameForIntervals,
     int maxFret = 17,
+    List<String>? tuning,
   }) =>
       FretboardMapper.generateFretboardMap(
         root: root,
@@ -57,11 +58,12 @@ class GuitarUtils {
         ghostNotes: ghostNotes,
         scaleNameForIntervals: scaleNameForIntervals,
         maxFret: maxFret,
+        tuning: tuning,
       );
 
   static Map<int, List<FretboardMarker>> generateMapFromVoicing(
-          ChordVoicing voicing, String root) =>
-      FretboardMapper.generateMapFromVoicing(voicing, root);
+          ChordVoicing voicing, String root, [List<String>? tuning]) =>
+      FretboardMapper.generateMapFromVoicing(voicing, root, tuning);
 
   static List<VoiceLeadingLine> calculateVoiceLeading(
     Map<int, List<FretboardMarker>> fromMap,

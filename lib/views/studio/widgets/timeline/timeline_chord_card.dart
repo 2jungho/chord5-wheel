@@ -8,6 +8,7 @@ import '../../../../providers/studio_state.dart';
 import '../../../../utils/theory_utils.dart';
 import '../../../../widgets/common/guitar/guitar_chord_widget.dart';
 import '../../../../widgets/common/piano/piano_chord_widget.dart';
+import '../../../../widgets/common/rhythm/strum_tab_strip.dart';
 import 'chord_insert_dialog.dart';
 
 class TimelineChordCard extends StatelessWidget {
@@ -289,6 +290,17 @@ class TimelineChordCard extends StatelessWidget {
                           size: 24, color: Colors.grey),
                     ),
                   ),
+
+                const SizedBox(height: 4),
+
+                // Strumming Pattern Indicator Strip
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: StrumTabStrip(
+                    pattern: studio.session.rhythmPattern,
+                    isCompact: true,
+                  ),
+                ),
               ],
             ),
           ),

@@ -14,6 +14,9 @@ import '../../models/fretboard_marker.dart';
 import '../../models/chord_model.dart';
 
 
+import '../../providers/settings_state.dart';
+import '../../models/instrument_model.dart';
+
 class StudioView extends StatefulWidget {
   const StudioView({super.key});
 
@@ -28,6 +31,8 @@ class _StudioViewState extends State<StudioView> {
   @override
   Widget build(BuildContext context) {
     final studio = context.watch<StudioState>();
+    final settings = context.watch<SettingsState>();
+    final tuning = settings.tuningPreset;
     final session = studio.session;
 
     // 현재 선택된 코드 블록을 기준으로 지판 표시 데이터 생성
@@ -46,11 +51,12 @@ class _StudioViewState extends State<StudioView> {
           chordData.quality.contains('m') && !chordData.quality.contains('maj');
       if (currentChordBlock.voicing != null) {
         highlightMap = GuitarUtils.generateMapFromVoicing(
-            currentChordBlock.voicing!, rootNote);
+            currentChordBlock.voicing!, rootNote, tuning.notes);
       } else {
         highlightMap = GuitarUtils.generateFretboardMap(
           root: rootNote,
           notes: chordData.notes,
+          tuning: tuning.notes,
         );
       }
 
@@ -215,6 +221,8 @@ class _StudioViewState extends State<StudioView> {
                   onTogglePentatonic: studio.togglePentatonicBackground,
                   selectedPentatonicBox: studio.selectedPentatonicBox,
                   onSelectPentatonicBox: studio.selectPentatonicBox,
+                  tuningPreset: tuning,
+                  onSelectTuning: (newPreset) => settings.setTuningPreset(newPreset),
                 ),
 
                 voiceLeadingLabel: (session.progression.length > 1)

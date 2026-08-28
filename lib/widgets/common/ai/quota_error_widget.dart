@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../models/gemini_model.dart';
+import '../../../models/ai_provider_config.dart';
 import '../../../providers/settings_state.dart';
 
 class QuotaErrorWidget extends StatelessWidget {
@@ -48,7 +49,7 @@ class QuotaErrorWidget extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               isQuotaError
-                  ? '⚠️ API 사용량이 초과되었습니다.\n(Free Tier Limit)'
+                  ? '⚠️ API 사용량이 초과되었습니다.\n(Quota / Rate Limit Exceeded)'
                   : '오류가 발생했습니다.',
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -69,12 +70,14 @@ class QuotaErrorWidget extends StatelessWidget {
             const SizedBox(height: 20),
             if (isQuotaError) ...[
               const Text(
-                '다른 모델로 변경하여 시도해보세요:',
+                '다른 사용 가능한 모델로 변경하여 즉시 시도해보세요:',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Consumer<SettingsState>(
                 builder: (context, settings, _) {
+                  final models = AIModelInfo.getModelsForProvider(
+                      settings.aiProviderType);
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     decoration: BoxDecoration(
@@ -83,21 +86,35 @@ class QuotaErrorWidget extends StatelessWidget {
                       border: Border.all(color: Theme.of(context).dividerColor),
                     ),
                     child: DropdownButtonHideUnderline(
-                      child: DropdownButton<GeminiModel>(
-                        value: settings.geminiModel,
+                      child: DropdownButton<String>(
+                        value: settings.currentModelId,
                         isDense: true,
-                        items: GeminiModel.values.map((model) {
-                          return DropdownMenuItem(
-                            value: model,
+                        items: models.map((model) {
+                          return DropdownMenuItem<String>(
+                            value: model.id,
                             child: Text(
-                              model.label,
+                              '${model.label} (${model.shortLabel})',
                               style: const TextStyle(fontSize: 13),
                             ),
                           );
                         }).toList(),
-                        onChanged: (newModel) {
-                          if (newModel != null) {
-                            settings.setGeminiModel(newModel);
+                        onChanged: (newModelId) {
+                          if (newModelId != null) {
+                            switch (settings.aiProviderType) {
+                              case AIProviderType.gemini:
+                                settings.setGeminiModel(
+                                    GeminiModel.fromId(newModelId));
+                                break;
+                              case AIProviderType.openai:
+                                settings.setOpenAiModelId(newModelId);
+                                break;
+                              case AIProviderType.claude:
+                                settings.setClaudeModelId(newModelId);
+                                break;
+                              case AIProviderType.custom:
+                                settings.setCustomModelName(newModelId);
+                                break;
+                            }
                             onRetry(); // 모델 변경 시 즉시 재시도
                           }
                         },

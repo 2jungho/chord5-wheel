@@ -521,6 +521,99 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
     }
   }
 
+  // --- Song Section Arranger ---
+
+  /// 새 송 폼 섹션 추가 (예: Intro, Verse, Chorus, Bridge, Outro)
+  void addSection(String name, {List<ChordBlock>? initialChords}) {
+    final currentSections = List<SongSection>.from(_session.sections);
+    if (currentSections.isEmpty) {
+      currentSections.add(SongSection(
+        id: 'sec_1',
+        name: 'Verse',
+        progression: _session.progression,
+      ));
+    }
+
+    final newSection = SongSection(
+      id: 'sec_${DateTime.now().millisecondsSinceEpoch}',
+      name: name,
+      progression: initialChords ?? [],
+      key: _session.key,
+    );
+
+    currentSections.add(newSection);
+    final newIndex = currentSections.length - 1;
+
+    _session = _session.copyWith(
+      sections: currentSections,
+      activeSectionIndex: newIndex,
+      progression: newSection.progression,
+    );
+
+    _selectedBlockIndex = 0;
+    _calculateVoiceLeading();
+    notifyListeners();
+  }
+
+  /// 활성 섹션 전환
+  void selectSection(int index) {
+    if (index >= 0 && index < _session.sections.length) {
+      // 1. 현재 섹션에 현재 progression 저장
+      final currentSections = List<SongSection>.from(_session.sections);
+      if (_session.activeSectionIndex >= 0 &&
+          _session.activeSectionIndex < currentSections.length) {
+        currentSections[_session.activeSectionIndex] =
+            currentSections[_session.activeSectionIndex]
+                .copyWith(progression: _session.progression);
+      }
+
+      // 2. 새 섹션으로 전환
+      final targetSection = currentSections[index];
+      _session = _session.copyWith(
+        sections: currentSections,
+        activeSectionIndex: index,
+        progression: targetSection.progression,
+        key: targetSection.key ?? _session.key,
+      );
+
+      _selectedBlockIndex = 0;
+      _calculateVoiceLeading();
+      notifyListeners();
+    }
+  }
+
+  /// 섹션 삭제
+  void removeSection(int index) {
+    if (_session.sections.length <= 1) return; // 최소 1개 유지
+    final currentSections = List<SongSection>.from(_session.sections);
+    if (index >= 0 && index < currentSections.length) {
+      currentSections.removeAt(index);
+      final newIndex = (_session.activeSectionIndex >= currentSections.length)
+          ? currentSections.length - 1
+          : _session.activeSectionIndex;
+
+      _session = _session.copyWith(
+        sections: currentSections,
+        activeSectionIndex: newIndex,
+        progression: currentSections[newIndex].progression,
+      );
+
+      _selectedBlockIndex = 0;
+      _calculateVoiceLeading();
+      notifyListeners();
+    }
+  }
+
+  /// 섹션 이름 변경
+  void renameSection(int index, String newName) {
+    if (index >= 0 && index < _session.sections.length) {
+      final currentSections = List<SongSection>.from(_session.sections);
+      currentSections[index] = currentSections[index].copyWith(name: newName);
+      _session = _session.copyWith(sections: currentSections);
+      notifyListeners();
+    }
+  }
+
   void clearProgression() {
     _session = _session.copyWith(progression: []);
     _selectedBlockIndex = 0;

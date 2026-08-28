@@ -58,6 +58,20 @@ class ChatMessageBubble extends StatelessWidget {
                     child: Image.asset('assets/images/icons8-chatgpt.png',
                         width: 24, height: 24),
                   )
+                else if (provider == 'claude')
+                  CircleAvatar(
+                    radius: 14,
+                    backgroundColor: const Color(0xFFD97706).withValues(alpha: 0.2),
+                    child: const Icon(Icons.auto_awesome,
+                        size: 16, color: Color(0xFFD97706)),
+                  )
+                else if (provider == 'deepseek')
+                  CircleAvatar(
+                    radius: 14,
+                    backgroundColor: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                    child: const Icon(Icons.psychology,
+                        size: 16, color: Color(0xFF38BDF8)),
+                  )
                 else
                   CircleAvatar(
                     radius: 14,

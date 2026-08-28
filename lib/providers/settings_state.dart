@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/gemini_model.dart';
+import '../models/ai_provider_config.dart';
 import '../models/instrument_model.dart';
 import '../audio/audio_manager.dart';
 import '../utils/app_theme.dart';
@@ -18,20 +19,24 @@ class SettingsState extends ChangeNotifier {
   // 2. 마스터 볼륨 (0.0 ~ 1.0)
   double _masterVolume = 0.8;
 
-  // 3. Gemini API Key
-  String _geminiApiKey = '';
-
-  // 4. AI Provider (gemini / openai)
+  // 3. AI Providers & Keys
   String _aiProvider = 'gemini';
-
-  // 5. OpenAI API Key
+  String _geminiApiKey = '';
   String _openAiApiKey = '';
+  String _claudeApiKey = '';
+  String _deepseekApiKey = '';
+  String _customApiKey = '';
+  String _customBaseUrl = 'http://localhost:11434/v1';
+  String _customModelName = 'llama3';
 
-  // 6. Gemini Model & Thinking Level
+  // 4. Provider-specific Selected Model IDs
   GeminiModel _geminiModel = GeminiModel.flash37;
+  String _openAiModelId = 'gpt-4o';
+  String _claudeModelId = 'claude-3-7-sonnet-20250219';
+  String _deepseekModelId = 'deepseek-chat';
   ThinkingLevel _thinkingLevel = ThinkingLevel.high;
 
-  // 7. System Prompt
+  // 5. System Prompt
   String _systemPrompt = '''
 당신은 친절한 기타 이론 선생님입니다. 
 사용자의 질문에 대해 음악 이론적으로 분석하고, 초보자도 이해하기 쉽도록 친절하게 설명해주세요.
@@ -65,10 +70,10 @@ class SettingsState extends ChangeNotifier {
 ```
 ''';
 
-  // 8. Chat Font Size
+  // 6. Chat Font Size
   double _chatFontSize = 14.0;
 
-  // 9. Selected Instrument
+  // 7. Selected Instrument
   String _selectedInstrumentId = Instrument.guitarStandard.id;
 
   // Available Instruments
@@ -79,14 +84,31 @@ class SettingsState extends ChangeNotifier {
     Instrument.ukulele,
   ];
 
+  // 8. Tuning Preset
+  TuningPreset _tuningPreset = TuningPreset.standard;
+
   // --- Getters ---
   AppThemePreset get themePreset => _themePreset;
+  TuningPreset get tuningPreset => _tuningPreset;
   double get masterVolume => _masterVolume;
-  String get geminiApiKey => _geminiApiKey;
+
   String get aiProvider => _aiProvider;
+  AIProviderType get aiProviderType => AIProviderType.fromId(_aiProvider);
+
+  String get geminiApiKey => _geminiApiKey;
   String get openAiApiKey => _openAiApiKey;
+  String get claudeApiKey => _claudeApiKey;
+  String get deepseekApiKey => _deepseekApiKey;
+  String get customApiKey => _customApiKey;
+  String get customBaseUrl => _customBaseUrl;
+  String get customModelName => _customModelName;
+
   GeminiModel get geminiModel => _geminiModel;
+  String get openAiModelId => _openAiModelId;
+  String get claudeModelId => _claudeModelId;
+  String get deepseekModelId => _deepseekModelId;
   ThinkingLevel get thinkingLevel => _thinkingLevel;
+
   String get systemPrompt => _systemPrompt;
   double get chatFontSize => _chatFontSize;
 
@@ -98,6 +120,35 @@ class SettingsState extends ChangeNotifier {
       (inst) => inst.id == _selectedInstrumentId,
       orElse: () => Instrument.guitarStandard,
     );
+  }
+
+  /// 현재 활성 프로바이더의 모델 ID 반환
+  String get currentModelId {
+    switch (aiProviderType) {
+      case AIProviderType.gemini:
+        return _geminiModel.id;
+      case AIProviderType.openai:
+        return _openAiModelId;
+      case AIProviderType.claude:
+        return _claudeModelId;
+      case AIProviderType.custom:
+        return _customModelName;
+    }
+  }
+
+  /// 현재 활성 프로바이더의 모델 메타데이터 반환
+  AIModelInfo get currentModelInfo {
+    if (aiProviderType == AIProviderType.custom) {
+      return AIModelInfo(
+        id: _customModelName,
+        label: _customModelName,
+        shortLabel: _customModelName.length > 8
+            ? _customModelName.substring(0, 8)
+            : _customModelName,
+        provider: AIProviderType.custom,
+      );
+    }
+    return AIModelInfo.fromId(currentModelId, aiProviderType);
   }
 
   SettingsState() {
@@ -117,14 +168,35 @@ class SettingsState extends ChangeNotifier {
       }
     }
 
+    // Load tuning preset
+    final String? savedTuning = _prefs?.getString('tuningPreset');
+    if (savedTuning != null) {
+      try {
+        _tuningPreset = TuningPreset.values.byName(savedTuning);
+      } catch (_) {
+        _tuningPreset = TuningPreset.standard;
+      }
+    }
+
     _masterVolume = _prefs?.getDouble('masterVolume') ?? 0.8;
-    _geminiApiKey = _prefs?.getString('geminiApiKey') ?? '';
     _aiProvider = _prefs?.getString('aiProvider') ?? 'gemini';
+    _geminiApiKey = _prefs?.getString('geminiApiKey') ?? '';
     _openAiApiKey = _prefs?.getString('openAiApiKey') ?? '';
+    _claudeApiKey = _prefs?.getString('claudeApiKey') ?? '';
+    _deepseekApiKey = _prefs?.getString('deepseekApiKey') ?? '';
+    _customApiKey = _prefs?.getString('customApiKey') ?? '';
+    _customBaseUrl =
+        _prefs?.getString('customBaseUrl') ?? 'http://localhost:11434/v1';
+    _customModelName = _prefs?.getString('customModelName') ?? 'llama3';
 
     final String? modelId = _prefs?.getString('geminiModel');
     _geminiModel =
         modelId != null ? GeminiModel.fromId(modelId) : GeminiModel.flash37;
+
+    _openAiModelId = _prefs?.getString('openAiModelId') ?? 'gpt-4o';
+    _claudeModelId =
+        _prefs?.getString('claudeModelId') ?? 'claude-3-7-sonnet-20250219';
+    _deepseekModelId = _prefs?.getString('deepseekModelId') ?? 'deepseek-chat';
 
     final String? thinkingId = _prefs?.getString('thinkingLevel');
     _thinkingLevel = thinkingId != null
@@ -138,6 +210,14 @@ class SettingsState extends ChangeNotifier {
         Instrument.guitarStandard.id;
 
     notifyListeners();
+  }
+
+  void setTuningPreset(TuningPreset preset) {
+    if (_tuningPreset != preset) {
+      _tuningPreset = preset;
+      _prefs?.setString('tuningPreset', preset.name);
+      notifyListeners();
+    }
   }
 
   // --- Actions ---
@@ -213,6 +293,88 @@ class SettingsState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setClaudeApiKey(String key) {
+    if (_claudeApiKey != key) {
+      _claudeApiKey = key;
+      _prefs?.setString('claudeApiKey', key);
+      notifyListeners();
+    }
+  }
+
+  void clearClaudeApiKey() {
+    _claudeApiKey = '';
+    _prefs?.remove('claudeApiKey');
+    notifyListeners();
+  }
+
+  void setDeepSeekApiKey(String key) {
+    if (_deepseekApiKey != key) {
+      _deepseekApiKey = key;
+      _prefs?.setString('deepseekApiKey', key);
+      notifyListeners();
+    }
+  }
+
+  void clearDeepSeekApiKey() {
+    _deepseekApiKey = '';
+    _prefs?.remove('deepseekApiKey');
+    notifyListeners();
+  }
+
+  void setCustomApiKey(String key) {
+    if (_customApiKey != key) {
+      _customApiKey = key;
+      _prefs?.setString('customApiKey', key);
+      notifyListeners();
+    }
+  }
+
+  void clearCustomApiKey() {
+    _customApiKey = '';
+    _prefs?.remove('customApiKey');
+    notifyListeners();
+  }
+
+  void setCustomBaseUrl(String url) {
+    if (_customBaseUrl != url) {
+      _customBaseUrl = url;
+      _prefs?.setString('customBaseUrl', url);
+      notifyListeners();
+    }
+  }
+
+  void setCustomModelName(String modelName) {
+    if (_customModelName != modelName) {
+      _customModelName = modelName;
+      _prefs?.setString('customModelName', modelName);
+      notifyListeners();
+    }
+  }
+
+  void setOpenAiModelId(String modelId) {
+    if (_openAiModelId != modelId) {
+      _openAiModelId = modelId;
+      _prefs?.setString('openAiModelId', modelId);
+      notifyListeners();
+    }
+  }
+
+  void setClaudeModelId(String modelId) {
+    if (_claudeModelId != modelId) {
+      _claudeModelId = modelId;
+      _prefs?.setString('claudeModelId', modelId);
+      notifyListeners();
+    }
+  }
+
+  void setDeepSeekModelId(String modelId) {
+    if (_deepseekModelId != modelId) {
+      _deepseekModelId = modelId;
+      _prefs?.setString('deepseekModelId', modelId);
+      notifyListeners();
+    }
+  }
+
   void setSystemPrompt(String prompt) {
     if (_systemPrompt != prompt) {
       _systemPrompt = prompt;
@@ -255,28 +417,66 @@ class SettingsState extends ChangeNotifier {
 
   // --- Convenience Methods ---
 
-  /// 입력된 API Key를 Gemini Key로 설정합니다.
+  /// 활성 프로바이더의 API Key를 업데이트합니다.
   void updateApiKey(String key) {
     final trimmedKey = key.trim();
-    if (trimmedKey.isEmpty) return;
-
-    // 무조건 Gemini로 설정 (검증된 모델만 허용)
-    setAiProvider('gemini');
-    setGeminiApiKey(trimmedKey);
+    updateApiKeyForProvider(aiProviderType, trimmedKey);
   }
 
-  /// 현재 활성화된 Provider의 API Key를 반환합니다.
-  String get currentApiKey =>
-      _aiProvider == 'openai' ? _openAiApiKey : _geminiApiKey;
-
-  /// 현재 활성화된 Provider의 API Key를 삭제합니다.
-  void clearCurrentApiKey() {
-    if (_aiProvider == 'openai') {
-      clearOpenAiApiKey();
-    } else {
-      clearGeminiApiKey();
+  /// 특정 프로바이더의 API Key를 설정합니다.
+  void updateApiKeyForProvider(AIProviderType provider, String key) {
+    final trimmedKey = key.trim();
+    switch (provider) {
+      case AIProviderType.gemini:
+        setGeminiApiKey(trimmedKey);
+        break;
+      case AIProviderType.openai:
+        setOpenAiApiKey(trimmedKey);
+        break;
+      case AIProviderType.claude:
+        setClaudeApiKey(trimmedKey);
+        break;
+      case AIProviderType.custom:
+        setCustomApiKey(trimmedKey);
+        break;
     }
   }
 
-  bool get hasApiKey => currentApiKey.isNotEmpty;
+  /// 특정 프로바이더의 API Key를 가져옵니다.
+  String getApiKeyForProvider(AIProviderType provider) {
+    switch (provider) {
+      case AIProviderType.gemini:
+        return _geminiApiKey;
+      case AIProviderType.openai:
+        return _openAiApiKey;
+      case AIProviderType.claude:
+        return _claudeApiKey;
+      case AIProviderType.custom:
+        return _customApiKey;
+    }
+  }
+
+  /// 현재 활성화된 Provider의 API Key를 반환합니다.
+  String get currentApiKey => getApiKeyForProvider(aiProviderType);
+
+  /// 현재 활성화된 Provider의 API Key를 삭제합니다.
+  void clearCurrentApiKey() {
+    switch (aiProviderType) {
+      case AIProviderType.gemini:
+        clearGeminiApiKey();
+        break;
+      case AIProviderType.openai:
+        clearOpenAiApiKey();
+        break;
+      case AIProviderType.claude:
+        clearClaudeApiKey();
+        break;
+      case AIProviderType.custom:
+        clearCustomApiKey();
+        break;
+    }
+  }
+
+  bool get hasApiKey =>
+      aiProviderType == AIProviderType.custom || currentApiKey.isNotEmpty;
 }

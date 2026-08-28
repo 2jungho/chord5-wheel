@@ -8,5 +8,8 @@ class WebAudioApi {
   static void setBpm(int bpm) {}
   static void setInstrument(String id) {}
   static void setVolume(double volume) {}
+  static Future<bool> startRecording() async => false;
+  static bool stopRecording() => false;
+  static bool downloadRecording(String filename) => false;
 }
 

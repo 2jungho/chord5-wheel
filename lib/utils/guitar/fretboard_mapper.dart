@@ -10,8 +10,10 @@ class FretboardMapper {
     List<String> ghostNotes = const [],
     String? scaleNameForIntervals,
     int maxFret = 17,
+    List<String>? tuning,
   }) {
     final newMap = <int, List<FretboardMarker>>{};
+    final currentTuning = tuning ?? TuningUtils.TUNING_NOTES;
     
     int rootIdx = NoteUtils.getNoteIndex(root);
     Set<int> targetIndices =
@@ -20,7 +22,9 @@ class FretboardMapper {
         ghostNotes.map((n) => NoteUtils.getNoteIndex(n)).toSet();
 
     for (int strIdx = 0; strIdx < 6; strIdx++) {
-      final openNote = TuningUtils.TUNING_NOTES[strIdx];
+      final openNote = strIdx < currentTuning.length
+          ? currentTuning[strIdx]
+          : TuningUtils.TUNING_NOTES[strIdx];
       final openVal = NoteUtils.getNoteIndex(openNote);
 
       if (!newMap.containsKey(strIdx)) newMap[strIdx] = [];
@@ -48,17 +52,23 @@ class FretboardMapper {
   }
 
   static Map<int, List<FretboardMarker>> generateMapFromVoicing(
-      ChordVoicing voicing, String root) {
+      ChordVoicing voicing, String root, [List<String>? tuning]) {
     final map = <int, List<FretboardMarker>>{};
+    final currentTuning = tuning ?? TuningUtils.TUNING_NOTES;
 
     for (int i = 0; i < 6; i++) {
       final fret = voicing.frets[i];
       if (fret != -1) {
-        final openVal = NoteUtils.getNoteIndex(TuningUtils.TUNING_NOTES[i]);
+        final openNote = i < currentTuning.length
+            ? currentTuning[i]
+            : TuningUtils.TUNING_NOTES[i];
+        final openVal = NoteUtils.getNoteIndex(openNote);
         final noteVal = (openVal + fret) % 12;
 
         final intervalName = generateFretboardMap(
-                root: root, notes: [NoteUtils.getNoteName(noteVal, true)])
+                root: root,
+                notes: [NoteUtils.getNoteName(noteVal, true)],
+                tuning: currentTuning)
             .values
             .first
             .first

@@ -328,6 +328,61 @@
       window.setWebBPM = function (bpm) {
         Tone.Transport.bpm.value = bpm;
       };
+
+      // --- 4. Audio Jam Recorder (Mic Capture & Quick Sketch) ---
+      let mediaRecorder;
+      let recordedChunks = [];
+      let recordedAudioBlob = null;
+
+      window.startWebRecording = async function () {
+        try {
+          recordedChunks = [];
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          mediaRecorder.ondataavailable = function (e) {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+          };
+          mediaRecorder.onstop = function () {
+            recordedAudioBlob = new Blob(recordedChunks, { type: "audio/webm" });
+            console.log("Web Recording completed. Blob size:", recordedAudioBlob.size);
+          };
+          mediaRecorder.start();
+          return true;
+        } catch (err) {
+          console.warn("startWebRecording error:", err);
+          return false;
+        }
+      };
+
+      window.stopWebRecording = function () {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+          if (mediaRecorder.stream) {
+            mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+          }
+          return true;
+        }
+        return false;
+      };
+
+      window.downloadWebRecording = function (filename) {
+        if (!recordedAudioBlob) {
+          console.warn("No recorded audio blob available");
+          return false;
+        }
+        const url = URL.createObjectURL(recordedAudioBlob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+        a.download = filename || "guitar_jam_sketch.webm";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+        return true;
+      };
     </script>
     <script src="flutter_bootstrap.js" async></script>
   </body>
