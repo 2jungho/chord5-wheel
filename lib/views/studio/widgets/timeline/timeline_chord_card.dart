@@ -8,6 +8,8 @@ import '../../../../providers/studio_state.dart';
 import '../../../../utils/theory_utils.dart';
 import '../../../../widgets/common/guitar/guitar_chord_widget.dart';
 import '../../../../widgets/common/piano/piano_chord_widget.dart';
+import 'chord_insert_dialog.dart';
+
 
 class TimelineChordCard extends StatelessWidget {
   final ChordBlock block;
@@ -213,6 +215,41 @@ class TimelineChordCard extends StatelessWidget {
                 ),
               ),
               Positioned(
+                left: 2,
+                top: 0,
+                child: IconButton(
+                  icon: Icon(
+                    Icons.add_circle_outline,
+                    size: 15,
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 24,
+                    minHeight: 24,
+                  ),
+                  onPressed: () {
+                    ChordInsertDialog.show(
+                      context,
+                      targetChord: block.chordSymbol,
+                      currentKey: studio.session.key,
+                      insertIndex: index,
+                      onInsert: (newChord, idx) {
+                        studio.insertChordAt(idx, newChord);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('\'$newChord\' 코드가 Bar ${idx + 1}에 삽입되었습니다.'),
+                            duration: const Duration(milliseconds: 1500),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  tooltip: '앞에 경과 화음(화성 확장) 삽입',
+                ),
+              ),
+              Positioned(
                 right: 0,
                 top: 0,
                 child: IconButton(
@@ -226,6 +263,7 @@ class TimelineChordCard extends StatelessWidget {
                   tooltip: '삭제',
                 ),
               ),
+
             ],
           ),
         ),

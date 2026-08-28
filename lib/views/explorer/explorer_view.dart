@@ -16,7 +16,11 @@ import '../../widgets/common/wheel/mode_selector.dart';
 import 'dialogs/modulation_dialog.dart';
 
 import '../../utils/guitar_utils.dart';
+import '../../utils/guitar/pentatonic_box_calculator.dart';
 import '../../widgets/common/glass_container.dart';
+import '../../models/fretboard_marker.dart';
+
+
 
 class ExplorerView extends StatelessWidget {
   const ExplorerView({super.key});
@@ -188,28 +192,42 @@ class ExplorerView extends StatelessWidget {
           String rootNote,
           String modeName,
           Set<String> visibleIntervals,
-          String? selectedCagedForm
+          String? selectedCagedForm,
+          int selectedPentatonicBox,
         })>(
       selector: (context, state) => (
         rootNote: state.rootNote,
         modeName: state.currentMode.name,
         visibleIntervals: state.visibleIntervals,
         selectedCagedForm: state.selectedCagedForm,
+        selectedPentatonicBox: state.selectedPentatonicBox,
       ),
       builder: (context, data, _) {
         final root = data.rootNote;
         final modeName = data.modeName;
-        final scaleNotes = TheoryUtils.calculateScaleNotes(root, modeName);
+        final isMinor = MusicConstants.MODES
+            .firstWhere((m) => m.name == modeName)
+            .isMinor;
 
-        final classified = TheoryUtils.classifyScaleNotes(scaleNotes, modeName);
-        final chordTones = classified['chordTones']!;
-        final otherNotes = classified['otherNotes']!;
+        Map<int, List<FretboardMarker>> map;
+        if (data.selectedPentatonicBox > 0) {
+          map = PentatonicBoxCalculator.generateBoxMarkers(
+            keyRoot: root,
+            isMinorKey: isMinor,
+            boxNumber: data.selectedPentatonicBox,
+          );
+        } else {
+          final scaleNotes = TheoryUtils.calculateScaleNotes(root, modeName);
+          final classified = TheoryUtils.classifyScaleNotes(scaleNotes, modeName);
+          final chordTones = classified['chordTones']!;
+          final otherNotes = classified['otherNotes']!;
 
-        final map = GuitarUtils.generateFretboardMap(
-            root: root,
-            notes: chordTones,
-            ghostNotes: otherNotes,
-            scaleNameForIntervals: modeName);
+          map = GuitarUtils.generateFretboardMap(
+              root: root,
+              notes: chordTones,
+              ghostNotes: otherNotes,
+              scaleNameForIntervals: modeName);
+        }
 
         final availableIntervals = map.values
             .expand((markers) => markers)
@@ -222,9 +240,7 @@ class ExplorerView extends StatelessWidget {
           selectedScaleName: '${data.rootNote} ${data.modeName}',
           visibleIntervals: data.visibleIntervals,
           focusCagedForm: data.selectedCagedForm,
-          isMinor: MusicConstants.MODES
-              .firstWhere((m) => m.name == modeName)
-              .isMinor,
+          isMinor: isMinor,
           controlPanel: ViewControlPanel(
             visibleIntervals: data.visibleIntervals,
             availableIntervals: availableIntervals,
@@ -232,9 +248,12 @@ class ExplorerView extends StatelessWidget {
             onToggleInterval: context.read<MusicState>().toggleInterval,
             onSelectForm: context.read<MusicState>().selectCagedForm,
             onReset: context.read<MusicState>().resetViewFilters,
+            selectedPentatonicBox: data.selectedPentatonicBox,
+            onSelectPentatonicBox: context.read<MusicState>().selectPentatonicBox,
           ),
         );
       },
     );
   }
+
 }

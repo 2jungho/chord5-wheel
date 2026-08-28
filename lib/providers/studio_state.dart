@@ -444,6 +444,58 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
     return newPreset.title;
   }
 
+  void insertChordAt(int index, String chordSymbol, {int duration = 4}) {
+    final analyzed = TheoryUtils.analyzeChord(chordSymbol);
+    final voicings = GuitarUtils.generateAllVoicings(analyzed.root, analyzed.quality);
+    final defaultVoicing = _findBestVoicingForStyle(voicings, _timelineVoicingStyle);
+    final tag = TheoryUtils.getFunctionTag(_session.key, chordSymbol);
+
+    final newBlock = ChordBlock(
+      chordSymbol: chordSymbol,
+      duration: duration,
+      chordDetail: analyzed,
+      voicing: defaultVoicing,
+      functionTag: tag,
+    );
+
+    final newList = List<ChordBlock>.from(_session.progression);
+    final safeIndex = index.clamp(0, newList.length);
+    newList.insert(safeIndex, newBlock);
+
+    _session = _session.copyWith(progression: newList);
+    selectBlock(safeIndex);
+    notifyListeners();
+  }
+
+  void applyTransposedChords(List<String> newChordSymbols) {
+    if (newChordSymbols.isEmpty) return;
+    ChordVoicing? lastVoicing;
+
+    final newBlocks = newChordSymbols.map((symbol) {
+      final analyzed = TheoryUtils.analyzeChord(symbol);
+      final voicings = GuitarUtils.generateAllVoicings(analyzed.root, analyzed.quality);
+      final defaultVoicing = _findBestVoicingForStyle(
+        voicings,
+        _timelineVoicingStyle,
+        previousVoicing: lastVoicing,
+      );
+      lastVoicing = defaultVoicing;
+      final tag = TheoryUtils.getFunctionTag(_session.key, symbol);
+
+      return ChordBlock(
+        chordSymbol: symbol,
+        duration: 4,
+        chordDetail: analyzed,
+        voicing: defaultVoicing,
+        functionTag: tag,
+      );
+    }).toList();
+
+    _session = _session.copyWith(progression: newBlocks);
+    selectBlock(0);
+    notifyListeners();
+  }
+
   void removeChord(int index) {
     final newList = List<ChordBlock>.from(_session.progression);
     if (index >= 0 && index < newList.length) {
@@ -465,6 +517,7 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
     _voiceLeadingLines = [];
     notifyListeners();
   }
+
 
   // --- Rhythm Editing ---
   void updateRhythmPattern(RhythmPattern pattern) {

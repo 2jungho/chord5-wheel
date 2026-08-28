@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/music_state.dart';
 import '../../../models/chord_model.dart';
+import '../../capo/capo_modal.dart';
+
 
 class DiatonicList extends StatelessWidget {
   const DiatonicList({super.key});
@@ -31,9 +33,47 @@ class DiatonicList extends StatelessWidget {
                         color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.bold)),
+                const Spacer(),
+                Tooltip(
+                  message: '현재 Key의 다이아토닉 코드 오픈코드 카포 위치 추천',
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(6),
+                    onTap: () {
+                      final chordNames = chords.map((c) => c.name).toList();
+                      CapoModal.show(context, chords: chordNames);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.music_note,
+                              size: 14, color: Theme.of(context).colorScheme.primary),
+                          const SizedBox(width: 4),
+                          Text(
+                            '카포 추천',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 12),
+
             Wrap(
               spacing: 4,
               runSpacing: 8,

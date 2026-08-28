@@ -24,10 +24,12 @@ mixin ViewControlStateMixin on ChangeNotifier {
   Set<String> _visibleIntervals = Set.from(_defaultIntervals);
   String? _selectedCagedForm;
   bool? _showPentatonicOnBackground;
+  int _selectedPentatonicBox = 0; // 0: All, 1~5: Box 1~5
 
   Set<String> get visibleIntervals => _visibleIntervals;
   String? get selectedCagedForm => _selectedCagedForm;
   bool get showPentatonicOnBackground => _showPentatonicOnBackground ?? true;
+  int get selectedPentatonicBox => _selectedPentatonicBox;
 
   void toggleInterval(String interval) {
     final newSet = Set<String>.from(_visibleIntervals);
@@ -45,6 +47,15 @@ mixin ViewControlStateMixin on ChangeNotifier {
     notifyListeners();
   }
 
+  void selectPentatonicBox(int boxNumber) {
+    if (_selectedPentatonicBox == boxNumber) {
+      _selectedPentatonicBox = 0; // Toggle off to All
+    } else {
+      _selectedPentatonicBox = boxNumber;
+    }
+    notifyListeners();
+  }
+
   void selectCagedForm(String? form, {bool force = false}) {
     if (!force && _selectedCagedForm == form) {
       _selectedCagedForm = null;
@@ -58,6 +69,8 @@ mixin ViewControlStateMixin on ChangeNotifier {
     _visibleIntervals = Set.from(_defaultIntervals);
     _selectedCagedForm = null;
     _showPentatonicOnBackground = true;
+    _selectedPentatonicBox = 0;
     notifyListeners();
   }
+
 }

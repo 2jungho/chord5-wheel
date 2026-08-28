@@ -14,6 +14,9 @@ import '../dialogs/ai_song_search_dialog.dart';
 import 'timeline/timeline_chord_card.dart';
 import 'soloing_guide_panel.dart';
 import 'insight_report_widget.dart';
+import '../../../widgets/capo/capo_modal.dart';
+import '../../../services/midi/midi_export_service.dart';
+
 
 class StudioTimeline extends StatefulWidget {
   const StudioTimeline({super.key});
@@ -827,6 +830,63 @@ class _StudioTimelineState extends State<StudioTimeline> {
           ]
         : [];
 
+    final toolButtons = [
+
+      OutlinedButton.icon(
+        onPressed: () {
+          final chords = session.progression.map((b) => b.chordSymbol).toList();
+          if (chords.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('카포를 계산할 코드 진행이 없습니다.')),
+            );
+            return;
+          }
+          CapoModal.show(
+            context,
+            chords: chords,
+            onApply: (capoFret, transposedChords) {
+              studio.applyTransposedChords(transposedChords);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Capo $capoFret 폼으로 변환되었습니다.'),
+                ),
+              );
+            },
+          );
+        },
+        icon: const Icon(Icons.music_note, size: 15),
+        label: const Text('카포 계산기', style: TextStyle(fontSize: 11)),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+      const SizedBox(width: 6),
+      OutlinedButton.icon(
+        onPressed: () {
+          if (session.progression.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('내보낼 코드 진행이 없습니다.')),
+            );
+            return;
+          }
+          MidiExportService.downloadSessionAsMidi(session);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('4인조 밴드 멀티트랙 MIDI 파일(.mid)이 다운로드되었습니다.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+        icon: const Icon(Icons.download, size: 15),
+        label: const Text('MIDI 내보내기', style: TextStyle(fontSize: 11)),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+    ];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: isMobile
@@ -878,14 +938,18 @@ class _StudioTimelineState extends State<StudioTimeline> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 12),
-                if (aiButtons.isNotEmpty) ...[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: aiButtons,
+                const SizedBox(height: 10),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      ...toolButtons,
+                      if (aiButtons.isNotEmpty) const SizedBox(width: 6),
+                      ...aiButtons,
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                ],
+                ),
+                const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(child: _buildQuickAddInput(context, studio)),
@@ -938,10 +1002,12 @@ class _StudioTimelineState extends State<StudioTimeline> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
+                ...toolButtons,
+                const SizedBox(width: 6),
                 // --- AI Action Buttons ---
                 ...aiButtons,
-                if (hasApiKey) const SizedBox(width: 12),
+                if (hasApiKey) const SizedBox(width: 8),
                 // Quick Add Input (Expanded to occupy optimal space)
                 Expanded(
                   flex: 2,
@@ -950,6 +1016,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
               ],
             ),
     );
+
   }
 
   Widget _buildQuickAddInput(BuildContext context, StudioState studio) {

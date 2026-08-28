@@ -8,9 +8,11 @@ import 'widgets/famous_songs_panel.dart';
 import 'widgets/lyria_jam_panel.dart';
 
 import '../../utils/guitar_utils.dart';
+import '../../utils/guitar/pentatonic_box_calculator.dart';
 import '../../utils/theory_utils.dart';
 import '../../models/fretboard_marker.dart';
 import '../../models/chord_model.dart';
+
 
 class StudioView extends StatefulWidget {
   const StudioView({super.key});
@@ -52,7 +54,7 @@ class _StudioViewState extends State<StudioView> {
         );
       }
 
-      // [New] Key Center 기반 펜타토닉 고스트 노트 생성 및 병합
+      // [New] Key Center 기반 펜타토닉 / 솔로 박스 노트 생성 및 병합
       if (studio.showPentatonicOnBackground && session.key.isNotEmpty) {
         String keyRoot = 'C';
         bool isKeyMinor = false;
@@ -62,20 +64,28 @@ class _StudioViewState extends State<StudioView> {
           isKeyMinor = session.key.contains('Minor');
         }
 
-        final scaleType = isKeyMinor ? 'Minor Pentatonic' : 'Major Pentatonic';
-        final pentatonicNotes =
-            TheoryUtils.calculateScaleNotes(keyRoot, scaleType);
-
-        // Key Root 기준의 펜타토닉 맵 생성 (오직 ghostNotes만 포함)
-        final ghostMap = GuitarUtils.generateFretboardMap(
-          root: keyRoot,
-          notes: [],
-          ghostNotes: pentatonicNotes,
-        );
+        Map<int, List<FretboardMarker>> boxMarkers;
+        if (studio.selectedPentatonicBox > 0) {
+          boxMarkers = PentatonicBoxCalculator.generateBoxMarkers(
+            keyRoot: keyRoot,
+            isMinorKey: isKeyMinor,
+            boxNumber: studio.selectedPentatonicBox,
+            currentChordRoot: rootNote,
+          );
+        } else {
+          final scaleType = isKeyMinor ? 'Minor Pentatonic' : 'Major Pentatonic';
+          final pentatonicNotes =
+              TheoryUtils.calculateScaleNotes(keyRoot, scaleType);
+          boxMarkers = GuitarUtils.generateFretboardMap(
+            root: keyRoot,
+            notes: [],
+            ghostNotes: pentatonicNotes,
+          );
+        }
 
         // 기존 highlightMap에 병합 (코드가 있는 위치는 덮어쓰지 않음)
         for (int s = 0; s < 6; s++) {
-          final ghostMarkers = ghostMap[s] ?? [];
+          final ghostMarkers = boxMarkers[s] ?? [];
           if (ghostMarkers.isEmpty) continue;
 
           if (!highlightMap.containsKey(s)) {
@@ -92,6 +102,7 @@ class _StudioViewState extends State<StudioView> {
         }
       }
     }
+
 
     return LayoutBuilder(builder: (context, constraints) {
       // Allow timeline to be resized but keep it within reasonable bounds
@@ -202,7 +213,10 @@ class _StudioViewState extends State<StudioView> {
                   onReset: studio.resetViewFilters,
                   showPentatonic: studio.showPentatonicOnBackground,
                   onTogglePentatonic: studio.togglePentatonicBackground,
+                  selectedPentatonicBox: studio.selectedPentatonicBox,
+                  onSelectPentatonicBox: studio.selectPentatonicBox,
                 ),
+
                 voiceLeadingLabel: (session.progression.length > 1)
                     ? (() {
                         final currentIndex = studio.selectedBlockIndex

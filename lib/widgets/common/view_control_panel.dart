@@ -7,6 +7,10 @@ class ViewControlPanel extends StatelessWidget {
   final Function(String) onToggleInterval;
   final Function(String?) onSelectForm;
   final VoidCallback onReset;
+  final bool showPentatonic;
+  final VoidCallback? onTogglePentatonic;
+  final int selectedPentatonicBox;
+  final Function(int)? onSelectPentatonicBox;
 
   const ViewControlPanel({
     super.key,
@@ -18,16 +22,14 @@ class ViewControlPanel extends StatelessWidget {
     required this.onReset,
     this.showPentatonic = true,
     this.onTogglePentatonic,
+    this.selectedPentatonicBox = 0,
+    this.onSelectPentatonicBox,
   });
-
-  final bool showPentatonic;
-  final VoidCallback? onTogglePentatonic;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width:
-          420, // Give it a fixed width preference if possible, but let parent decide
+      width: 420,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainer,
@@ -80,6 +82,12 @@ class ViewControlPanel extends StatelessWidget {
                 Divider(height: 1, color: Theme.of(context).dividerColor),
                 const SizedBox(height: 8),
                 _buildFormFocusSection(context),
+                if (onSelectPentatonicBox != null) ...[
+                  const SizedBox(height: 8),
+                  Divider(height: 1, color: Theme.of(context).dividerColor),
+                  const SizedBox(height: 8),
+                  _buildPentatonicBoxSection(context),
+                ],
               ],
             ),
           ],
@@ -140,22 +148,11 @@ class ViewControlPanel extends StatelessWidget {
   Widget _buildIntervalsRow2(BuildContext context) {
     return Row(
       children: [
-        // Offset to align b3 between 2 & 3
-        // 1P(36) + 4 + M2(36) + 4 = 80. M3 starts at 80. Gap center 78.
-        // b3(36) to center at 78 needs start at 60.
         const SizedBox(width: 60),
         _buildFixedToggleButton(context, 'm3', 'b3', Colors.amber),
-
-        // Gap to b5 (between 4 & 5)
-        // b3 ends at 96. b5 should start at 140 (Center 158).
-        // 140 - 96 = 44.
         const SizedBox(width: 44),
         _buildFixedToggleButton(
             context, 'd5', 'b5', Theme.of(context).colorScheme.onSurface),
-
-        // Gap to b7 (between 6 & 7)
-        // b5 ends at 176. b7 should start at 220 (Center 238).
-        // 220 - 176 = 44.
         const SizedBox(width: 44),
         _buildFixedToggleButton(context, 'm7', 'b7', Colors.cyanAccent),
       ],
@@ -194,17 +191,67 @@ class ViewControlPanel extends StatelessWidget {
     );
   }
 
-  // 기존 _buildIntervalToggle은 InkWell을 반환하는데,
-  // 고정 사이즈 처리를 위해 약간 수정된 버전을 사용하거나 Container로 감싸야 함.
-  // 여기서는 _buildFixedToggleButton이라는 내부 헬퍼를 만들어 사용.
+  Widget _buildPentatonicBoxSection(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text('솔로 박스 (Box)',
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 11)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            alignment: WrapAlignment.start,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              _buildBoxButton(context, 0, '전체'),
+              _buildBoxButton(context, 1, 'Box 1'),
+              _buildBoxButton(context, 2, 'Box 2'),
+              _buildBoxButton(context, 3, 'Box 3'),
+              _buildBoxButton(context, 4, 'Box 4'),
+              _buildBoxButton(context, 5, 'Box 5'),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBoxButton(BuildContext context, int boxNum, String label) {
+    final isSelected = selectedPentatonicBox == boxNum;
+    return SizedBox(
+      height: 26,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isSelected
+              ? Theme.of(context).colorScheme.tertiary
+              : Theme.of(context).colorScheme.surfaceContainerHigh,
+          foregroundColor: isSelected
+              ? Theme.of(context).colorScheme.onTertiary
+              : Theme.of(context).colorScheme.onSurface,
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(6),
+              side: BorderSide(
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.tertiary
+                      : Theme.of(context).dividerColor)),
+        ),
+        onPressed: () => onSelectPentatonicBox?.call(boxNum),
+        child: Text(label,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
+      ),
+    );
+  }
 
   Widget _buildFixedToggleButton(
       BuildContext context, String intervalKey, String label, Color color) {
-    // 1. Availability Check
     final isAvailable =
         availableIntervals == null || availableIntervals!.contains(intervalKey);
-
-    // 2. Selection Check
     final isSelected = visibleIntervals.contains(intervalKey);
 
     if (!isAvailable) {
@@ -233,7 +280,6 @@ class ViewControlPanel extends StatelessWidget {
       );
     }
 
-    // Active Toggle Button
     return SizedBox(
       width: 36,
       height: 26,
