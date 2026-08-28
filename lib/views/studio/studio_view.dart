@@ -98,7 +98,7 @@ class _StudioViewState extends State<StudioView> {
   }
 }
 
-/// AI Jam & 유명 곡 패널 영역
+/// AI Jam & 유명 곡 패널 영역 (Tier 2: Live Jam & Sound Engine)
 class _StudioJamAndSongSection extends StatelessWidget {
   const _StudioJamAndSongSection();
 
@@ -109,14 +109,14 @@ class _StudioJamAndSongSection extends StatelessWidget {
       builder: (context, session, _) {
         return LayoutBuilder(
           builder: (context, panelConstraints) {
-            final isCompact = panelConstraints.maxWidth < 950;
+            final isCompact = panelConstraints.maxWidth < 1100;
 
             if (isCompact) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const LyriaJamPanel(),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   FamousSongsPanel(session: session),
                 ],
               );
@@ -126,12 +126,12 @@ class _StudioJamAndSongSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Expanded(
-                  flex: 5,
+                  flex: 62,
                   child: LyriaJamPanel(),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
-                  flex: 5,
+                  flex: 38,
                   child: FamousSongsPanel(session: session),
                 ),
               ],
@@ -142,6 +142,7 @@ class _StudioJamAndSongSection extends StatelessWidget {
     );
   }
 }
+
 
 /// Studio 프렛보드 영역 (Selector 기반 최적화)
 class _StudioFretboardSection extends StatelessWidget {
