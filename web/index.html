@@ -79,7 +79,7 @@
 
       // Master Audio Processing Graph & Studio Effects
       let masterLimiter, masterCompressor, studioReverb, studioChorus;
-      let guitarCabFilter, guitarChorus, guitarDrive;
+      let nylonSynth, electricCleanSynth, electricCrunchSynth;
       let drumKick, drumSnareBody, drumSnareNoise, snareFilter, drumHiHat, drumRim;
       let bassSynth, keysSynth;
 
@@ -113,28 +113,7 @@
         }).connect(studioReverb);
         studioChorus.start();
 
-        // Authentic Guitar Processing Channel (Cab Filter -> Chorus -> Drive -> Master Reverb & Compressor)
-        guitarCabFilter = new Tone.Filter({
-          frequency: 16000,
-          type: "lowpass",
-          rolloff: -12,
-        }).connect(masterCompressor);
-        guitarCabFilter.connect(studioReverb);
-
-        guitarChorus = new Tone.Chorus({
-          frequency: 1.5,
-          delayTime: 3.2,
-          depth: 0.45,
-          wet: 0.0,
-        }).connect(guitarCabFilter);
-        guitarChorus.start();
-
-        guitarDrive = new Tone.Distortion({
-          distortion: 0.0,
-          oversample: "2x",
-          wet: 0.0,
-        }).connect(guitarChorus);
-
+        // 1. Steel-String Acoustic Guitar: Studio Recorded Samples
         sampler = new Tone.Sampler({
           urls: {
             E2: "assets/assets/sounds/E2.mp3",
@@ -156,11 +135,36 @@
           onerror: (err) => {
             console.warn("Tone.Sampler failed to load some samples, using fallback:", err);
           },
-        }).connect(guitarDrive);
+        }).connect(masterCompressor);
+        sampler.connect(studioReverb);
 
-        if (fallbackSynth) {
-          fallbackSynth.connect(guitarDrive);
-        }
+        // 2. Classical Nylon Guitar: Soft-attack warm Karplus-Strong physical modeling
+        const nylonFilter = new Tone.Filter({ frequency: 3400, type: "lowpass" }).connect(masterCompressor);
+        nylonFilter.connect(studioReverb);
+        nylonSynth = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: "triangle" },
+          envelope: { attack: 0.02, decay: 1.1, sustain: 0.08, release: 0.9 },
+        }).connect(nylonFilter);
+
+        // 3. Electric Clean Guitar: Single-Coil pickup pulse wave + lush analog chorus
+        const cleanCab = new Tone.Filter({ frequency: 6200, type: "lowpass" }).connect(masterCompressor);
+        const cleanChorus = new Tone.Chorus({ frequency: 1.8, delayTime: 3.5, depth: 0.55, wet: 0.38 }).connect(cleanCab);
+        cleanChorus.connect(studioReverb);
+        cleanChorus.start();
+        electricCleanSynth = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: "pulse", width: 0.32 },
+          envelope: { attack: 0.003, decay: 0.9, sustain: 0.28, release: 0.75 },
+        }).connect(cleanChorus);
+
+        // 4. Crunch Overdrive Electric Guitar: Sawtooth + Tube Preamp Drive + 4x12 Speaker Cabinet Simulation
+        const crunchCab = new Tone.Filter({ frequency: 3200, type: "lowpass", rolloff: -24 }).connect(masterCompressor);
+        crunchCab.connect(studioReverb);
+        const crunchDrive = new Tone.Distortion({ distortion: 0.40, oversample: "4x", wet: 0.85 }).connect(crunchCab);
+        electricCrunchSynth = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: "sawtooth" },
+          envelope: { attack: 0.004, decay: 1.3, sustain: 0.60, release: 0.9 },
+        }).connect(crunchDrive);
+
 
 
 
@@ -315,24 +319,7 @@
               });
             }
           } else if (category === "guitar") {
-            if (profileId === "guitar_nylon") {
-              if (guitarCabFilter) guitarCabFilter.frequency.value = 5200;
-              if (guitarDrive) { guitarDrive.distortion = 0.0; guitarDrive.wet.value = 0.0; }
-              if (guitarChorus) guitarChorus.wet.value = 0.0;
-            } else if (profileId === "guitar_crunch") {
-              if (guitarCabFilter) guitarCabFilter.frequency.value = 3800;
-              if (guitarDrive) { guitarDrive.distortion = 0.06; guitarDrive.wet.value = 0.18; }
-              if (guitarChorus) guitarChorus.wet.value = 0.0;
-            } else if (profileId === "guitar_clean") {
-              if (guitarCabFilter) guitarCabFilter.frequency.value = 7200;
-              if (guitarDrive) { guitarDrive.distortion = 0.0; guitarDrive.wet.value = 0.0; }
-              if (guitarChorus) guitarChorus.wet.value = 0.32;
-            } else {
-              // guitar_acoustic
-              if (guitarCabFilter) guitarCabFilter.frequency.value = 16000;
-              if (guitarDrive) { guitarDrive.distortion = 0.0; guitarDrive.wet.value = 0.0; }
-              if (guitarChorus) guitarChorus.wet.value = 0.0;
-            }
+            console.log("Guitar sound profile set to:", profileId);
           }
 
         } catch (e) {
@@ -340,6 +327,17 @@
         }
       };
 
+      function getActiveGuitarSynth() {
+        const prof = currentProfiles.guitar || "guitar_acoustic";
+        if (prof === "guitar_nylon" && nylonSynth) {
+          return nylonSynth;
+        } else if (prof === "guitar_clean" && electricCleanSynth) {
+          return electricCleanSynth;
+        } else if (prof === "guitar_crunch" && electricCrunchSynth) {
+          return electricCrunchSynth;
+        }
+        return (isLoaded && sampler) ? sampler : fallbackSynth;
+      }
 
       window.playWebDrum = async function (type, volume) {
         try {
@@ -404,7 +402,6 @@
         }
       };
 
-
       window.playWebGuitarNote = async function (note, octave) {
         try {
           if (Tone.context.state !== "running") {
@@ -428,11 +425,9 @@
           }
 
           const pitch = cleanNote + targetOctave;
-
-          if (isLoaded && sampler) {
-            sampler.triggerAttackRelease(pitch, "2n");
-          } else if (fallbackSynth) {
-            fallbackSynth.triggerAttackRelease(pitch, "2n");
+          const guitarSynth = getActiveGuitarSynth();
+          if (guitarSynth) {
+            guitarSynth.triggerAttackRelease(pitch, "2n");
           }
         } catch (e) {
           console.warn("playWebGuitarNote error:", e);
@@ -440,7 +435,6 @@
       };
 
       window.scheduleWebSequence = async function (bpm, dataJson) {
-        if (!isLoaded) return;
         await Tone.start();
         Tone.Transport.stop();
         Tone.Transport.cancel();
@@ -451,6 +445,7 @@
         const rhythm = data.rhythm;
 
         let currentBeat = 0; // Cumulative beats
+        const activeGuitar = getActiveGuitarSynth();
 
         progression.forEach((block) => {
           const notes = block.chordDetail ? block.chordDetail.notes : [];
@@ -473,37 +468,42 @@
               const startTime = Tone.Time(absoluteBeat, "n").toSeconds();
 
               Tone.Transport.schedule((time) => {
-                const velocity = step.accent ? 0.8 : 0.5;
+                const velocity = step.accent ? 0.85 : 0.55;
 
                 if (step.type === "down" || step.type === "up") {
                   notes.forEach((note, i) => {
-                    // Strum delay: ~20ms per string
                     const strumDelay =
                       step.type === "down"
                         ? i * 0.02
                         : (notes.length - 1 - i) * 0.015;
-                    sampler.triggerAttackRelease(
-                      note + "3",
-                      "4n",
-                      time + strumDelay,
-                      velocity
-                    );
+                    if (activeGuitar) {
+                      activeGuitar.triggerAttackRelease(
+                        note + "3",
+                        "4n",
+                        time + strumDelay,
+                        velocity
+                      );
+                    }
                   });
                 } else if (step.type === "bass") {
-                  sampler.triggerAttackRelease(
-                    notes[0] + "2",
-                    "4n",
-                    time,
-                    velocity + 0.1
-                  );
+                  if (activeGuitar) {
+                    activeGuitar.triggerAttackRelease(
+                      notes[0] + "2",
+                      "4n",
+                      time,
+                      velocity + 0.1
+                    );
+                  }
                 } else if (step.type === "mute") {
                   notes.forEach((note, i) => {
-                    sampler.triggerAttackRelease(
-                      note + "3",
-                      "16n",
-                      time + i * 0.01,
-                      velocity * 0.4
-                    );
+                    if (activeGuitar) {
+                      activeGuitar.triggerAttackRelease(
+                        note + "3",
+                        "16n",
+                        time + i * 0.01,
+                        velocity * 0.4
+                      );
+                    }
                   });
                 }
               }, startTime);
@@ -517,6 +517,7 @@
         Tone.Transport.loopEnd = currentBeat + "n";
         Tone.Transport.start();
       };
+
 
       window.stopWebAudio = function () {
         Tone.Transport.stop();
