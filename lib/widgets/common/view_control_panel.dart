@@ -35,9 +35,10 @@ class ViewControlPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 420,
+      constraints: const BoxConstraints(maxWidth: 480),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
+
         color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Theme.of(context).dividerColor),
@@ -262,25 +263,30 @@ class ViewControlPanel extends StatelessWidget {
         Text('Form Focus',
             style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontSize: 11)),
+                fontSize: 11,
+                fontWeight: FontWeight.bold)),
         const SizedBox(width: 12),
         Expanded(
-          child: Wrap(
-            spacing: 4,
-            runSpacing: 4,
-            alignment: WrapAlignment.start,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              _buildCagedButton(context, 'C'),
-              _buildCagedButton(context, 'A'),
-              _buildCagedButton(context, 'G'),
-              _buildCagedButton(context, 'E'),
-              _buildCagedButton(context, 'D'),
-              if (onTogglePentatonic != null) ...[
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildCagedButton(context, 'C'),
                 const SizedBox(width: 4),
-                _buildScaleToggleButton(context),
+                _buildCagedButton(context, 'A'),
+                const SizedBox(width: 4),
+                _buildCagedButton(context, 'G'),
+                const SizedBox(width: 4),
+                _buildCagedButton(context, 'E'),
+                const SizedBox(width: 4),
+                _buildCagedButton(context, 'D'),
+                if (onTogglePentatonic != null) ...[
+                  const SizedBox(width: 8),
+                  _buildScaleToggleButton(context),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ],
@@ -291,25 +297,31 @@ class ViewControlPanel extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text('솔로 박스 (Box)',
+        Text('솔로 박스',
             style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontSize: 11)),
-        const SizedBox(width: 8),
+                fontSize: 11,
+                fontWeight: FontWeight.bold)),
+        const SizedBox(width: 12),
         Expanded(
-          child: Wrap(
-            spacing: 4,
-            runSpacing: 4,
-            alignment: WrapAlignment.start,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              _buildBoxButton(context, 0, '전체'),
-              _buildBoxButton(context, 1, 'Box 1'),
-              _buildBoxButton(context, 2, 'Box 2'),
-              _buildBoxButton(context, 3, 'Box 3'),
-              _buildBoxButton(context, 4, 'Box 4'),
-              _buildBoxButton(context, 5, 'Box 5'),
-            ],
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildBoxButton(context, 0, '전체'),
+                const SizedBox(width: 4),
+                _buildBoxButton(context, 1, 'Box 1'),
+                const SizedBox(width: 4),
+                _buildBoxButton(context, 2, 'Box 2'),
+                const SizedBox(width: 4),
+                _buildBoxButton(context, 3, 'Box 3'),
+                const SizedBox(width: 4),
+                _buildBoxButton(context, 4, 'Box 4'),
+                const SizedBox(width: 4),
+                _buildBoxButton(context, 5, 'Box 5'),
+              ],
+            ),
           ),
         ),
       ],
@@ -318,31 +330,34 @@ class ViewControlPanel extends StatelessWidget {
 
   Widget _buildBoxButton(BuildContext context, int boxNum, String label) {
     final isSelected = selectedPentatonicBox == boxNum;
+    final theme = Theme.of(context);
     return SizedBox(
       height: 26,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: isSelected
-              ? Theme.of(context).colorScheme.tertiary
-              : Theme.of(context).colorScheme.surfaceContainerHigh,
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surfaceContainerHigh,
           foregroundColor: isSelected
-              ? Theme.of(context).colorScheme.onTertiary
-              : Theme.of(context).colorScheme.onSurface,
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          elevation: 0,
+              ? theme.colorScheme.onPrimary
+              : theme.colorScheme.onSurface,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          elevation: isSelected ? 1 : 0,
+          visualDensity: VisualDensity.compact,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(6),
               side: BorderSide(
                   color: isSelected
-                      ? Theme.of(context).colorScheme.tertiary
-                      : Theme.of(context).dividerColor)),
+                      ? theme.colorScheme.primary
+                      : theme.dividerColor.withValues(alpha: 0.6))),
         ),
         onPressed: () => onSelectPentatonicBox?.call(boxNum),
         child: Text(label,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
       ),
     );
   }
+
 
   Widget _buildFixedToggleButton(
       BuildContext context, String intervalKey, String label, Color color) {
