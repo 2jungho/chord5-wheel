@@ -363,14 +363,16 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
       if (replace) {
         _session = _session.copyWith(
           progression: newBlocks,
-          // 교체(Replace) 시, 제목이 주어지면 적용하고 없으면 초기화(Untitled)
-          title: title ?? 'Untitled Progression',
+          title: title ?? (text.trim().isNotEmpty ? text.trim() : 'Untitled Progression'),
         );
       } else {
+        final existingTitle = (_session.title.isNotEmpty && _session.title != 'Untitled Progression') ? _session.title : null;
         _session = _session.copyWith(
           progression: [..._session.progression, ...newBlocks],
+          title: title ?? existingTitle ?? [..._session.progression, ...newBlocks].map((b) => b.chordSymbol).join('-'),
         );
       }
+
       // 코드가 추가된 후 첫 번째 블록을 자동으로 선택하여 프렛보드에 표시
       selectBlock(0);
     }
@@ -491,10 +493,18 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
       );
     }).toList();
 
-    _session = _session.copyWith(progression: newBlocks);
+    final existingTitle = (_session.title.isNotEmpty && _session.title != 'Untitled Progression')
+        ? '${_session.title} (Capo)'
+        : newChordSymbols.join('-');
+
+    _session = _session.copyWith(
+      progression: newBlocks,
+      title: existingTitle,
+    );
     selectBlock(0);
     notifyListeners();
   }
+
 
   void removeChord(int index) {
     final newList = List<ChordBlock>.from(_session.progression);

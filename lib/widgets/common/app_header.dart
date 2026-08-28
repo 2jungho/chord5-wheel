@@ -190,7 +190,7 @@ class _AppHeaderState extends State<AppHeader> {
                                 ),
                           ),
                           Text(
-                            '${widget.currentTab == AppTab.explorer ? 'Circle of Fifths' : 'Chord Flow & Rhythm'}${_latestVersion.isNotEmpty ? '  v$_latestVersion' : ''}',
+                            '${widget.currentTab == AppTab.explorer ? 'Circle of Fifths' : 'Chord Flow & Rhythm'}${_latestVersion.isNotEmpty ? '  ${_latestVersion.startsWith('v') ? _latestVersion : 'v$_latestVersion'}' : ''}',
                             style: TextStyle(
                               color: Theme.of(context)
                                   .colorScheme
@@ -198,6 +198,7 @@ class _AppHeaderState extends State<AppHeader> {
                               fontSize: 12,
                             ),
                           ),
+
                         ],
                       ),
                   ],

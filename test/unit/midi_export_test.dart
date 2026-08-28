@@ -41,5 +41,25 @@ void main() {
       expect(bytes[10], equals(0x00));
       expect(bytes[11], equals(0x05));
     });
+
+    test('downloadSessionAsMidi generates descriptive filename with title and chords', () {
+      final session = ProgressionSession(
+        title: 'Bluesy',
+        key: 'C Major',
+        bpm: 120,
+        rhythmPattern: RhythmPattern.presets.first,
+        progression: const [
+          ChordBlock(chordSymbol: 'Dm9', duration: 4),
+          ChordBlock(chordSymbol: 'G7(#9)', duration: 4),
+          ChordBlock(chordSymbol: 'C9', duration: 4),
+        ],
+      );
+
+      final filename = MidiExportService.downloadSessionAsMidi(session);
+      expect(filename.startsWith('Bluesy_Dm9-G7_sharp9-C9'), isTrue);
+      expect(filename.endsWith('.mid'), isTrue);
+    });
   });
 }
+
+

@@ -31,7 +31,22 @@ class _StudioTimelineState extends State<StudioTimeline> {
       500.0; // Default width for Analysis Panel (Expanded)
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final studio = context.read<StudioState>();
+        if (_quickAddController.text.isEmpty && studio.session.progression.isNotEmpty) {
+          _quickAddController.text = studio.session.progression.map((c) => c.chordSymbol).join(' - ');
+          setState(() {});
+        }
+      }
+    });
+  }
+
+  @override
   void dispose() {
+
     _quickAddController.dispose();
     super.dispose();
   }
@@ -870,10 +885,10 @@ class _StudioTimelineState extends State<StudioTimeline> {
             );
             return;
           }
-          MidiExportService.downloadSessionAsMidi(session);
+          final filename = MidiExportService.downloadSessionAsMidi(session);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('4인조 밴드 멀티트랙 MIDI 파일(.mid)이 다운로드되었습니다.'),
+            SnackBar(
+              content: Text('4인조 밴드 MIDI 파일($filename)이 다운로드되었습니다.'),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -944,7 +959,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
                   child: Row(
                     children: [
                       ...toolButtons,
-                      if (aiButtons.isNotEmpty) const SizedBox(width: 6),
+                      const SizedBox(width: 8),
                       ...aiButtons,
                     ],
                   ),
@@ -1020,6 +1035,11 @@ class _StudioTimelineState extends State<StudioTimeline> {
   }
 
   Widget _buildQuickAddInput(BuildContext context, StudioState studio) {
+    final currentChordsText = studio.session.progression.map((c) => c.chordSymbol).join(' - ');
+    if (_quickAddController.text.isEmpty && currentChordsText.isNotEmpty) {
+      _quickAddController.text = currentChordsText;
+    }
+
     return Container(
       height: 32,
       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -1053,7 +1073,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
                     onApply: (progression, title) {
                       studio.addProgressionFromText(progression,
                           replace: true, title: title);
-                      _quickAddController.clear();
+                      _quickAddController.text = progression;
                       setState(() {});
                     },
                   ),
@@ -1068,13 +1088,9 @@ class _StudioTimelineState extends State<StudioTimeline> {
               onChanged: (val) => setState(() {}),
               onSubmitted: (value) {
                 if (value.trim().isNotEmpty) {
-                  studio.addProgressionFromText(value);
-                  Future.delayed(const Duration(milliseconds: 50), () {
-                    if (mounted) {
-                      _quickAddController.clear();
-                      setState(() {});
-                    }
-                  });
+                  studio.addProgressionFromText(value.trim(), replace: true, title: value.trim());
+                  _quickAddController.text = value.trim();
+                  setState(() {});
                 }
               },
               style: const TextStyle(fontSize: 12),
@@ -1103,12 +1119,11 @@ class _StudioTimelineState extends State<StudioTimeline> {
           if (_quickAddController.text.trim().isNotEmpty) ...[
             const SizedBox(width: 8),
             Tooltip(
-                message: '기존 진행 삭제 후 신규 생성',
+                message: '입력한 진행으로 전체 교체 (신규 생성)',
                 child: InkWell(
                     onTap: () {
-                      studio.addProgressionFromText(_quickAddController.text,
-                          replace: true);
-                      _quickAddController.clear();
+                      studio.addProgressionFromText(_quickAddController.text.trim(),
+                          replace: true, title: _quickAddController.text.trim());
                       setState(() {});
                     },
                     child: Text('신규',
@@ -1121,9 +1136,11 @@ class _StudioTimelineState extends State<StudioTimeline> {
                 message: '기존 진행 뒤에 추가',
                 child: InkWell(
                     onTap: () {
-                      studio.addProgressionFromText(_quickAddController.text,
+                      studio.addProgressionFromText(_quickAddController.text.trim(),
                           replace: false);
-                      _quickAddController.clear();
+                      _quickAddController.text = studio.session.progression
+                          .map((c) => c.chordSymbol)
+                          .join(' - ');
                       setState(() {});
                     },
                     child: Text('추가',
@@ -1131,11 +1148,20 @@ class _StudioTimelineState extends State<StudioTimeline> {
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).colorScheme.secondary)))),
+            const SizedBox(width: 6),
+            InkWell(
+              onTap: () {
+                _quickAddController.clear();
+                setState(() {});
+              },
+              child: const Icon(Icons.close, size: 14, color: Colors.grey),
+            ),
           ],
         ],
       ),
     );
   }
+
 
   Widget _buildTimelineGrid(
       BuildContext context, StudioState studio, ProgressionSession session) {

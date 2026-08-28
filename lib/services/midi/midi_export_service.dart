@@ -107,13 +107,36 @@ class MidiExportService {
     return writer.buildMidiFile();
   }
 
-  /// Export and trigger file download
-  static void downloadSessionAsMidi(ProgressionSession session) {
+  /// Export and trigger file download with descriptive filename (e.g. Bluesy_Dm9-G7_9-C9.mid)
+  static String downloadSessionAsMidi(ProgressionSession session) {
     final midiBytes = exportSessionToMidi(session);
-    final sanitizedName = (session.title.isNotEmpty ? session.title : 'chord_progression')
-        .replaceAll(RegExp(r'[^\w\s\-]'), '_')
-        .replaceAll(' ', '_');
+
+    String rawTitle = '';
+    if (session.title.isNotEmpty && session.title != 'Untitled Progression') {
+      rawTitle = session.title;
+      if (session.progression.isNotEmpty) {
+        final chordsStr = session.progression.map((b) => b.chordSymbol).join('-');
+        rawTitle += '_$chordsStr';
+      }
+    } else if (session.progression.isNotEmpty) {
+      final chordsStr = session.progression.map((b) => b.chordSymbol).join('-');
+      rawTitle = '${session.key}_$chordsStr';
+    } else {
+      rawTitle = 'chord_progression';
+    }
+
+    final sanitizedName = rawTitle
+        .replaceAll('#', 'sharp')
+        .replaceAll(RegExp(r'[^a-zA-Z0-9\-_]'), '_')
+        .replaceAll(RegExp(r'[_]+'), '_')
+        .replaceAll(RegExp(r'_+-+|-+_+'), '-')
+        .replaceAll(RegExp(r'^[-_]+|[-_]+$'), '');
     final filename = '$sanitizedName.mid';
     downloadFileCrossPlatform(filename, midiBytes);
+    return filename;
   }
 }
+
+
+
+
