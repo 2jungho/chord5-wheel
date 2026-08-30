@@ -5,12 +5,14 @@ import '../../../models/music_constants.dart';
 class CircleOfFifthsPainter extends CustomPainter {
   final int selectedKeyIndex;
   final bool isInnerSelected;
+  final bool isSeventhMode;
   final List<KeyData> keys;
   final ThemeData theme;
 
   CircleOfFifthsPainter({
     required this.selectedKeyIndex,
     required this.isInnerSelected,
+    this.isSeventhMode = false,
     required this.keys,
     ThemeData? theme,
   }) : theme = theme ?? ThemeData.dark();
@@ -45,6 +47,7 @@ class CircleOfFifthsPainter extends CustomPainter {
 
       final key = keys[i];
       final isSelected = (i == selectedKeyIndex);
+      final int dist = (i - selectedKeyIndex + 12) % 12;
 
       // --- Major Slice (Outer) ---
       final isMajorActive = isSelected && !isInnerSelected;
@@ -88,87 +91,149 @@ class CircleOfFifthsPainter extends CustomPainter {
       canvas.drawPath(
           pathInner, isMinorActive ? selectedBorderPaint : borderPaint);
 
+      // --- Determine slice text labels (Triad vs 7th) ---
+      String majorText = key.name;
+      String minorText = key.minor;
+
+      if (isSeventhMode) {
+        if (!isInnerSelected) {
+          // Major Key mode: Diatonic major chords
+          if (dist == 0 || dist == 11) {
+            majorText = '${key.name}maj7';
+          } else if (dist == 1) {
+            majorText = '${key.name}7';
+          }
+
+          // Diatonic minor chords
+          if (dist == 0 || dist == 1 || dist == 11) {
+            minorText = '${key.minor}7';
+          }
+        } else {
+          // Minor Key mode: Diatonic minor chords
+          if (dist == 0 || dist == 1 || dist == 11) {
+            minorText = '${key.minor}7';
+          }
+
+          // Diatonic relative major chords
+          if (dist == 0 || dist == 11) {
+            majorText = '${key.name}maj7';
+          } else if (dist == 1) {
+            majorText = '${key.name}7';
+          }
+        }
+      }
+
       // --- Text Labels with adjusted radius to avoid badge overlap ---
       final midAngle = startRad + (15 * pi / 180);
 
       double majorTextR = (rMiddle + (rOuter - 26 * scale)) / 2 + 5 * scale;
+      double majorFontSize = (majorText.length > 4
+              ? 11.0
+              : (majorText.length > 2 ? 12.5 : 14.0)) *
+          scale;
 
       _drawText(
           canvas,
           center,
           midAngle,
           majorTextR,
-          key.name,
+          majorText,
           isMajorActive
               ? theme.colorScheme.onPrimary
               : theme.colorScheme.onSurface,
           FontWeight.bold,
-          14 * scale);
+          majorFontSize);
 
       // Minor Text (Inner Slice: rInner to rMiddle)
       double minorTextR = (rMiddle + (rInner + 24 * scale)) / 2 - 2 * scale;
+      double minorFontSize = (minorText.length > 4
+              ? 9.0
+              : (minorText.length > 2 ? 10.0 : 11.0)) *
+          scale;
 
       _drawText(
           canvas,
           center,
           midAngle,
           minorTextR,
-          key.minor,
+          minorText,
           isMinorActive
               ? theme.colorScheme.onPrimary
               : theme.colorScheme.onSurfaceVariant,
           FontWeight.normal,
-          11 * scale);
+          minorFontSize);
 
-      // --- Badges (I, IV, V, vi, ii, iii... ) ---
-      int dist = (i - selectedKeyIndex + 12) % 12;
-
+      // --- Badges (I, IV, V, vi, ii, iii... or Imaj7, IVmaj7, V7... ) ---
       if (!isInnerSelected) {
         // === Major Key Selected ===
         if (dist == 0) {
-          _drawBadge(canvas, center, midAngle, rOuter - 10 * scale, 'I',
-              theme.colorScheme.primary, scale);
+          _drawBadge(
+              canvas,
+              center,
+              midAngle,
+              rOuter - 10 * scale,
+              isSeventhMode ? 'Imaj7' : 'I',
+              theme.colorScheme.primary,
+              scale);
         } else if (dist == 1) {
-          _drawBadge(canvas, center, midAngle, rOuter - 10 * scale, 'V',
-              Colors.amber, scale);
+          _drawBadge(canvas, center, midAngle, rOuter - 10 * scale,
+              isSeventhMode ? 'V7' : 'V', Colors.amber, scale);
         } else if (dist == 11) {
-          _drawBadge(canvas, center, midAngle, rOuter - 10 * scale, 'IV',
-              Colors.green, scale);
+          _drawBadge(canvas, center, midAngle, rOuter - 10 * scale,
+              isSeventhMode ? 'IVmaj7' : 'IV', Colors.green, scale);
         }
 
         if (dist == 0) {
-          _drawBadge(canvas, center, midAngle, rInner + 12 * scale, 'vi',
-              theme.colorScheme.secondary, scale);
+          _drawBadge(
+              canvas,
+              center,
+              midAngle,
+              rInner + 12 * scale,
+              isSeventhMode ? 'vi7' : 'vi',
+              theme.colorScheme.secondary,
+              scale);
         } else if (dist == 1) {
-          _drawBadge(canvas, center, midAngle, rInner + 12 * scale, 'iii',
-              Colors.amber, scale);
+          _drawBadge(canvas, center, midAngle, rInner + 12 * scale,
+              isSeventhMode ? 'iii7' : 'iii', Colors.amber, scale);
         } else if (dist == 11) {
-          _drawBadge(canvas, center, midAngle, rInner + 12 * scale, 'ii',
-              Colors.green, scale);
+          _drawBadge(canvas, center, midAngle, rInner + 12 * scale,
+              isSeventhMode ? 'ii7' : 'ii', Colors.green, scale);
         }
       } else {
         // === Minor Key Selected ===
         if (dist == 0) {
-          _drawBadge(canvas, center, midAngle, rInner + 12 * scale, 'i',
-              theme.colorScheme.secondary, scale);
+          _drawBadge(
+              canvas,
+              center,
+              midAngle,
+              rInner + 12 * scale,
+              isSeventhMode ? 'i7' : 'i',
+              theme.colorScheme.secondary,
+              scale);
         } else if (dist == 1) {
-          _drawBadge(canvas, center, midAngle, rInner + 12 * scale, 'v',
-              Colors.amber, scale);
+          _drawBadge(canvas, center, midAngle, rInner + 12 * scale,
+              isSeventhMode ? 'v7' : 'v', Colors.amber, scale);
         } else if (dist == 11) {
-          _drawBadge(canvas, center, midAngle, rInner + 12 * scale, 'iv',
-              Colors.green, scale);
+          _drawBadge(canvas, center, midAngle, rInner + 12 * scale,
+              isSeventhMode ? 'iv7' : 'iv', Colors.green, scale);
         }
 
         // Outer Ring (Relative Majors):
         if (dist == 0) {
-          _drawBadge(canvas, center, midAngle, rOuter - 10 * scale, 'III',
-              theme.colorScheme.primary, scale);
+          _drawBadge(
+              canvas,
+              center,
+              midAngle,
+              rOuter - 10 * scale,
+              isSeventhMode ? 'IIImaj7' : 'III',
+              theme.colorScheme.primary,
+              scale);
         } else if (dist == 1) {
-          _drawBadge(canvas, center, midAngle, rOuter - 10 * scale, 'VII',
-              Colors.amber, scale);
+          _drawBadge(canvas, center, midAngle, rOuter - 10 * scale,
+              isSeventhMode ? 'VII7' : 'VII', Colors.amber, scale);
         } else if (dist == 11) {
-          _drawBadge(canvas, center, midAngle, rOuter - 10 * scale, 'VI',
-              Colors.green, scale);
+          _drawBadge(canvas, center, midAngle, rOuter - 10 * scale,
+              isSeventhMode ? 'VImaj7' : 'VI', Colors.green, scale);
         }
       }
     }
@@ -201,25 +266,34 @@ class CircleOfFifthsPainter extends CustomPainter {
     final y = center.dy + radius * sin(angle);
     final pos = Offset(x, y);
 
-    final bgPaint = Paint()..color = color;
-    canvas.drawCircle(pos, 9 * scale, bgPaint);
-
-    final borderPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5 * scale;
-    canvas.drawCircle(pos, 9 * scale, borderPaint);
-
     final textSpan = TextSpan(
       text: text,
       style: TextStyle(
           color: Colors.white,
-          fontSize: 9 * scale,
+          fontSize:
+              (text.length > 4 ? 7.0 : (text.length > 2 ? 8.0 : 9.0)) * scale,
           fontWeight: FontWeight.bold),
     );
     final textPainter =
         TextPainter(text: textSpan, textDirection: TextDirection.ltr);
     textPainter.layout();
+
+    final badgeHeight = 18.0 * scale;
+    final badgeWidth = max(badgeHeight, textPainter.width + 8.0 * scale);
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: pos, width: badgeWidth, height: badgeHeight),
+      Radius.circular(badgeHeight / 2),
+    );
+
+    final bgPaint = Paint()..color = color;
+    canvas.drawRRect(rrect, bgPaint);
+
+    final borderPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5 * scale;
+    canvas.drawRRect(rrect, borderPaint);
+
     textPainter.paint(
         canvas, Offset(x - textPainter.width / 2, y - textPainter.height / 2));
   }
@@ -227,6 +301,7 @@ class CircleOfFifthsPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CircleOfFifthsPainter oldDelegate) {
     return oldDelegate.selectedKeyIndex != selectedKeyIndex ||
-        oldDelegate.isInnerSelected != isInnerSelected;
+        oldDelegate.isInnerSelected != isInnerSelected ||
+        oldDelegate.isSeventhMode != isSeventhMode;
   }
 }

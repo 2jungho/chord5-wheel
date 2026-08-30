@@ -9,6 +9,7 @@ class InteractiveCircleOfFifths extends StatelessWidget {
   final String modeName;
   final int currentKeyIndex;
   final bool isInnerRingSelected;
+  final bool isSeventhMode;
   final Function(int index, bool isInner) onKeySelected;
   final Function(int index, bool isInner)? onKeyLongPressed;
 
@@ -19,15 +20,17 @@ class InteractiveCircleOfFifths extends StatelessWidget {
     required this.modeName,
     required this.currentKeyIndex,
     required this.isInnerRingSelected,
+    this.isSeventhMode = false,
     required this.onKeySelected,
     this.onKeyLongPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    final displayMode = modeName == 'Ionian'
+    final rawMode = modeName == 'Ionian'
         ? 'MAJOR'
         : (modeName == 'Aeolian' ? 'MINOR' : modeName.toUpperCase());
+    final displayMode = isSeventhMode ? '$rawMode 7th' : rawMode;
 
     return SizedBox(
       width: size,
@@ -45,6 +48,7 @@ class InteractiveCircleOfFifths extends StatelessWidget {
               painter: CircleOfFifthsPainter(
                 selectedKeyIndex: currentKeyIndex,
                 isInnerSelected: isInnerRingSelected,
+                isSeventhMode: isSeventhMode,
                 keys: MusicConstants.KEYS,
                 theme: Theme.of(context),
               ),

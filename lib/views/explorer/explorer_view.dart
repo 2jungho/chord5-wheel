@@ -144,13 +144,15 @@ class ExplorerView extends StatelessWidget {
           String rootNote,
           String modeName,
           int currentKeyIndex,
-          bool isInnerRingSelected
+          bool isInnerRingSelected,
+          bool isSeventhMode,
         })>(
       selector: (context, state) => (
         rootNote: state.rootNote,
         modeName: state.currentMode.name,
         currentKeyIndex: state.currentKeyIndex,
         isInnerRingSelected: state.isInnerRingSelected,
+        isSeventhMode: state.isSeventhMode,
       ),
       builder: (context, data, _) => InteractiveCircleOfFifths(
         size: size,
@@ -158,6 +160,7 @@ class ExplorerView extends StatelessWidget {
         modeName: data.modeName,
         currentKeyIndex: data.currentKeyIndex,
         isInnerRingSelected: data.isInnerRingSelected,
+        isSeventhMode: data.isSeventhMode,
         onKeySelected: (index, isInner) =>
             context.read<MusicState>().selectKeySlice(index, isInner),
         onKeyLongPressed: (index, isInner) {
