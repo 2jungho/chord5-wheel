@@ -720,6 +720,7 @@ class _StudioTimelineState extends State<StudioTimeline> {
                 double size = min(constraints.maxWidth, constraints.maxHeight);
                 return CircleOfFifthsSelector(
                   currentKey: session.key,
+                  isSeventhMode: context.watch<MusicState>().isSeventhMode,
                   onKeySelected: (key) {
                     studio.updateKey(key);
                     _syncKeyWithMusicState(context, key);

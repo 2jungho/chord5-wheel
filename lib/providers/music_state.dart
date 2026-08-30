@@ -158,10 +158,12 @@ class MusicState extends ChangeNotifier with ViewControlStateMixin {
     _selectedDiatonicIndex = index;
     _selectedCagedPatternName = null; // 코드가 바뀌면 CAGED 선택도 초기화
 
-    // 코드가 바뀌었으므로, 해당 코드의 첫 번째 CAGED 폼을 자동 선택
+    // 1. 기본 보이싱 계산 (Generic)
+    _calculateMainChordVoicing();
+
+    // 2. 코드가 바뀌었으므로, 해당 코드의 첫 번째 CAGED 폼을 자동 선택 (안전한 코드인 경우 덮어쓰기)
     _setDefaultCagedSelection();
 
-    _calculateMainChordVoicing(); // 보이싱만 다시 계산하면 됨
     notifyListeners();
   }
 

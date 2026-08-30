@@ -7,12 +7,14 @@ class CircleOfFifthsSelector extends StatelessWidget {
   final String currentKey;
   final Function(String) onKeySelected;
   final double size;
+  final bool isSeventhMode;
 
   const CircleOfFifthsSelector({
     super.key,
     required this.currentKey,
     required this.onKeySelected,
     this.size = 280,
+    this.isSeventhMode = false,
   });
 
   @override
@@ -64,6 +66,7 @@ class CircleOfFifthsSelector extends StatelessWidget {
                 isInnerSelected: isMinor,
                 keys: keys,
                 theme: Theme.of(context),
+                isSeventhMode: isSeventhMode,
               ),
             ),
           ),

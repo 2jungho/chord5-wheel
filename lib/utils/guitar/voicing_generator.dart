@@ -10,6 +10,22 @@ class VoicingGenerator {
     final r5 = TuningUtils.get5thStringFret(normRoot);
 
     const shapes = {
+      'Maj': {
+        'r6': [0, 2, 2, 1, 0, 0],
+        'r5': [-1, 0, 2, 2, 2, 0],
+      },
+      'm': {
+        'r6': [0, 2, 2, 0, 0, 0],
+        'r5': [-1, 0, 2, 2, 1, 0],
+      },
+      'dim': {
+        'r6': [0, -1, -1, 0, -1, -1],
+        'r5': [-1, 0, 1, 2, 1, -1],
+      },
+      'dim7': {
+        'r6': [0, -1, -1, 0, -1, -1],
+        'r5': [-1, 0, 1, -1, 1, -1],
+      },
       'Maj7': {
         'r6': [0, -1, 1, 1, 0, -1],
         'r5': [-1, 0, 2, 1, 2, 0],
@@ -26,14 +42,32 @@ class VoicingGenerator {
         'r6': [0, -1, 0, 0, -1, -1],
         'r5': [-1, 0, 1, 0, 1, -1],
       },
+      'sus4': {
+        'r6': [0, 2, 2, 2, 0, 0],
+        'r5': [-1, 0, 2, 2, 3, 0],
+      },
+      'sus2': {
+        'r6': [0, 2, 4, 4, -1, -1],
+        'r5': [-1, 0, 2, 2, 0, 0],
+      },
+      'aug': {
+        'r6': [0, 3, 2, 1, 1, 0],
+        'r5': [-1, 0, 3, 2, 2, 1],
+      },
     };
 
     final qKey = switch (quality) {
-      _ when quality.contains('m7b5') => 'm7b5',
-      _ when quality.contains('m7') => 'm7',
-      _ when quality.contains('Maj7') => 'Maj7',
+      _ when quality.contains('m7b5') || quality.contains('ø') => 'm7b5',
+      _ when quality.contains('dim7') || quality.contains('°7') => 'dim7',
+      _ when quality.contains('dim') || quality.contains('°') || quality.contains('b5') => 'dim',
+      _ when quality.contains('Maj7') || quality.contains('maj7') || quality.contains('M7') || quality.contains('Δ') => 'Maj7',
+      _ when quality.contains('m7') || quality.contains('min7') => 'm7',
       _ when quality.contains('7') => '7',
-      _ => 'Maj7',
+      _ when quality.contains('sus4') => 'sus4',
+      _ when quality.contains('sus2') => 'sus2',
+      _ when quality.contains('aug') || quality.contains('+') => 'aug',
+      _ when quality.contains('m') || quality.contains('min') => 'm',
+      _ => 'Maj',
     };
 
     final s = shapes[qKey] ?? shapes['Maj7']!;

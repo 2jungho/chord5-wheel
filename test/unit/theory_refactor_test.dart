@@ -94,11 +94,20 @@ void main() {
     test('calculateChordShape Cmaj7', () {
       final voicing = VoicingGenerator.calculateChordShape('C', 'Maj7');
       expect(voicing.rootString, 5); // Should prefer 5th string for C
-      // Expected logic: r5=3. s['r5']=[-1, 0, 2, 1, 2, 0].
-      // offsets + root(3): [-1, 3, 5, 4, 5, 3] -> [3, 5, 4, 5, 3] (omitting 6th string mute)
-      // frets[0] is 6th string. -1.
       expect(voicing.frets[0], -1);
       expect(voicing.frets[1], 3); // C on A string
+    });
+
+    test('calculateChordShape Bdim (Triad)', () {
+      final voicing = VoicingGenerator.calculateChordShape('B', 'dim');
+      expect(voicing.rootString, 5); // Root on 5th string (B)
+      expect(voicing.frets, [-1, 2, 3, 4, 3, -1]); // x 2 3 4 3 x (B, F, B, D)
+    });
+
+    test('calculateChordShape Bm7b5 (7th)', () {
+      final voicing = VoicingGenerator.calculateChordShape('B', 'm7b5');
+      expect(voicing.rootString, 5); // Root on 5th string (B)
+      expect(voicing.frets, [-1, 2, 3, 2, 3, -1]); // x 2 3 2 3 x (B, F, A, D)
     });
   });
 }
