@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:flutter_markdown_plus_latex/flutter_markdown_plus_latex.dart';
+import 'package:markdown/markdown.dart' as md;
 
 class ChatMessageBubble extends StatelessWidget {
   final String message;
@@ -151,6 +153,26 @@ class ChatMessageBubble extends StatelessWidget {
                               : MarkdownBody(
                                   data: message,
                                   selectable: true,
+                                  extensionSet: md.ExtensionSet(
+                                    [
+                                      LatexBlockSyntax(),
+                                      ...md.ExtensionSet.gitHubFlavored.blockSyntaxes,
+                                    ],
+                                    [
+                                      LatexInlineSyntax(),
+                                      ...md.ExtensionSet.gitHubFlavored.inlineSyntaxes,
+                                    ],
+                                  ),
+                                  builders: {
+                                    'latex': LatexElementBuilder(
+                                      textStyle: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                        fontSize: fontSize,
+                                      ),
+                                    ),
+                                  },
                                   styleSheet: MarkdownStyleSheet(
                                     p: TextStyle(
                                         color: Theme.of(context)

@@ -113,6 +113,7 @@ git config user.email "jungho.lee@maius.co.kr"
 
 ### 7. 🤖 대화형 AI 튜터 챗봇 & 앱 상태 제어
 *   우측 패널에서 실시간 스트리밍으로 화성학 질문 답변 및 코드 진행 분석을 제공합니다.
+*   **LaTeX 수식 및 화살표 렌더러 탑재**: 답변 내 `$\rightarrow$`, `$\to$`, `$\Rightarrow$` 등의 화살표 문법 및 수식(`$$...$$`)이 깨짐 없이 시각적 기호로 깔끔하게 렌더링됩니다.
 *   사용자의 자연어 요청에 따라 앱의 5도권 키 및 모드를 실시간으로 변경(App State Command Execution)합니다.
 *   헤더에 최적화된 단일 라인 축약 뱃지(`3.7F`, `4o`, `3.7S`, `R1` 등)와 외부 사이트 바로가기 제공.
 
@@ -127,6 +128,7 @@ git config user.email "jungho.lee@maius.co.kr"
 | **MIDI Engine** | Pure Dart SMF Type 1 Writer | 5트랙 표준 MIDI 바이너리 파일 생성 및 크로스 플랫폼 다운로드 |
 | **Audio Engine** | Tone.js (Web) / VirtualBandSynth (PCM/WAV) / flutter_soloud | 플랫폼별 최적화된 하이브리드 오디오 엔진 |
 | **Multi-AI Engine** | Gemini / OpenAI / Claude / DeepSeek / Ollama | 멀티 LLM SSE 스트리밍 및 공통 JSON 파서 연동 |
+| **Markdown & LaTeX** | flutter_markdown_plus / flutter_markdown_plus_latex | GFM 지원 및 KaTeX/LaTeX 수식·화살표 기호 미려 렌더링 |
 | **Hosting & Deploy** | Firebase Hosting | 프로덕션 웹 릴리즈 배포 (`chord5-wheel.web.app`) |
 | **Repository** | GitHub (`2jungho/chord5-wheel`) | 버전 관리 및 협업 |
 | **Code Quality** | Effective Dart / 0-Lint Architecture | `dart analyze lib test` 0개 이슈 달성 |
@@ -192,7 +194,7 @@ flutter run -d windows
 # 정적 분석 (0 issues)
 dart analyze lib test
 
-# 전체 단위 및 위젯 테스트 실행 (38 tests)
+# 전체 단위 및 위젯 테스트 실행 (48 tests)
 flutter test
 ```
 
@@ -213,6 +215,13 @@ firebase deploy --only hosting
 ---
 
 ## 📝 변경 이력 (Changelog)
+
+### v2.7.0 (2026-09-10 - AI Chat LaTeX Math & Arrow Renderer Enhancement)
+* **✨ AI 채팅 LaTeX 수식 및 화살표 렌더러 플러그인 탑재 (`flutter_markdown_plus_latex`)**:
+  * AI 튜터 응답 내 `$\rightarrow$`, `$\to$`, `$\Rightarrow$` 등 LaTeX 화살표 표기 및 수학 공식(`$...$`, `$$...$$`)이 원문 텍스트 깨짐 없이 미려한 그래픽 기호로 렌더링되도록 개선.
+  * `flutter_markdown_plus` 및 `flutter_markdown_plus_latex` 기반 커스텀 빌더(`LatexElementBuilder`) 연동으로 앱 테마 색상(onSurface) 및 사용자 지정 폰트 크기 자동 동기화.
+  * GitHub Flavored Markdown(표, 체크박스 등) 문법 확장과 결합하여 풍부한 마크다운 표현력 확보.
+* **품질 보증**: 48개 전체 단위/위젯 테스트 100% 통과 및 정적 분석 0개 이슈 달성.
 
 ### v2.6.0 (2026-08-28 - AI Prompt Jam Track Generator & Mood Vibe Suite)
 * **✨ AI 잼트랙 분위기 프롬프트 주입기 (AI Mood-Driven Jam Generator)**:
