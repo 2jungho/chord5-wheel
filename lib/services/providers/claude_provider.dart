@@ -26,19 +26,8 @@ class ClaudeProvider implements AIProvider {
   @override
   Stream<String> sendMessageStream(
       String userMessage, String contextStr) async* {
-    final systemInstruction = _systemPrompt ??
-        'You are a helpful Guitar Theory Tutor AI assistant. Analyze user questions based on provided Context. Use Markdown. IMPORTANT: You MUST answer strictly in Korean (한국어). Provide detailed explanations.';
-
-    String fullUserMessage = userMessage;
-    if (contextStr.isNotEmpty) {
-      fullUserMessage = '''
-[Context]
-$contextStr
-
-[Question]
-$userMessage
-''';
-    }
+    final systemInstruction = _systemPrompt ?? kDefaultGuitarTheorySystemPrompt;
+    final fullUserMessage = buildPromptWithContext(userMessage, contextStr);
 
     _messages.add({'role': 'user', 'content': fullUserMessage});
 

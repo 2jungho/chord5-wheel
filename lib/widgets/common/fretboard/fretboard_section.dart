@@ -6,6 +6,7 @@ import '../../../providers/settings_state.dart';
 import '../../../models/instrument_model.dart';
 import '../../../models/fretboard_marker.dart';
 import '../../../utils/theory_utils.dart';
+import '../../../utils/fretboard_colors.dart';
 
 class FretboardSection extends StatefulWidget {
   final Map<int, List<FretboardMarker>> highlightMap;
@@ -195,9 +196,9 @@ class _FretboardSectionState extends State<FretboardSection> {
   Widget build(BuildContext context) {
     // 1. Smart Legend Chips
     final List<Widget> legendChips = [
-      _buildLegendChip(context, 'Voice Path', const Color(0xFFc084fc)),
+      _buildLegendChip(context, 'Voice Path', FretboardColors.voiceLeadingTension),
       const SizedBox(width: 8),
-      _buildLegendChip(context, 'Guide Tone', const Color(0xFFfbbf24)),
+      _buildLegendChip(context, 'Guide Tone', FretboardColors.guideToneOrResolution),
     ];
 
     return Container(

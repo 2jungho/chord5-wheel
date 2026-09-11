@@ -49,20 +49,20 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
       if (block.voicing != null) {
         final name = block.voicing!.name ?? '';
 
-        // 1. 이름 기반 매칭
-        if (name.startsWith('E Form')) {
-          selectCagedForm('E Form', force: true);
-        } else if (name.startsWith('A Form')) {
-          selectCagedForm('A Form', force: true);
-        } else if (name.startsWith('D Form')) {
-          selectCagedForm('D Form', force: true);
-        } else if (name.startsWith('G Form')) {
-          selectCagedForm('G Form', force: true);
-        } else if (name.startsWith('C Form')) {
-          selectCagedForm('C Form', force: true);
+        // 1. 이름 기반 매칭 (E Form, A Form, D Form, G Form, C Form)
+        const cagedForms = ['E Form', 'A Form', 'D Form', 'G Form', 'C Form'];
+        String? matchedForm;
+        for (final form in cagedForms) {
+          if (name.startsWith(form)) {
+            matchedForm = form;
+            break;
+          }
         }
-        // 2. 이름 매칭 실패 시 루트 스트링 기반 추론 (Fallback)
-        else {
+
+        if (matchedForm != null) {
+          selectCagedForm(matchedForm, force: true);
+        } else {
+          // 2. 이름 매칭 실패 시 루트 스트링 기반 추론 (Fallback)
           int rStr = block.voicing!.rootString;
           // 메타데이터가 부정확할 수 있으므로 실제 프렛 데이터에서 가장 낮은 줄(Bass) 감지
           for (int i = 0; i < 6; i++) {
@@ -73,16 +73,12 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
             }
           }
 
-          if (rStr == 6) {
-            selectCagedForm('E Form', force: true);
-          } else if (rStr == 5) {
-            selectCagedForm('A Form', force: true);
-          } else if (rStr == 4) {
-            selectCagedForm('D Form', force: true);
-          } else {
-            // 그 외(3,2,1번줄 루트 등)는 일단 전체 표시
-            selectCagedForm(null, force: true);
-          }
+          const rootStringForms = {
+            6: 'E Form',
+            5: 'A Form',
+            4: 'D Form',
+          };
+          selectCagedForm(rootStringForms[rStr], force: true);
         }
       } else {
         selectCagedForm(null, force: true);
@@ -153,6 +149,41 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
     return sorted.first;
   }
 
+  /// 코드 심볼로부터 ChordBlock의 화성 분석 및 최적 보이싱을 계산하여 반환
+  ChordBlock _createOrUpdateBlockVoicing({
+    ChordBlock? existingBlock,
+    required String chordSymbol,
+    String? functionTag,
+    int? duration,
+    ChordVoicing? previousVoicing,
+  }) {
+    final analyzed = TheoryUtils.analyzeChord(chordSymbol);
+    final voicings =
+        GuitarUtils.generateAllVoicings(analyzed.root, analyzed.quality);
+    final bestVoicing = _findBestVoicingForStyle(
+      voicings,
+      _timelineVoicingStyle,
+      previousVoicing: previousVoicing,
+    );
+
+    if (existingBlock != null) {
+      return existingBlock.copyWith(
+        chordSymbol: chordSymbol,
+        functionTag: functionTag,
+        chordDetail: analyzed,
+        voicing: bestVoicing,
+      );
+    }
+
+    return ChordBlock(
+      chordSymbol: chordSymbol,
+      duration: duration ?? 4,
+      chordDetail: analyzed,
+      voicing: bestVoicing,
+      functionTag: functionTag,
+    );
+  }
+
   void updateKey(String newKeyString) {
     if (_session.key == newKeyString) return;
 
@@ -204,17 +235,10 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
               ? TheoryUtils.getMinorRomanNumeral(degreeIndex + 1)
               : TheoryUtils.getRomanNumeral(degreeIndex + 1);
 
-          final analyzed = TheoryUtils.analyzeChord(newSymbol);
-          final voicings =
-              GuitarUtils.generateAllVoicings(analyzed.root, analyzed.quality);
-          final newVoicing =
-              _findBestVoicingForStyle(voicings, _timelineVoicingStyle);
-
-          return block.copyWith(
+          return _createOrUpdateBlockVoicing(
+            existingBlock: block,
             chordSymbol: newSymbol,
             functionTag: newTag,
-            chordDetail: analyzed,
-            voicing: newVoicing,
           );
         } else {
           // Non-diatonic: Fallback to Simple Transposition (Semitone)
@@ -224,16 +248,9 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
 
           final newSymbol =
               TheoryUtils.transposeChord(block.chordSymbol, semitones);
-          final analyzed = TheoryUtils.analyzeChord(newSymbol);
-          final voicings =
-              GuitarUtils.generateAllVoicings(analyzed.root, analyzed.quality);
-          final newVoicing =
-              _findBestVoicingForStyle(voicings, _timelineVoicingStyle);
-
-          return block.copyWith(
+          return _createOrUpdateBlockVoicing(
+            existingBlock: block,
             chordSymbol: newSymbol,
-            chordDetail: analyzed,
-            voicing: newVoicing,
           );
         }
       }).toList();
@@ -246,16 +263,9 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
       newProgression = _session.progression.map((block) {
         final newSymbol =
             TheoryUtils.transposeChord(block.chordSymbol, semitones);
-        final analyzed = TheoryUtils.analyzeChord(newSymbol);
-        final voicings =
-            GuitarUtils.generateAllVoicings(analyzed.root, analyzed.quality);
-        final newVoicing =
-            _findBestVoicingForStyle(voicings, _timelineVoicingStyle);
-
-        return block.copyWith(
+        return _createOrUpdateBlockVoicing(
+          existingBlock: block,
           chordSymbol: newSymbol,
-          chordDetail: analyzed,
-          voicing: newVoicing,
         );
       }).toList();
     }

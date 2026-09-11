@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../utils/theory_utils.dart';
 import '../../../models/fretboard_marker.dart';
 import '../../../models/instrument_model.dart';
+import '../../../utils/fretboard_colors.dart';
 
 class ZoneDef {
   final String name;
@@ -216,8 +217,8 @@ class FretboardPainter extends CustomPainter {
 
         final linePaint = Paint()
           ..color = isResolution
-              ? const Color(0xFFfbbf24)
-              : const Color(0xFFc084fc)
+              ? FretboardColors.guideToneOrResolution
+              : FretboardColors.voiceLeadingTension
           ..strokeWidth = isResolution ? 4.0 : 3.0
           ..style = PaintingStyle.stroke
           ..strokeCap = StrokeCap.round;
@@ -247,14 +248,19 @@ class FretboardPainter extends CustomPainter {
         canvas.drawPath(path, linePaint);
 
         final endDotPaint = Paint()
-          ..color =
-              isResolution ? const Color(0xFFfbbf24) : const Color(0xFFc084fc);
+          ..color = isResolution
+              ? FretboardColors.guideToneOrResolution
+              : FretboardColors.voiceLeadingTension;
 
         canvas.drawCircle(Offset(toX, toY), isResolution ? 5 : 4, endDotPaint);
 
         if (isResolution) {
-          canvas.drawCircle(Offset(toX, toY), 8,
-              Paint()..color = const Color(0xFFfbbf24).withValues(alpha: 0.3));
+          canvas.drawCircle(
+              Offset(toX, toY),
+              8,
+              Paint()
+                ..color = FretboardColors.guideToneOrResolution
+                    .withValues(alpha: 0.3));
         }
       }
     }
@@ -295,13 +301,13 @@ class FretboardPainter extends CustomPainter {
             ? paddingX - 10
             : paddingX + (marker.fret * fretGap) - (fretGap / 2);
 
-        Color fillColor = const Color(0xFFc084fc);
+        Color fillColor = FretboardColors.voiceLeadingTension;
         Color strokeColor = Colors.white;
 
         if (marker.isGhost || isDimmed) {
           fillColor = isTarget
-              ? const Color(0xFFa855f7)
-              : const Color.fromARGB(242, 151, 150, 151);
+              ? FretboardColors.voiceLeadingTarget
+              : FretboardColors.ghostMarker;
           strokeColor = Colors.transparent;
 
           if (isDimmed) {
@@ -310,12 +316,12 @@ class FretboardPainter extends CustomPainter {
         } else {
           final iv = marker.interval;
           fillColor = switch (iv) {
-            '1P' || '1' => const Color(0xFFef4444),
+            '1P' || '1' => FretboardColors.root,
             _ when iv.contains('3') => iv.contains('M')
-                ? const Color(0xFF60a5fa)
-                : const Color(0xFF22d3ee),
-            _ when iv.contains('5') => const Color(0xFFfacc15),
-            _ when iv.contains('7') => const Color(0xFF4ade80),
+                ? FretboardColors.majorThird
+                : FretboardColors.minorThird,
+            _ when iv.contains('5') => FretboardColors.fifth,
+            _ when iv.contains('7') => FretboardColors.seventh,
             _ => fillColor,
           };
         }
@@ -328,7 +334,7 @@ class FretboardPainter extends CustomPainter {
               Offset(x, y),
               13,
               Paint()
-                ..color = const Color(0xFFc084fc)
+                ..color = FretboardColors.voiceLeadingTension
                 ..style = PaintingStyle.stroke
                 ..strokeWidth = 2.5);
         }
@@ -339,7 +345,7 @@ class FretboardPainter extends CustomPainter {
             text: TextSpan(
                 text: marker.interval,
                 style: TextStyle(
-                    color: const Color(0xFF1e293b)
+                    color: FretboardColors.markerText
                         .withValues(alpha: (marker.isGhost || isDimmed) ? 0.5 : 1.0),
                     fontSize: 9,
                     fontWeight: FontWeight.bold)),
@@ -375,12 +381,12 @@ class FretboardPainter extends CustomPainter {
             Offset(x, y),
             13,
             Paint()
-              ..color = const Color(0xFFc084fc)
+              ..color = FretboardColors.voiceLeadingTension
               ..style = PaintingStyle.stroke
               ..strokeWidth = 2.5);
 
         canvas.drawCircle(
-            Offset(x, y), 9, Paint()..color = const Color(0xFFa855f7));
+            Offset(x, y), 9, Paint()..color = FretboardColors.voiceLeadingTarget);
       }
     }
   }
@@ -396,13 +402,7 @@ class FretboardPainter extends CustomPainter {
     final names = isMinor
         ? ['Em Form', 'Dm Form', 'Cm Form', 'Am Form', 'Gm Form']
         : ['E Form', 'D Form', 'C Form', 'A Form', 'G Form'];
-    final colors = [
-      const Color(0xFF4ade80),
-      const Color(0xFF60a5fa),
-      const Color(0xFFf87171),
-      const Color(0xFFfb923c),
-      const Color(0xFFfacc15),
-    ];
+    final colors = FretboardColors.cagedZonePalette;
 
     for (int f = baseFret - 12; f <= 24; f += 12) {
       for (int i = 0; i < names.length; i++) {

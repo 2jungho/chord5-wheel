@@ -28,23 +28,13 @@ class OpenAICompatibleProvider implements AIProvider {
   @override
   Stream<String> sendMessageStream(
       String userMessage, String contextStr) async* {
-    final systemInstruction = _systemPrompt ??
-        'You are a helpful Guitar Theory Tutor AI assistant. Analyze user questions based on provided Context. Use Markdown. IMPORTANT: You MUST answer strictly in Korean (한국어). Provide detailed explanations.';
+    final systemInstruction = _systemPrompt ?? kDefaultGuitarTheorySystemPrompt;
 
     if (_messages.isEmpty) {
       _messages.add({'role': 'system', 'content': systemInstruction});
     }
 
-    String fullUserMessage = userMessage;
-    if (contextStr.isNotEmpty) {
-      fullUserMessage = '''
-[Context]
-$contextStr
-
-[Question]
-$userMessage
-''';
-    }
+    final fullUserMessage = buildPromptWithContext(userMessage, contextStr);
 
     _messages.add({'role': 'user', 'content': fullUserMessage});
 
