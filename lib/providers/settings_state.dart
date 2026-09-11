@@ -28,6 +28,7 @@ class SettingsState extends ChangeNotifier {
   String _customApiKey = '';
   String _customBaseUrl = 'http://localhost:11434/v1';
   String _customModelName = 'llama3';
+  String _huggingFaceToken = '';
 
   // 4. Provider-specific Selected Model IDs
   GeminiModel _geminiModel = GeminiModel.flash37;
@@ -102,6 +103,7 @@ class SettingsState extends ChangeNotifier {
   String get customApiKey => _customApiKey;
   String get customBaseUrl => _customBaseUrl;
   String get customModelName => _customModelName;
+  String get huggingFaceToken => _huggingFaceToken;
 
   GeminiModel get geminiModel => _geminiModel;
   String get openAiModelId => _openAiModelId;
@@ -392,9 +394,6 @@ class SettingsState extends ChangeNotifier {
   }
 
   // 9. Hugging Face Access Token
-  String _huggingFaceToken = '';
-  String get huggingFaceToken => _huggingFaceToken;
-
   void setHuggingFaceToken(String token) {
     if (_huggingFaceToken != token) {
       _huggingFaceToken = token;

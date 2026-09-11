@@ -10,10 +10,7 @@ import 'widgets/lyria_jam_panel.dart';
 import '../../widgets/lick/progression_lick_panel.dart';
 
 import '../../utils/guitar_utils.dart';
-import '../../utils/guitar/pentatonic_box_calculator.dart';
-import '../../utils/theory_utils.dart';
 import '../../models/fretboard_marker.dart';
-import '../../models/chord_model.dart';
 import '../../models/instrument_model.dart';
 import '../../models/progression/progression_models.dart';
 
@@ -187,87 +184,18 @@ class _StudioFretboardSection extends StatelessWidget {
         final session = data.session;
         final studio = context.read<StudioState>();
 
-        // 현재 선택된 코드 블록을 기준으로 지판 표시 데이터 생성
-        Map<int, List<FretboardMarker>> highlightMap = {};
-        String? rootNote;
-        bool isMinor = false;
-
-        if (session.progression.isNotEmpty) {
-          final safeIndex =
-              data.selectedBlockIndex.clamp(0, session.progression.length - 1);
-          final currentChordBlock = session.progression[safeIndex];
-          final Chord chordData =
-              TheoryUtils.analyzeChord(currentChordBlock.chordSymbol);
-          rootNote = chordData.root;
-          isMinor = chordData.quality.contains('m') &&
-              !chordData.quality.contains('maj');
-
-          if (currentChordBlock.voicing != null) {
-            highlightMap = GuitarUtils.generateMapFromVoicing(
-                currentChordBlock.voicing!, rootNote, tuning.notes);
-          } else {
-            highlightMap = GuitarUtils.generateFretboardMap(
-              root: rootNote,
-              notes: chordData.notes,
-              tuning: tuning.notes,
-            );
-          }
-
-          // Key Center 기반 펜타토닉 / 솔로 박스 노트 생성 및 병합
-          if (data.showPentatonicOnBackground && session.key.isNotEmpty) {
-            String keyRoot = 'C';
-            bool isKeyMinor = false;
-            final parts = session.key.split(' ');
-            if (parts.isNotEmpty) {
-              keyRoot = parts[0];
-              isKeyMinor = session.key.contains('Minor');
-            }
-
-            Map<int, List<FretboardMarker>> boxMarkers;
-            if (data.selectedPentatonicBox > 0) {
-              boxMarkers = PentatonicBoxCalculator.generateBoxMarkers(
-                keyRoot: keyRoot,
-                isMinorKey: isKeyMinor,
-                boxNumber: data.selectedPentatonicBox,
-                currentChordRoot: rootNote,
-              );
-            } else {
-              final scaleType =
-                  isKeyMinor ? 'Minor Pentatonic' : 'Major Pentatonic';
-              final pentatonicNotes =
-                  TheoryUtils.calculateScaleNotes(keyRoot, scaleType);
-              boxMarkers = GuitarUtils.generateFretboardMap(
-                root: keyRoot,
-                notes: [],
-                ghostNotes: pentatonicNotes,
-              );
-            }
-
-            // 기존 highlightMap에 병합
-            for (int s = 0; s < 6; s++) {
-              final ghostMarkers = boxMarkers[s] ?? [];
-              if (ghostMarkers.isEmpty) continue;
-
-              if (!highlightMap.containsKey(s)) {
-                highlightMap[s] = ghostMarkers;
-              } else {
-                final existingFrets =
-                    highlightMap[s]!.map((m) => m.fret).toSet();
-                for (var gm in ghostMarkers) {
-                  if (!existingFrets.contains(gm.fret)) {
-                    highlightMap[s]!.add(gm);
-                  }
-                }
-                highlightMap[s]!.sort((a, b) => a.fret.compareTo(b.fret));
-              }
-            }
-          }
-        }
+        final fretboardData = GuitarUtils.generateStudioFretboardMap(
+          session: session,
+          selectedBlockIndex: data.selectedBlockIndex,
+          showPentatonicOnBackground: data.showPentatonicOnBackground,
+          selectedPentatonicBox: data.selectedPentatonicBox,
+          tuningNotes: tuning.notes,
+        );
 
         return FretboardSection(
-          highlightMap: highlightMap,
-          rootNote: rootNote,
-          isMinor: isMinor,
+          highlightMap: fretboardData.highlightMap,
+          rootNote: fretboardData.rootNote,
+          isMinor: fretboardData.isMinor,
           visibleIntervals: data.visibleIntervals,
           focusCagedForm: data.selectedCagedForm,
           voiceLeadingLines: data.voiceLeadingLines,

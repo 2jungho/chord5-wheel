@@ -14,7 +14,8 @@ import '../utils/guitar/voicing_generator.dart';
 class MusicTheoryService {
   /// Calculates scale and diatonic chords based on key and mode indices.
   static (Scale, List<Chord>) calculateKeyContext(
-      int keyIndex, int modeIndex, bool isInnerRing) {
+      int keyIndex, int modeIndex, bool isInnerRing,
+      {bool isSeventh = true}) {
     
     final keyData = MusicConstants.KEYS[keyIndex];
     String rootNoteName = isInnerRing 
@@ -37,7 +38,11 @@ class MusicTheoryService {
     );
     
     // 3. Diatonic Chords
-    final diatonicChords = ChordUtils.getDiatonicChords(scaleNotes, modeData.name);
+    final diatonicChords = ChordUtils.getDiatonicChords(
+      scaleNotes, 
+      modeData.name,
+      isSeventh: isSeventh,
+    );
     
     return (scale, diatonicChords);
   }

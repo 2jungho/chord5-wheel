@@ -185,8 +185,7 @@ class ExplorerView extends StatelessWidget {
   }
 
   Widget _buildChordTypeToggle(BuildContext context) {
-    final musicState = context.watch<MusicState>();
-    final isSeventh = musicState.isSeventhMode;
+    final isSeventh = context.select<MusicState, bool>((s) => s.isSeventhMode);
     final theme = Theme.of(context);
 
     return Container(

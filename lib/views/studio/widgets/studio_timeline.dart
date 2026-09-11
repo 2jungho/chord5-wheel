@@ -200,27 +200,9 @@ class _StudioTimelineState extends State<StudioTimeline> {
                           child: GestureDetector(
                             onHorizontalDragUpdate: (details) {
                               setState(() {
-                                double currentWidth = 500.0;
-                                try {
-                                  final dynamic raw = _analysisPanelWidth;
-                                  if (raw != null) {
-                                    currentWidth = (raw as num).toDouble();
-                                  }
-                                } catch (e) {
-                                  currentWidth = 500.0;
-                                }
-
-                                if (currentWidth.isNaN) currentWidth = 500.0;
-
-                                currentWidth -= details.delta.dx;
-
-                                if (currentWidth < 250) {
-                                  currentWidth = 250;
-                                }
-                                if (currentWidth > 800) {
-                                  currentWidth = 800;
-                                }
-                                _analysisPanelWidth = currentWidth;
+                                _analysisPanelWidth =
+                                    (_analysisPanelWidth - details.delta.dx)
+                                        .clamp(250.0, 800.0);
                               });
                             },
                             child: Container(

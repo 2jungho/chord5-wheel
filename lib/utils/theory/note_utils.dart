@@ -67,4 +67,16 @@ class NoteUtils {
     };
     return map[st] ?? '?';
   }
+
+  /// Normalizes any CAGED form string (e.g. "Em Form", "E Form", "Em", "E")
+  /// to its single-letter uppercase base form ("E", "D", "C", "A", "G").
+  static String normalizeCagedForm(String? form) {
+    if (form == null || form.isEmpty) return '';
+    final token = form.trim().split(RegExp(r'\s+'))[0];
+    final base = token.replaceAll(RegExp(r'm$', caseSensitive: false), '').toUpperCase();
+    if (const {'C', 'A', 'G', 'E', 'D'}.contains(base)) {
+      return base;
+    }
+    return token;
+  }
 }

@@ -18,6 +18,9 @@ class TheoryUtils {
   static String normalizeNoteName(String name) =>
       NoteUtils.normalizeNoteName(name);
 
+  static String normalizeCagedForm(String? form) =>
+      NoteUtils.normalizeCagedForm(form);
+
   static int getNoteIndex(String noteName) => NoteUtils.getNoteIndex(noteName);
 
   static String getNoteName(int chromaticIndex, bool useSharp) =>

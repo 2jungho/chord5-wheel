@@ -108,13 +108,7 @@ class MusicState extends ChangeNotifier with ViewControlStateMixin {
   void changeKey(int index) {
     if (index < 0 || index >= MusicConstants.KEYS.length) return;
     _currentKeyIndex = index;
-    // resetViewFilters(); // View Filters Reset -> Removed to keep selection consistent? No, filters should reset on key change.
-    // However, we want to auto-select the first CAGED form.
-    _selectedCagedPatternName = null; // Reset explicitly
-    selectCagedForm(null); // Clear focus
-
-    _calculateState();
-    notifyListeners();
+    _resetSelectionAndRecalculate();
   }
 
   /// 휠의 특정 슬라이스(Key) 선택 시 호출
@@ -127,28 +121,22 @@ class MusicState extends ChangeNotifier with ViewControlStateMixin {
     // JS 원본 로직 반영:
     // Inner Ring 선택 시 Aeolian(Natural Minor) 모드로 자동 전환
     // Outer Ring 선택 시 Ionian(Major) 모드로 자동 전환
-    if (isInner) {
-      _currentModeIndex = 4; // Aeolian (Natural Minor)
-    } else {
-      _currentModeIndex = 1; // Ionian (Major)
-    }
-
-    _selectedDiatonicIndex = 0; // 코드 선택 초기화
-    _selectedCagedPatternName = null; // CAGED 선택 초기화
-    selectCagedForm(null); // Clear Focus
-
-    _calculateState();
-    notifyListeners();
+    _currentModeIndex = isInner ? 4 : 1;
+    _resetSelectionAndRecalculate();
   }
 
   /// 모드 변경 (Ionian, Dorian, Phrygian 등)
   void changeMode(int modeIndex) {
     if (modeIndex < 0 || modeIndex >= MusicConstants.MODES.length) return;
     _currentModeIndex = modeIndex;
+    _resetSelectionAndRecalculate();
+  }
+
+  /// 키나 모드 변경 시 다이아토닉 선택 및 뷰 필터를 초기화하고 상태를 재계산합니다.
+  void _resetSelectionAndRecalculate() {
     _selectedDiatonicIndex = 0;
     _selectedCagedPatternName = null;
-    selectCagedForm(null); // Clear Focus
-
+    selectCagedForm(null);
     _calculateState();
     notifyListeners();
   }
@@ -175,13 +163,8 @@ class MusicState extends ChangeNotifier with ViewControlStateMixin {
     } else {
       _selectedCagedPatternName = patternName;
       if (form != null) {
-        // "E Form" -> "E", "Em Form" -> "E"
-        String normalizedForm = form.split(' ')[0];
-        if (normalizedForm.endsWith('m')) {
-          normalizedForm =
-              normalizedForm.substring(0, normalizedForm.length - 1);
-        }
-        selectCagedForm(normalizedForm, force: true);
+        final normalizedForm = NoteUtils.normalizeCagedForm(form);
+        selectCagedForm(normalizedForm.isNotEmpty ? normalizedForm : null, force: true);
       } else {
         selectCagedForm(null);
       }
@@ -199,31 +182,20 @@ class MusicState extends ChangeNotifier with ViewControlStateMixin {
 
   /// 현재 설정(Key, Mode, Ring)에 따라 모든 파생 데이터를 다시 계산합니다.
   void _calculateState() {
-    // 1. 루트 노트와 모드 결정
-    final root = TheoryUtils.normalizeNoteName(rootNote);
-    final mode = currentMode;
-
-    // 2. 스케일 구성음 계산 (TheoryUtils 활용)
-    final scaleNotes = TheoryUtils.calculateScaleNotes(root, mode.name);
-
-    _currentScale = Scale(
-      root: root,
-      mode: mode,
-      notes: scaleNotes,
-      intervals: mode.formula.split(' '),
-    );
-
-    // 3. 다이아토닉 코드 목록 생성 (3화음 vs 7화음 반영)
-    _diatonicChords = TheoryUtils.getDiatonicChords(
-      scaleNotes,
-      mode.name,
+    // 1. 스케일 및 다이아토닉 코드 계산 (MusicTheoryService 단일 진실 공급원 활용)
+    final (scale, chords) = MusicTheoryService.calculateKeyContext(
+      _currentKeyIndex,
+      _currentModeIndex,
+      _isInnerRingSelected,
       isSeventh: _isSeventhMode,
     );
+    _currentScale = scale;
+    _diatonicChords = chords;
 
-    // 4. 기본 보이싱 계산 (Generic) - 먼저 초기화
+    // 2. 기본 보이싱 계산 (Generic)
     _calculateMainChordVoicing();
 
-    // 5. CAGED 기본 선택 및 덮어쓰기 (First Form)
+    // 3. CAGED 기본 선택 및 덮어쓰기 (First Form)
     _setDefaultCagedSelection();
   }
 
@@ -249,12 +221,11 @@ class MusicState extends ChangeNotifier with ViewControlStateMixin {
       _selectedCagedPatternName = result.$1;
 
       // Update Fretboard Highlight (selectCagedForm)
-      String form = result.$2.name ?? '';
-      String normalizedForm = form.split(' ')[0];
-      if (normalizedForm.endsWith('m')) {
-        normalizedForm = normalizedForm.substring(0, normalizedForm.length - 1);
+      final form = result.$2.name ?? '';
+      final normalizedForm = NoteUtils.normalizeCagedForm(form);
+      if (normalizedForm.isNotEmpty) {
+        selectCagedForm(normalizedForm, force: true);
       }
-      selectCagedForm(normalizedForm, force: true);
 
       // Update Main Chord Voicing to match this pattern
       // ONLY if safe (m7b5, dim, aug etc are not supported by simple CAGED dots logic)

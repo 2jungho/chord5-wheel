@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/generator_state.dart';
 import '../../providers/settings_state.dart';
 import '../../models/chord_model.dart';
+import '../../models/instrument_model.dart';
 import '../../models/fretboard_marker.dart';
 import '../../widgets/common/app_card_container.dart';
 import '../../widgets/common/fretboard/fretboard_section.dart';
@@ -147,36 +148,75 @@ class _GeneratorMobileDashboard extends StatelessWidget {
         canRestore: s.canRestore,
       ),
       builder: (context, data, _) {
-        final state = context.read<GeneratorState>();
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ChordInfoSection(
+            _ChordResultCard(
               root: data.root,
               quality: data.quality,
               intervals: data.intervals,
               notes: data.notes,
-              onPlay: () {
-                if (data.voicing != null &&
-                    data.voicing!.frets.any((f) => f != -1)) {
-                  state.playVoicing(data.voicing!);
-                } else {
-                  state.playChordStrum();
-                }
-              },
-              onRestore: data.canRestore ? state.restoreInitialChord : null,
               voicing: data.voicing,
+              canRestore: data.canRestore,
               instrument: instrument,
-            ),
-            ChordLickRecommendationCard(
-              chordRoot: data.root,
-              chordQuality: data.quality,
             ),
             const SizedBox(height: 24),
             const _GeneratorMobileDashboardBody(),
           ],
         );
       },
+    );
+  }
+}
+
+/// 코드 분석 상단 결과 카드 (모바일/데스크톱 공통 컴포넌트)
+class _ChordResultCard extends StatelessWidget {
+  final String root;
+  final String quality;
+  final String intervals;
+  final List<String> notes;
+  final ChordVoicing? voicing;
+  final bool canRestore;
+  final Instrument instrument;
+
+  const _ChordResultCard({
+    required this.root,
+    required this.quality,
+    required this.intervals,
+    required this.notes,
+    required this.voicing,
+    required this.canRestore,
+    required this.instrument,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.read<GeneratorState>();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ChordInfoSection(
+          root: root,
+          quality: quality,
+          intervals: intervals,
+          notes: notes,
+          onPlay: () {
+            if (voicing != null && voicing!.frets.any((f) => f != -1)) {
+              state.playVoicing(voicing!);
+            } else {
+              state.playChordStrum();
+            }
+          },
+          onRestore: canRestore ? state.restoreInitialChord : null,
+          voicing: voicing,
+          instrument: instrument,
+        ),
+        ChordLickRecommendationCard(
+          chordRoot: root,
+          chordQuality: quality,
+        ),
+      ],
     );
   }
 }
@@ -219,32 +259,14 @@ class _GeneratorDesktopDashboard extends StatelessWidget {
             // 1. Info Section (Left)
             Expanded(
               flex: 3,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ChordInfoSection(
-                    root: data.root,
-                    quality: data.quality,
-                    intervals: data.intervals,
-                    notes: data.notes,
-                    onPlay: () {
-                      if (data.voicing != null &&
-                          data.voicing!.frets.any((f) => f != -1)) {
-                        state.playVoicing(data.voicing!);
-                      } else {
-                        state.playChordStrum();
-                      }
-                    },
-                    onRestore: data.canRestore ? state.restoreInitialChord : null,
-                    voicing: data.voicing,
-                    instrument: instrument,
-                  ),
-                  ChordLickRecommendationCard(
-                    chordRoot: data.root,
-                    chordQuality: data.quality,
-                  ),
-                ],
+              child: _ChordResultCard(
+                root: data.root,
+                quality: data.quality,
+                intervals: data.intervals,
+                notes: data.notes,
+                voicing: data.voicing,
+                canRestore: data.canRestore,
+                instrument: instrument,
               ),
             ),
             const SizedBox(width: 24),
@@ -258,16 +280,8 @@ class _GeneratorDesktopDashboard extends StatelessWidget {
             Expanded(
               flex: 3,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '${data.root}${data.quality} 코드입니다. 다양한 보이싱으로 연주해보세요.',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
                   ExtendedAnalysisSection(
                     root: data.root,
                     quality: data.quality,
@@ -291,30 +305,56 @@ class _GeneratorMobileDashboardBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<GeneratorState>(
-      builder: (context, generatorState, _) {
+    return Selector<
+        GeneratorState,
+        ({
+          String root,
+          String quality,
+          List<String> chordNotes,
+          List<ChordVoicing> voicings,
+          String selectedStyle,
+          int? selectedVoicingIndex,
+          List<String> relatedScales,
+          String? selectedScaleName,
+          bool isMinor,
+          List<String> chordIntervalList,
+        })>(
+      selector: (_, s) => (
+        root: s.analyzedRoot,
+        quality: s.analyzedQuality,
+        chordNotes: s.chordNotes,
+        voicings: s.generatedVoicings,
+        selectedStyle: s.selectedVoicingStyle,
+        selectedVoicingIndex: s.selectedVoicingIndex,
+        relatedScales: s.relatedScales,
+        selectedScaleName: s.selectedScaleName,
+        isMinor: s.isMinor,
+        chordIntervalList: s.chordIntervalList,
+      ),
+      builder: (context, data, _) {
+        final generatorState = context.read<GeneratorState>();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ChordVoicingSection(
-              root: generatorState.analyzedRoot,
-              quality: generatorState.analyzedQuality,
-              notes: generatorState.chordNotes,
-              voicings: generatorState.generatedVoicings,
+              root: data.root,
+              quality: data.quality,
+              notes: data.chordNotes,
+              voicings: data.voicings,
               onPlayVoicing: generatorState.playVoicing,
-              selectedStyle: generatorState.selectedVoicingStyle,
+              selectedStyle: data.selectedStyle,
               onStyleSelected: generatorState.setVoicingStyle,
-              selectedVoicingIndex: generatorState.selectedVoicingIndex,
+              selectedVoicingIndex: data.selectedVoicingIndex,
               onVoicingSelected: generatorState.selectVoicing,
             ),
             const SizedBox(height: 8),
             Divider(color: Theme.of(context).dividerColor),
             const SizedBox(height: 8),
             RelatedScalesSection(
-              root: generatorState.analyzedRoot,
-              displayQuality: generatorState.analyzedQuality,
-              relatedScales: generatorState.relatedScales,
-              selectedScaleName: generatorState.selectedScaleName,
+              root: data.root,
+              displayQuality: data.quality,
+              relatedScales: data.relatedScales,
+              selectedScaleName: data.selectedScaleName,
               onScaleSelected: (scaleName) =>
                   generatorState.selectScale(scaleName),
               onChordTonesSelected: generatorState.selectChordTones,
@@ -325,14 +365,14 @@ class _GeneratorMobileDashboardBody extends StatelessWidget {
             Divider(color: Theme.of(context).dividerColor),
             const SizedBox(height: 12),
             ScaleVisualizationSection(
-              root: generatorState.analyzedRoot,
-              selectedScaleName: generatorState.selectedScaleName,
-              baseScaleName: generatorState.relatedScales.isNotEmpty
-                  ? generatorState.relatedScales.first
+              root: data.root,
+              selectedScaleName: data.selectedScaleName,
+              baseScaleName: data.relatedScales.isNotEmpty
+                  ? data.relatedScales.first
                   : null,
-              isMinor: generatorState.isMinor,
-              chordNotes: generatorState.chordNotes,
-              chordIntervals: generatorState.chordIntervalList,
+              isMinor: data.isMinor,
+              chordNotes: data.chordNotes,
+              chordIntervals: data.chordIntervalList,
               onPlayScale: generatorState.playSelectedScale,
               onPlayChord: generatorState.playChordStrum,
               hasContainer: false,
@@ -340,9 +380,9 @@ class _GeneratorMobileDashboardBody extends StatelessWidget {
             const SizedBox(height: 16),
             if (MediaQuery.of(context).size.width <= 1100)
               ExtendedAnalysisSection(
-                root: generatorState.analyzedRoot,
-                quality: generatorState.analyzedQuality,
-                selectedScaleName: generatorState.selectedScaleName,
+                root: data.root,
+                quality: data.quality,
+                selectedScaleName: data.selectedScaleName,
                 onChordSelected: (val) =>
                     generatorState.analyzeChord(val, isNavigation: true),
               ),

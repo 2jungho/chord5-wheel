@@ -203,7 +203,7 @@ lib/
 └── widgets/               # 공통 위젯
     ├── ai_chat/                 # AI 채팅 패널(AIChatPanel), 메시지 버블(ChatMessageBubble)
     ├── capo/                    # 스마트 카포 다이얼로그(CapoModal)
-    ├── lick/                    # 아티스트 릭 보관함 모달 시트 (ArtistLickVaultSheet)
+    ├── lick/                    # 아티스트 릭 보관함(ArtistLickVaultSheet) 및 분해된 컴포넌트(components/)
     ├── common/                  # 앱 헤더, 5도권 휠, 프렛보드 맵, 뷰 컨트롤 패널, 테마/AI 설정 다이얼로그
     └── ...
 
@@ -261,6 +261,32 @@ firebase deploy --only hosting
 ---
 
 ## 📝 변경 이력 (Changelog)
+
+### v2.9.1 (2026-09-11 - Comprehensive Clean Architecture Refactoring & Stability Hardening)
+* **🏛️ 대규모 코드베이스 리팩토링 및 클린 아키텍처 고도화 (Behavior-Preserving Refactoring)**:
+  * **1단계: 화성학 서비스 연동 및 데드코드 해소 (`MusicTheoryService`)**:
+    * `MusicTheoryService.calculateKeyContext(..., {bool isSeventh = true})` 파라미터 확장 및 `MusicState._calculateState()`와의 직접 연동으로 중복 연산 제거 및 데드코드 상태 완전 해소.
+    * CAGED 폼 명칭 정규화 메서드 `NoteUtils.normalizeCagedForm` 구현 및 전역 호출 일원화.
+  * **2단계: 핵심 State Provider 헬퍼 통합 & 정규화 (`MusicState`, `StudioState`)**:
+    * `MusicState`: 산재된 하드코딩 문자열 슬라이싱(`replaceAll`, `substring`)을 `normalizeCagedForm`으로 치환하고 Key/Mode 리셋 시퀀스를 `_resetSelectionAndRecalculate()`로 통합.
+    * `StudioState`: `addProgressionFromText`, `convertProgressionDensity`, `setProgression` 등에 중복 작성되어 있던 블록 생성 루프를 단일 헬퍼 `_buildProgressionBlocks(...)`로 일원화.
+  * **3단계: 1,090줄 God-Widget 분해 (`ArtistLickVaultSheet` → 5개 서브 컴포넌트)**:
+    * `lib/widgets/lick/components/` 산하에 5개 단일 책임 위젯으로 전면 분리:
+      1. `LickFilterBar`: 장르 칩, 아티스트 선택 필터, 거장 프로필 배너, 태그 필터 바.
+      2. `LickCardList`: 릭 카드 목록 및 난이도 배지.
+      3. `InteractiveTabViewer`: 6현 TAB 악보 렌더러, 5-Box 펜타토닉 뷰 스위처, 연주 테크닉 배지, 단음 미리듣기.
+      4. `LickTheoryPanel`: 화성학 분석 및 코드 톤 타겟팅, 음표별 역할 분석.
+      5. `LickActionBar`: 재생 템포, 5대 기타 사운드 프리셋 팝업, 재생/일시정지, 타임라인 삽입.
+    * 메인 시트 위젯 라인 수: **1,089줄 → 160줄 (`-85.3%` 경량화)**.
+  * **4단계: UI 빌더 내부 도메인 연산 로직 추출 및 성능 최적화**:
+    * `GuitarUtils.generateStudioFretboardMap`: `StudioView` 빌드 메서드 내에 있던 75줄의 복잡한 펜타토닉 박스 및 고스트 노트 계산 로직을 순수 유틸 함수로 추출하여 UI 재렌더링 부하 최소화.
+    * `GeneratorView`: 모바일/데스크톱 공통 상단 코드 결과 카드를 `_ChordResultCard`로 분리 및 `Consumer`를 타입 안전한 `Selector`로 전환하여 불필요한 전체 리빌드 방지.
+    * `ExplorerView`: `context.watch<MusicState>()`를 `context.select<MusicState, bool>((s) => s.isSeventhMode)`로 최적화.
+  * **5단계: 공통 헤더/타임라인/설정 상태 정리**:
+    * `AppHeader`: `FirstLetterUppercaseFormatter`를 `lib/utils/text_formatters.dart`로 분리, 네비게이션 탭 `AppTab` enum을 `lib/models/navigation/app_tab.dart`로 모듈화, 대형 `build()` 함수를 5대 전용 빌더 메서드로 구조화.
+    * `StudioTimeline`: 너비 조절 핸들의 불필요한 `dynamic` 캐스팅 및 `try/catch` 예외 처리를 `_analysisPanelWidth.clamp(250.0, 800.0)`로 간결하고 안전하게 교체.
+    * `SettingsState`: 중간에 삽입되어 있던 `_huggingFaceToken` 필드를 최상단 필드 및 게터 영역으로 재배치하여 코드 일관성 확보.
+* **품질 보증**: 92개 전체 단위/위젯 테스트 100% 통과, `dart analyze` 0개 이슈, 웹 릴리즈 빌드 및 Firebase Hosting 프로덕션 배포 완료.
 
 ### v2.9.0 (2026-09-11 - Artist Lick Vault 18 Masters Suite & 5 Guitar Tone Presets)
 * **🎸 아티스트 릭 보관함(Artist Lick Vault) 아키텍처 개편 & 18대 기타 거장 라이브러리 구축**:

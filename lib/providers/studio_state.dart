@@ -48,27 +48,14 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
       // 현재 선택된 보이싱의 폼(Form)을 파악하여 ViewControl 패널 상태 동기화
       final block = _session.progression[index];
       if (block.voicing != null) {
-        final name = block.voicing!.name ?? '';
-
-        // 1. 이름 기반 매칭 (E Form, A Form, D Form, G Form, C Form)
-        const cagedForms = ['E Form', 'A Form', 'D Form', 'G Form', 'C Form'];
-        String? matchedForm;
-        for (final form in cagedForms) {
-          if (name.startsWith(form)) {
-            matchedForm = form;
-            break;
-          }
-        }
-
-        if (matchedForm != null) {
-          selectCagedForm(matchedForm, force: true);
+        final form = NoteUtils.normalizeCagedForm(block.voicing!.name);
+        if (form.isNotEmpty) {
+          selectCagedForm('$form Form', force: true);
         } else {
-          // 2. 이름 매칭 실패 시 루트 스트링 기반 추론 (Fallback)
+          // 이름 매칭 실패 시 루트 스트링 기반 추론 (Fallback)
           int rStr = block.voicing!.rootString;
-          // 메타데이터가 부정확할 수 있으므로 실제 프렛 데이터에서 가장 낮은 줄(Bass) 감지
           for (int i = 0; i < 6; i++) {
             if (block.voicing!.frets[i] != -1) {
-              // i=0(6번줄) -> 6, i=1(5번줄) -> 5 ...
               rStr = 6 - i;
               break;
             }
@@ -134,6 +121,32 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
     notifyListeners();
   }
 
+  /// 코드 블록 시퀀스에 순차적 보이싱(Voice Leading)을 적용하여 일괄 빌드하는 공통 헬퍼
+  List<ChordBlock> _buildProgressionBlocks(
+    Iterable<ChordBlock> blocks, {
+    String? key,
+    String? Function(ChordBlock)? symbolTransformer,
+  }) {
+    ChordVoicing? lastVoicing;
+    final activeKey = key ?? _session.key;
+    return blocks.map((block) {
+      final symbol = symbolTransformer != null
+          ? (symbolTransformer(block) ?? block.chordSymbol)
+          : block.chordSymbol;
+      final newBlock = MusicTheoryService.buildChordBlock(
+        chordSymbol: symbol,
+        key: activeKey,
+        style: _timelineVoicingStyle,
+        previousVoicing: lastVoicing,
+        functionTag: block.functionTag,
+        duration: block.duration,
+        existingBlock: block,
+      );
+      lastVoicing = newBlock.voicing;
+      return newBlock;
+    }).toList();
+  }
+
   void addChord(ChordBlock chord) {
     final lastVoicing = _session.progression.isNotEmpty
         ? _session.progression.last.voicing
@@ -158,23 +171,7 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
   void addProgressionFromText(String text,
       {bool replace = false, String? title}) {
     final parsedBlocks = TheoryUtils.parseProgressionText(text, _session.key);
-    ChordVoicing? lastVoicing = _session.progression.isNotEmpty
-        ? _session.progression.last.voicing
-        : null;
-
-    final newBlocks = parsedBlocks.map((block) {
-      final newBlock = MusicTheoryService.buildChordBlock(
-        chordSymbol: block.chordSymbol,
-        key: _session.key,
-        style: _timelineVoicingStyle,
-        previousVoicing: lastVoicing,
-        functionTag: block.functionTag,
-        duration: block.duration,
-        existingBlock: block,
-      );
-      lastVoicing = newBlock.voicing;
-      return newBlock;
-    }).toList();
+    final newBlocks = _buildProgressionBlocks(parsedBlocks);
 
     if (newBlocks.isNotEmpty) {
       if (replace) {
@@ -207,24 +204,14 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
   void convertProgressionDensity({required bool toSeventh}) {
     if (_session.progression.isEmpty) return;
 
-    ChordVoicing? lastVoicing;
-    final newProgression = _session.progression.map((block) {
-      final newSymbol = TheoryUtils.convertChordDensity(
+    final newProgression = _buildProgressionBlocks(
+      _session.progression,
+      symbolTransformer: (block) => TheoryUtils.convertChordDensity(
         block.chordSymbol,
         toSeventh: toSeventh,
         functionTag: block.functionTag,
-      );
-
-      final newBlock = MusicTheoryService.buildChordBlock(
-        chordSymbol: newSymbol,
-        key: _session.key,
-        style: _timelineVoicingStyle,
-        previousVoicing: lastVoicing,
-        existingBlock: block,
-      );
-      lastVoicing = newBlock.voicing;
-      return newBlock;
-    }).toList();
+      ),
+    );
 
     _session = _session.copyWith(progression: newProgression);
     _calculateVoiceLeading();
@@ -237,23 +224,11 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
       String? title,
       String? arrangementStyle,
       bool clearArrangement = false}) {
-    ChordVoicing? lastVoicing;
     final activeKey = (key != null && key.isNotEmpty) ? key : _session.key;
-
-    final processedBlocks = blocks.map((block) {
-      final newBlock = MusicTheoryService.buildChordBlock(
-        chordSymbol: block.chordSymbol,
-        key: activeKey,
-        style: _timelineVoicingStyle,
-        previousVoicing: lastVoicing,
-        existingBlock: block,
-      );
-      lastVoicing = newBlock.voicing;
-      return newBlock;
-    }).toList();
+    final processedBlocks = _buildProgressionBlocks(blocks, key: activeKey);
 
     _session = _session.copyWith(
-      key: (key != null && key.isNotEmpty) ? key : _session.key,
+      key: activeKey,
       title: (title != null && title.isNotEmpty) ? title : _session.title,
       arrangementStyle: arrangementStyle,
       clearArrangement: clearArrangement,
