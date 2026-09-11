@@ -7,6 +7,7 @@ import '../utils/theory_utils.dart';
 import '../utils/guitar_utils.dart';
 import '../models/fretboard_marker.dart';
 import '../models/chord_model.dart';
+import '../utils/theory/voice_leading_calculator.dart';
 
 class StudioState extends ChangeNotifier with ViewControlStateMixin {
   ProgressionSession _session;
@@ -128,7 +129,10 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
     } else {
       // CAGED Form: Key Root의 해당 폼 위치를 기준으로 고정 (포지션 중시)
       // 예: C Key, E Form -> C 코드를 E Form으로 잡는 8프렛이 기준
-      targetFret = _calculateAnchorFret(style);
+      targetFret = VoiceLeadingCalculator.calculateAnchorFret(
+        key: _session.key,
+        formStyle: style,
+      );
     }
 
     // Target Fret과 가장 가까운(거리 차이가 적은) 보이싱 찾기
@@ -147,51 +151,6 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
     });
 
     return sorted.first;
-  }
-
-  /// 현재 Key의 Root Note를 주어진 [formStyle] (예: 'E Form')으로 잡았을 때의 프렛 위치를 반환
-  int _calculateAnchorFret(String formStyle) {
-    if (formStyle == 'Auto') return 0;
-
-    // Hybrid Form parsing (e.g., "C-A")
-    if (formStyle.contains('-')) {
-      final parts = formStyle.split('-');
-      final form1 = parts[0];
-      final form2 = parts[1];
-
-      int anchor1 = _calculateAnchorFret(form1);
-      int anchor2 = _calculateAnchorFret(form2);
-
-      // Wrap-around handling (e.g., D-C where D=10, C=3? No, C should be 15)
-      // Usually CAGED order is C(3) A(5) G(8) E(10) D(12) C(15)...
-      // If anchor2 is significantly smaller than anchor1 (suggesting lower octave), add 12
-      if (anchor2 < anchor1) {
-        anchor2 += 12;
-      }
-      // Special case: if difference is too big (reverse wrap?), though uncommon in this ordered list
-      if ((anchor2 - anchor1).abs() > 6) {
-        // Try to bring them closer
-        if (anchor2 > anchor1) anchor1 += 12;
-      }
-
-      return (anchor1 + anchor2) ~/ 2;
-    }
-
-    // 1. Key Root 파싱 (예: "C Major" -> "C")
-    final keyParts = _session.key.split(' ');
-    final rootNote = TheoryUtils.normalizeNoteName(keyParts[0]);
-
-    // 2. 해당 Root로 Form에 해당하는 보이싱 생성
-    // 퀄리티는 Major 기준으로 위치만 잡으면 됨
-    final cagedVoicings = GuitarUtils.generateCAGEDVoicings(rootNote, '');
-
-    // 3. 해당 Form과 일치하는 보이싱의 startFret 반환
-    final match = cagedVoicings.firstWhere(
-      (v) => v.name?.startsWith('$formStyle Form') ?? false,
-      orElse: () => ChordVoicing(frets: [], startFret: 0, rootString: 6),
-    );
-
-    return match.startFret;
   }
 
   void updateKey(String newKeyString) {
@@ -770,37 +729,9 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
   }
 
   void _calculateVoiceLeading() {
-    // 1. 유효성 검사: 코드 진행이 최소 2개 이상이어야 함
-    if (_session.progression.length < 2 ||
-        _selectedBlockIndex < 0 ||
-        _selectedBlockIndex >= _session.progression.length) {
-      _voiceLeadingLines = [];
-      return;
-    }
-
-    final currentBlock = _session.progression[_selectedBlockIndex];
-    // 마지막 블록인 경우 첫 번째 블록으로 루프 연결
-    final nextIndex = (_selectedBlockIndex < _session.progression.length - 1)
-        ? _selectedBlockIndex + 1
-        : 0;
-    final nextBlock = _session.progression[nextIndex];
-
-    if (currentBlock.voicing == null || nextBlock.voicing == null) {
-      _voiceLeadingLines = [];
-      return;
-    }
-
-    // 2. Fretboard Map 생성 (현재 코드, 다음 코드)
-    final root1 = currentBlock.chordDetail?.root ??
-        TheoryUtils.analyzeChord(currentBlock.chordSymbol).root;
-    final root2 = nextBlock.chordDetail?.root ??
-        TheoryUtils.analyzeChord(nextBlock.chordSymbol).root;
-
-    final map1 =
-        GuitarUtils.generateMapFromVoicing(currentBlock.voicing!, root1);
-    final map2 = GuitarUtils.generateMapFromVoicing(nextBlock.voicing!, root2);
-
-    // 3. 라인 계산
-    _voiceLeadingLines = GuitarUtils.calculateVoiceLeading(map1, map2);
+    _voiceLeadingLines = VoiceLeadingCalculator.calculateVoiceLeading(
+      session: _session,
+      selectedBlockIndex: _selectedBlockIndex,
+    );
   }
 }

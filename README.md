@@ -216,6 +216,24 @@ firebase deploy --only hosting
 
 ## 📝 변경 이력 (Changelog)
 
+### v2.8.0 (2026-09-11 - Full Clean Architecture Modularization & Codebase Refactoring)
+* **🏗️ 대규모 비대 소스 및 God Widget 전면 분리 & 모듈화 (Clean Architecture)**:
+  * **Settings UI 통합 단일화 (`lib/widgets/settings/`)**:
+    * `SettingsDialog`와 `SettingsDrawer`에 95% 중복 분산되어 있던 1,500여 줄의 설정을 단일 컴포넌트 `SettingsContent`로 통합 (`-89.6%` 라인 감소 및 동기화 무결성 확보).
+  * **프렛보드 렌더러 분리 (`fretboard_painter.dart`)**:
+    * 510줄의 캔버스 그래픽 렌더링 로직(`FretboardPainter`, `ZoneDef`)을 순수 페인터로 추출하여 UI 재렌더링 성능 및 가독성 향상.
+  * **순수 화성학/보이스 리딩 계산 엔진 분리 (`voice_leading_calculator.dart`)**:
+    * `StudioState` 거대 상태 클래스로부터 순수 연산 로직(`calculateVoiceLeading`, `calculateAnchorFret`)을 분리하고 독립 단위 테스트 구축.
+  * **스튜디오 타임라인 모듈화 (`lib/views/studio/widgets/timeline/`)**:
+    * 1,636줄의 God Widget을 5개 특화 서브패널(`TimelineHeaderToolbar`, `TimelineSectionsBar`, `TimelineQuickAddBar`, `TimelineKeyPanel`, `TimelineAnalysisPanel`)로 분해.
+  * **가상 밴드 잼 세션 모듈화 (`lib/views/studio/widgets/jam/`)**:
+    * 1,283줄의 `LyriaJamPanel`을 4개 독립 컴포넌트(`JamControlsBar`, `JamBandMixer`, `JamToneSelector`, `JamMoodPromptCard`)로 구조화.
+  * **AI 채팅 패널 모듈화 (`lib/widgets/ai_chat/`)**:
+    * 992줄의 `AIChatPanel`을 `ChatPanelHeader`, `ChatInputBar`, `ChatQuickPromptsBar`, `ChatDialogs`로 분리.
+  * **유명곡 탐색기 모듈화 (`lib/views/studio/widgets/famous_songs/`)**:
+    * 852줄의 `FamousSongsPanel`을 `FamousSongsAiSearchView` 및 `FamousSongsDetailInfoPanel`로 분리.
+* **품질 보증**: 58개 전체 단위/위젯 테스트 100% 통과, `dart analyze` 0개 이슈, 웹 프로덕션 빌드 및 Firebase 호스팅 배포 완료.
+
 ### v2.7.0 (2026-09-10 - AI Chat LaTeX Math & Arrow Renderer Enhancement)
 * **✨ AI 채팅 LaTeX 수식 및 화살표 렌더러 플러그인 탑재 (`flutter_markdown_plus_latex`)**:
   * AI 튜터 응답 내 `$\rightarrow$`, `$\to$`, `$\Rightarrow$` 등 LaTeX 화살표 표기 및 수학 공식(`$...$`, `$$...$$`)이 원문 텍스트 깨짐 없이 미려한 그래픽 기호로 렌더링되도록 개선.

@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
-import '../../providers/settings_state.dart';
+import '../../providers/chat_state.dart';
 import '../../providers/generator_state.dart';
 import '../../providers/music_state.dart';
-import '../../providers/chat_state.dart';
-import '../../models/ai_provider_config.dart';
-import '../../models/gemini_model.dart';
-
-import 'chat_message_bubble.dart';
-
-import '../../widgets/common/ai/quota_error_widget.dart'; // import QuotaErrorWidget
-
-import '../../providers/studio_state.dart'; // StudioState 추가
+import '../../providers/settings_state.dart';
+import '../../providers/studio_state.dart';
 import '../../services/ai_command_service.dart';
+import '../common/ai/quota_error_widget.dart';
+import 'chat_dialogs.dart';
+import 'chat_input_bar.dart';
+import 'chat_message_bubble.dart';
+import 'chat_panel_header.dart';
+import 'chat_quick_prompts_bar.dart';
 
 class AIChatPanel extends StatefulWidget {
   final VoidCallback? onClose;
@@ -59,7 +56,6 @@ class _AIChatPanelState extends State<AIChatPanel> {
   void _onScroll() {
     if (_scrollController.hasClients) {
       final position = _scrollController.position;
-      // Consider at bottom if within 50 pixels
       _isUserAtBottom = position.pixels >= position.maxScrollExtent - 50;
     }
   }
@@ -107,14 +103,16 @@ class _AIChatPanelState extends State<AIChatPanel> {
             setState(() {
               _textController.text = result.recognizedWords;
               _textController.selection = TextSelection.fromPosition(
-                  TextPosition(offset: _textController.text.length));
+                TextPosition(offset: _textController.text.length),
+              );
             });
           },
         );
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('음성 인식을 시작할 수 없습니다. 권한을 확인해주세요.')));
+            const SnackBar(content: Text('음성 인식을 시작할 수 없습니다. 권한을 확인해주세요.')),
+          );
         }
       }
     }
@@ -130,7 +128,6 @@ class _AIChatPanelState extends State<AIChatPanel> {
     final key = '$root $mode';
     final scale = genState.selectedScaleName;
 
-    // Studio 진행이 있으면 관련 프롬프트 추가
     final hasProgression = studioState.session.progression.isNotEmpty;
 
     List<String> prompts = [];
@@ -196,7 +193,6 @@ class _AIChatPanelState extends State<AIChatPanel> {
           customBaseUrl: settings.customBaseUrl,
         );
 
-    // AI 명령 파싱 및 실행
     if (mounted) {
       final messages = context.read<ChatState>().messages;
       if (messages.isNotEmpty && messages.last['isUser'] == false) {
@@ -209,82 +205,39 @@ class _AIChatPanelState extends State<AIChatPanel> {
     }
 
     _isUserAtBottom = true;
-    // Scroll to bottom after a slight delay to show the change
     Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
   }
 
   void _handleEditMessage(int index, String currentText) {
-    final editController = TextEditingController(text: currentText);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
-        title: Text('메시지 수정',
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
-        content: TextField(
-          controller: editController,
-          autofocus: true,
-          minLines: 1,
-          maxLines: 5,
-          decoration: InputDecoration(
-            hintText: '메시지를 수정하세요',
-            hintStyle: TextStyle(color: Theme.of(context).hintColor),
-            filled: true,
-            fillColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-          ),
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('취소',
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ),
-          TextButton(
-            onPressed: () async {
-              final newText = editController.text.trim();
-              if (newText.isNotEmpty && newText != currentText) {
-                final settings = context.read<SettingsState>();
-                final modelName = settings.currentModelId;
-                final systemPrompt = settings.systemPrompt;
+    ChatDialogs.showEditMessageDialog(
+      context,
+      currentText,
+      (newText) async {
+        final settings = context.read<SettingsState>();
+        final modelName = settings.currentModelId;
+        final systemPrompt = settings.systemPrompt;
+        final chatState = context.read<ChatState>();
 
-                final chatState = context.read<ChatState>();
-                Navigator.pop(context); // Close dialog first
+        await chatState.editMessage(
+          index,
+          newText,
+          contextData: _getContextData(),
+          modelName: modelName,
+          systemPrompt: systemPrompt,
+          thinkingLevel: settings.thinkingLevel,
+          customBaseUrl: settings.customBaseUrl,
+        );
 
-                await chatState.editMessage(
-                  index,
-                  newText,
-                  contextData: _getContextData(),
-                  modelName: modelName,
-                  systemPrompt: systemPrompt,
-                  thinkingLevel: settings.thinkingLevel,
-                  customBaseUrl: settings.customBaseUrl,
-                );
-
-                // AI 명령 파싱 및 실행
-                if (!mounted) return;
-                final messages = chatState.messages;
-                if (messages.isNotEmpty && messages.last['isUser'] == false) {
-                  final lastMsg = messages.last['text'] as String;
-                  final cmd = AICommandService.parse(lastMsg);
-                  if (cmd != null && mounted) {
-                    AICommandService.execute(this.context, cmd);
-                  }
-                }
-              } else {
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('수정 및 재생성',
-                style: TextStyle(color: Colors.blueAccent)),
-          ),
-        ],
-      ),
+        if (!mounted) return;
+        final messages = chatState.messages;
+        if (messages.isNotEmpty && messages.last['isUser'] == false) {
+          final lastMsg = messages.last['text'] as String;
+          final cmd = AICommandService.parse(lastMsg);
+          if (cmd != null && mounted) {
+            AICommandService.execute(context, cmd);
+          }
+        }
+      },
     );
   }
 
@@ -293,7 +246,6 @@ class _AIChatPanelState extends State<AIChatPanel> {
     _textController.clear();
 
     final settings = context.read<SettingsState>();
-
     final provider = settings.aiProvider;
     final apiKey = settings.currentApiKey;
     final systemPrompt = settings.systemPrompt;
@@ -301,8 +253,10 @@ class _AIChatPanelState extends State<AIChatPanel> {
     if (!settings.hasApiKey) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                '${settings.aiProviderType.label} API Key가 설정되지 않았습니다. 설정창에서 키를 등록해주세요.')),
+          content: Text(
+            '${settings.aiProviderType.label} API Key가 설정되지 않았습니다. 설정창에서 키를 등록해주세요.',
+          ),
+        ),
       );
       return;
     }
@@ -318,7 +272,6 @@ class _AIChatPanelState extends State<AIChatPanel> {
           customBaseUrl: settings.customBaseUrl,
         );
 
-    // AI 명령 파싱 및 실행
     if (mounted) {
       final messages = context.read<ChatState>().messages;
       if (messages.isNotEmpty && messages.last['isUser'] == false) {
@@ -334,164 +287,32 @@ class _AIChatPanelState extends State<AIChatPanel> {
     Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
   }
 
-  // ... (Skip _confirmClearChat, _launchExternalWeb)
-
-  // ... (Inside build)
-
-  //           Expanded(
-  //             child: SelectionArea(
-  //               child: ListView.builder(
-  //                 controller: _scrollController,
-  //                 padding: const EdgeInsets.all(16),
-  //                 itemCount: messages.length + (isLoading ? 1 : 0),
-  //                 itemBuilder: (context, index) {
-  // ...
-  //                   final msg = messages[index];
-  //                   // 유니크 키 추가 (Key)
-  //                   return ChatMessageBubble(
-  //                     key: ValueKey('msg_${index}_${msg.hashCode}'),
-  //                     message: msg['text'] as String,
-  //                     isUser: msg['isUser'] as bool,
-  //                     provider: msg['provider'] as String?,
-  //                     fontSize: settings.chatFontSize, // Add this
-  //                     onEdit: (msg['isUser'] as bool) && !isLoading
-  //                         ? () => _handleEditMessage(index, msg['text'] as String)
-  //                         : null,
-  //                   );
-
   void _confirmClearChat() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Theme.of(context).dialogTheme.backgroundColor,
-        title: Text('대화 기록 삭제',
-            style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
-        content: Text('모든 대화 내용이 영구적으로 삭제됩니다.\n계속하시겠습니까?',
-            style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('취소',
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ),
-          TextButton(
-            onPressed: () {
-              context.read<ChatState>().clearHistory();
-              Navigator.pop(context);
-            },
-            child: const Text('삭제', style: TextStyle(color: Colors.redAccent)),
-          ),
-        ],
-      ),
+    ChatDialogs.confirmClearChat(
+      context,
+      () => context.read<ChatState>().clearHistory(),
     );
   }
 
-  Future<void> _launchExternalWeb(AIProviderType provider) async {
-    final chatState = context.read<ChatState>();
+  void _launchExternalWeb() {
     final settings = context.read<SettingsState>();
-    final messages = chatState.messages;
-    final url = switch (provider) {
-      AIProviderType.gemini => 'https://gemini.google.com/',
-      AIProviderType.openai => 'https://chatgpt.com/',
-      AIProviderType.claude => 'https://claude.ai/',
-      AIProviderType.custom => settings.customBaseUrl,
-    };
-    final uri = Uri.parse(url);
-
-    void launchSite() async {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.platformDefault);
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('링크를 열 수 없습니다: $url')),
-          );
-        }
-      }
-    }
-
-    // 1. 대화 내용이 있는 경우: 클립보드 복사 후 다이얼로그 표시
-    if (messages.isNotEmpty) {
-      final StringBuffer buffer = StringBuffer();
-      buffer.writeln("이전 대화 맥락입니다:");
-      for (final msg in messages) {
-        final role = msg['isUser'] == true ? "User" : "AI";
-        final text = msg['text'] as String;
-        buffer.writeln("[$role]: $text");
-      }
-      buffer.writeln("\n이 맥락을 바탕으로 대화를 계속해주세요.");
-
-      await Clipboard.setData(ClipboardData(text: buffer.toString()));
-
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Row(
-              children: [
-                Icon(Icons.check_circle,
-                    color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
-                const Text('복사 완료'),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('대화 맥락이 클립보드에 저장되었습니다.'),
-                const SizedBox(height: 8),
-                Text('열리는 사이트의 입력창에 붙여넣기(Ctrl+V)하여\n대화를 이어가세요.',
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        fontSize: 13)),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('취소'),
-              ),
-              FilledButton.icon(
-                onPressed: () {
-                  Navigator.pop(context);
-                  launchSite();
-                },
-                icon: const Icon(Icons.open_in_new, size: 16),
-                label: const Text('사이트 열기'),
-              ),
-            ],
-          ),
-        );
-      }
-    } else {
-      // 2. 대화 내용이 없는 경우: 즉시 이동
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('외부 사이트로 이동합니다.'),
-            duration: Duration(seconds: 1),
-          ),
-        );
-      }
-      launchSite();
-    }
+    final chatState = context.read<ChatState>();
+    ChatDialogs.launchExternalWeb(
+      context: context,
+      provider: settings.aiProviderType,
+      messages: chatState.messages,
+      customBaseUrl: settings.customBaseUrl,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Listen to ChatState changes
     final chatState = context.watch<ChatState>();
     final settings = context.watch<SettingsState>();
     final messages = chatState.messages;
     final isLoading = chatState.isLoading;
-
-    // Check for mobile layout
     final isMobile = MediaQuery.of(context).size.width < 800;
 
-    // Auto-scroll on new messages
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         if (isLoading && _isUserAtBottom) {
@@ -500,7 +321,6 @@ class _AIChatPanelState extends State<AIChatPanel> {
       }
     });
 
-    // Content Widget
     final content = Container(
       width: isMobile ? double.infinity : _panelWidth,
       clipBehavior: Clip.hardEdge,
@@ -510,272 +330,20 @@ class _AIChatPanelState extends State<AIChatPanel> {
         border: Border.all(color: Theme.of(context).dividerColor),
         boxShadow: [
           BoxShadow(
-              color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
-              blurRadius: 4)
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
+            blurRadius: 4,
+          ),
         ],
       ),
       child: Column(
         children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              border: Border(
-                  bottom: BorderSide(color: Theme.of(context).dividerColor)),
-              color: Theme.of(context).cardColor,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Icon(
-                        settings.aiProviderType == AIProviderType.openai
-                            ? Icons.psychology
-                            : settings.aiProviderType == AIProviderType.claude
-                                ? Icons.wb_incandescent_outlined
-                                : settings.aiProviderType == AIProviderType.custom
-                                    ? Icons.terminal
-                                    : Icons.auto_awesome,
-                        color: Theme.of(context).colorScheme.tertiary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        // AI Tutor Label
-                        switch (settings.aiProviderType) {
-                          AIProviderType.gemini => 'Gemini',
-                          AIProviderType.openai => 'ChatGPT',
-                          AIProviderType.claude => 'Claude',
-                          AIProviderType.custom => 'Custom AI',
-                        },
-                        style: GoogleFonts.notoSansKr(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            color: Theme.of(context).colorScheme.onSurface),
-                      ),
-                      const SizedBox(width: 8),
-                      // Interactive Model Selector (PopupMenuButton - No clipping, full width)
-                      if (settings.aiProviderType != AIProviderType.custom)
-                        Theme(
-                          data: Theme.of(context).copyWith(
-                            popupMenuTheme: PopupMenuThemeData(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: BorderSide(
-                                  color: Theme.of(context)
-                                      .dividerColor
-                                      .withValues(alpha: 0.5),
-                                ),
-                              ),
-                              elevation: 10,
-                            ),
-                          ),
-                          child: PopupMenuButton<String>(
-                            tooltip: 'AI 모델 변경',
-                            initialValue: settings.currentModelId,
-                            position: PopupMenuPosition.under,
-                            constraints: const BoxConstraints(
-                              minWidth: 200,
-                              maxWidth: 260,
-                            ),
-                            padding: EdgeInsets.zero,
-                            onSelected: (newModelId) {
-                              switch (settings.aiProviderType) {
-                                case AIProviderType.gemini:
-                                  settings.setGeminiModel(
-                                      GeminiModel.fromId(newModelId));
-                                  break;
-                                case AIProviderType.openai:
-                                  settings.setOpenAiModelId(newModelId);
-                                  break;
-                                case AIProviderType.claude:
-                                  settings.setClaudeModelId(newModelId);
-                                  break;
-                                case AIProviderType.custom:
-                                  settings.setCustomModelName(newModelId);
-                                  break;
-                              }
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      'AI 모델이 ${AIModelInfo.fromId(newModelId).label}(으)로 변경되었습니다.'),
-                                  duration: const Duration(seconds: 1),
-                                ),
-                              );
-                            },
-                            itemBuilder: (context) {
-                              final models = AIModelInfo.getModelsForProvider(
-                                  settings.aiProviderType);
-                              return models.map((m) {
-                                final isSelected =
-                                    m.id == settings.currentModelId;
-                                return PopupMenuItem<String>(
-                                  value: m.id,
-                                  height: 38,
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        isSelected
-                                            ? Icons.check_circle
-                                            : Icons.circle_outlined,
-                                        size: 16,
-                                        color: isSelected
-                                            ? Theme.of(context)
-                                                .colorScheme
-                                                .primary
-                                            : Theme.of(context).hintColor,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: Text(
-                                          m.label,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: isSelected
-                                                ? FontWeight.bold
-                                                : FontWeight.w500,
-                                            color: isSelected
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                : Theme.of(context)
-                                                    .colorScheme
-                                                    .onSurface,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: isSelected
-                                              ? Theme.of(context)
-                                                  .colorScheme
-                                                  .primary
-                                                  .withValues(alpha: 0.15)
-                                              : Theme.of(context)
-                                                  .colorScheme
-                                                  .surfaceContainerLow,
-                                          borderRadius:
-                                              BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          m.shortLabel,
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                            color: isSelected
-                                                ? Theme.of(context)
-                                                    .colorScheme
-                                                    .primary
-                                                : Theme.of(context)
-                                                    .colorScheme
-                                                    .onSurfaceVariant,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }).toList();
-                            },
-                            child: Container(
-                              height: 28,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .surfaceContainerHighest
-                                    .withValues(alpha: 0.7),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withValues(alpha: 0.35),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    settings.currentModelInfo.shortLabel,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .primary,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Icon(
-                                    Icons.arrow_drop_down,
-                                    size: 16,
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                if (!isMobile) ...[
-                  const SizedBox(width: 8),
-                  InkWell(
-                    onTap: () => _launchExternalWeb(settings.aiProviderType),
-                    borderRadius: BorderRadius.circular(8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Opacity(
-                        opacity: 0.7,
-                        child: Image.asset(
-                          settings.aiProvider == 'openai'
-                              ? 'assets/images/icons8-chatgpt.png'
-                              : 'assets/images/icons8-gemini.png',
-                          width: 24,
-                          height: 24,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: Icon(Icons.delete_outline,
-                      color: Theme.of(context)
-                          .iconTheme
-                          .color
-                          ?.withValues(alpha: 0.5)),
-                  onPressed: _confirmClearChat,
-                  tooltip: '대화 지우기',
-                ),
-                if (widget.onClose != null)
-                  IconButton(
-                    icon: Icon(Icons.close,
-                        color: Theme.of(context)
-                            .iconTheme
-                            .color
-                            ?.withValues(alpha: 0.5)),
-                    onPressed: widget.onClose,
-                    tooltip: '닫기',
-                  ),
-              ],
-            ),
+          ChatPanelHeader(
+            settings: settings,
+            onClearChat: _confirmClearChat,
+            onClose: widget.onClose,
+            onLaunchExternalWeb: _launchExternalWeb,
+            isMobile: isMobile,
           ),
-
-          // Messages Area
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
@@ -790,8 +358,9 @@ class _AIChatPanelState extends State<AIChatPanel> {
                         width: 24,
                         height: 24,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Theme.of(context).colorScheme.primary),
+                          strokeWidth: 2,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
                     ),
                   );
@@ -810,7 +379,6 @@ class _AIChatPanelState extends State<AIChatPanel> {
                   );
                 }
 
-                // 유니크 키 추가 (Key)
                 return ChatMessageBubble(
                   key: ValueKey('msg_${index}_${msg.hashCode}'),
                   message: msgText,
@@ -824,136 +392,22 @@ class _AIChatPanelState extends State<AIChatPanel> {
               },
             ),
           ),
-
-          // Quick Prompts Area
-          // Quick Prompts Area
           if (!isLoading)
-            SizedBox(
-              height: 60,
-              child: Row(
-                children: [
-                  // Regenerate Button (Always visible logic)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0, right: 4.0),
-                    child: IconButton(
-                      onPressed: (messages.isNotEmpty &&
-                              messages.last['isUser'] == false)
-                          ? _handleRegenerate
-                          : null,
-                      icon: const Icon(Icons.refresh, size: 20),
-                      tooltip: '답변 재생성',
-                      // 활성화 상태일 때 Primary Color로 강조
-                      color: (messages.isNotEmpty &&
-                              messages.last['isUser'] == false)
-                          ? Theme.of(context).colorScheme.primary
-                          : null,
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView.separated(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 8),
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _getQuickPrompts().length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(width: 8),
-                      itemBuilder: (context, index) {
-                        final prompt = _getQuickPrompts()[index];
-                        final isDark =
-                            Theme.of(context).brightness == Brightness.dark;
-                        return ActionChip(
-                          label: Text(prompt),
-                          onPressed: () => _handleSubmitted(prompt),
-                          backgroundColor: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest,
-                          labelStyle: TextStyle(
-                            fontSize: 12,
-                            fontWeight:
-                                isDark ? FontWeight.w500 : FontWeight.normal,
-                            color: isDark
-                                ? Theme.of(context).colorScheme.onSurface
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                          ),
-                          side: isDark
-                              ? BorderSide(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .outline
-                                      .withValues(alpha: 0.3))
-                              : BorderSide.none,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
+            ChatQuickPromptsBar(
+              canRegenerate:
+                  messages.isNotEmpty && messages.last['isUser'] == false,
+              onRegenerate: _handleRegenerate,
+              prompts: _getQuickPrompts(),
+              onSelectPrompt: _handleSubmitted,
             ),
-
-          // Input Area
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Theme.of(context).scaffoldBackgroundColor,
-            child: Row(
-              children: [
-                IconButton(
-                  icon: Icon(_isListening ? Icons.mic : Icons.mic_none,
-                      color: _isListening
-                          ? Colors.redAccent
-                          : Theme.of(context).hintColor),
-                  onPressed: _toggleListening,
-                  tooltip: '음성 인식',
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: TextField(
-                    controller: _textController,
-                    focusNode: _focusNode,
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface),
-                    minLines: 1,
-                    maxLines: 5,
-                    keyboardType: TextInputType.multiline,
-                    textInputAction: TextInputAction.newline,
-                    decoration: InputDecoration(
-                      hintText: '질문 입력...',
-                      hintStyle: TextStyle(color: Theme.of(context).hintColor),
-                      filled: true,
-                      fillColor:
-                          Theme.of(context).colorScheme.surfaceContainerHigh,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                    ),
-                    enabled: !isLoading,
-                    cursorColor: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: Icon(
-                    isLoading ? Icons.stop_circle_outlined : Icons.send,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  onPressed: () {
-                    if (isLoading) {
-                      _handleStop();
-                    } else {
-                      _handleSubmitted(_textController.text);
-                    }
-                  },
-                  tooltip: isLoading ? '생성 중단' : '전송',
-                ),
-              ],
-            ),
+          ChatInputBar(
+            textController: _textController,
+            focusNode: _focusNode,
+            isLoading: isLoading,
+            isListening: _isListening,
+            onToggleListening: _toggleListening,
+            onSubmit: _handleSubmitted,
+            onStop: _handleStop,
           ),
         ],
       ),

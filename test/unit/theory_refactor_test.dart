@@ -4,6 +4,8 @@ import 'package:guitar_theory_app/utils/theory/scale_utils.dart';
 import 'package:guitar_theory_app/utils/theory/chord_utils.dart';
 import 'package:guitar_theory_app/utils/theory/progression_utils.dart';
 import 'package:guitar_theory_app/utils/guitar/voicing_generator.dart';
+import 'package:guitar_theory_app/utils/theory/voice_leading_calculator.dart';
+import 'package:guitar_theory_app/models/progression/progression_models.dart';
 
 void main() {
   group('NoteUtils Tests', () {
@@ -108,6 +110,37 @@ void main() {
       final voicing = VoicingGenerator.calculateChordShape('B', 'm7b5');
       expect(voicing.rootString, 5); // Root on 5th string (B)
       expect(voicing.frets, [-1, 2, 3, 2, 3, -1]); // x 2 3 2 3 x (B, F, A, D)
+    });
+  });
+
+  group('VoiceLeadingCalculator Tests', () {
+    test('calculateAnchorFret correctly returns fret position', () {
+      final fretC = VoiceLeadingCalculator.calculateAnchorFret(key: 'C Major', formStyle: 'C Form');
+      expect(fretC, isNonNegative);
+
+      final fretE = VoiceLeadingCalculator.calculateAnchorFret(key: 'C Major', formStyle: 'E Form');
+      expect(fretE, isNonNegative);
+
+      final fretAuto = VoiceLeadingCalculator.calculateAnchorFret(key: 'C Major', formStyle: 'Auto');
+      expect(fretAuto, 0);
+    });
+
+    test('calculateVoiceLeading returns empty list when session has insufficient blocks or voicings', () {
+      final session = ProgressionSession(
+        key: 'C Major',
+        rhythmPattern: RhythmPattern.presets.first,
+        progression: [
+          ChordBlock(chordSymbol: 'C'),
+          ChordBlock(chordSymbol: 'Am'),
+        ],
+      );
+
+      final lines = VoiceLeadingCalculator.calculateVoiceLeading(
+        session: session,
+        selectedBlockIndex: 0,
+      );
+      // No voicing assigned, so returns empty list
+      expect(lines, isEmpty);
     });
   });
 }

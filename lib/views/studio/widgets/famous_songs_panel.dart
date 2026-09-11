@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../../models/progression/progression_models.dart';
-import '../../../utils/theory_utils.dart';
 import 'package:provider/provider.dart';
+import '../../../models/progression/progression_models.dart';
 import '../../../providers/settings_state.dart';
 import '../../../services/ai_service.dart';
 import '../../../services/prompt_templates.dart';
-import '../../../../widgets/common/ai/quota_error_widget.dart';
+import '../../../utils/theory_utils.dart';
 import 'famous_songs/famous_song_item.dart';
-import 'famous_songs/famous_song_info_box.dart';
+import 'famous_songs/famous_songs_ai_search_view.dart';
+import 'famous_songs/famous_songs_detail_info_panel.dart';
 
 class FamousSongsPanel extends StatefulWidget {
   final ProgressionSession session;
@@ -28,14 +28,12 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
   void didUpdateWidget(covariant FamousSongsPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // 코드 진행이 변경되었는지 확인
     final oldProgression =
         oldWidget.session.progression.map((e) => e.chordSymbol).join('-');
     final newProgression =
         widget.session.progression.map((e) => e.chordSymbol).join('-');
 
     if (oldProgression != newProgression) {
-      // 진행이 바뀌면 AI 결과 초기화
       setState(() {
         _aiGeneratedSongs = null;
         _isGenerating = false;
@@ -77,14 +75,14 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
           PromptTemplates.getFamousSongsUserPrompt(progressionText);
 
       final aiService = AIService(
-          apiKey: apiKey,
-          provider: provider,
-          modelName: settings.currentModelId,
-          systemPrompt: systemPrompt,
-          thinkingLevel: settings.thinkingLevel,
-          customBaseUrl: settings.customBaseUrl);
+        apiKey: apiKey,
+        provider: provider,
+        modelName: settings.currentModelId,
+        systemPrompt: systemPrompt,
+        thinkingLevel: settings.thinkingLevel,
+        customBaseUrl: settings.customBaseUrl,
+      );
 
-      // 스트림 응답 수신 및 누적
       final stream = aiService.sendMessageStream(userPrompt);
       final buffer = StringBuffer();
 
@@ -93,12 +91,9 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
       }
 
       String responseText = buffer.toString().trim();
-
-      // AIService의 견고한 JSON 추출 로직 사용 (Markdown 블록 처리 및 에러 상세 제공)
       final Map<String, dynamic> jsonResult =
           AIService.extractJson(responseText);
 
-      // Map<String, List<String>> 형태로 변환
       final Map<String, List<String>> songs = {};
       jsonResult.forEach((genre, list) {
         if (list is List) {
@@ -109,7 +104,6 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
       setState(() {
         _aiGeneratedSongs = songs;
         if (songs.isNotEmpty) {
-          // 기존에 선택된 장르가 새로 받은 결과에도 있다면 유지, 없으면 첫 번째 장르 선택
           if (_selectedGenre == null || !songs.containsKey(_selectedGenre)) {
             _selectedGenre = songs.keys.first;
           }
@@ -137,7 +131,7 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
         (_isGenerating ||
             (_aiGeneratedSongs != null && _aiGeneratedSongs!.isNotEmpty) ||
             _aiErrorMessage != null)) {
-      return _buildAiSearchPanel(context);
+      return _buildAiView(context);
     }
 
     // 1. 매칭되는 프리셋 찾기
@@ -146,13 +140,11 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
 
     // 2. 프리셋이 없거나 유명곡 데이터가 없으면 "AI로 찾기" 패널 표시
     if (matchedPreset == null || matchedPreset.famousSongs.isEmpty) {
-      return _buildAiSearchPanel(context);
+      return _buildAiView(context);
     }
 
     // 3. 장르 데이터 준비
     final genres = matchedPreset.famousSongs.keys.toList();
-
-    // 현재 선택된 장르가 유효하지 않으면 첫 번째 장르로 초기화
     if (_selectedGenre == null || !genres.contains(_selectedGenre)) {
       _selectedGenre = genres.first;
     }
@@ -173,11 +165,13 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header: Title + Genre Dropdown
           Row(
             children: [
-              Icon(Icons.queue_music,
-                  size: 20, color: Theme.of(context).colorScheme.primary),
+              Icon(
+                Icons.queue_music,
+                size: 20,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               const SizedBox(width: 8),
               Text(
                 '이 코드 진행이 쓰인 유명 곡 (Famous Songs)',
@@ -188,7 +182,6 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                 ),
               ),
               const Spacer(),
-              // AI Search Button (New)
               if (context.watch<SettingsState>().currentApiKey.isNotEmpty &&
                   widget.session.progression.isNotEmpty)
                 Padding(
@@ -205,29 +198,31 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                         }
                       },
                       icon: Icon(
-                          (_aiGeneratedSongs != null &&
-                                  _aiGeneratedSongs!.isNotEmpty)
-                              ? Icons.visibility
-                              : Icons.auto_awesome,
-                          size: 14),
+                        (_aiGeneratedSongs != null &&
+                                _aiGeneratedSongs!.isNotEmpty)
+                            ? Icons.visibility
+                            : Icons.auto_awesome,
+                        size: 14,
+                      ),
                       label: Text(
-                          (_aiGeneratedSongs != null &&
-                                  _aiGeneratedSongs!.isNotEmpty)
-                              ? 'AI 결과 보기'
-                              : 'AI로 더 찾아보기',
-                          style: const TextStyle(fontSize: 12)),
+                        (_aiGeneratedSongs != null &&
+                                _aiGeneratedSongs!.isNotEmpty)
+                            ? 'AI 결과 보기'
+                            : 'AI로 더 찾아보기',
+                        style: const TextStyle(fontSize: 12),
+                      ),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         side: BorderSide(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withValues(alpha: 0.5)),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withValues(alpha: 0.5),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              // Folding Toggle Button
               IconButton(
                 icon: Icon(
                   _isExpanded ? Icons.expand_less : Icons.expand_more,
@@ -238,7 +233,6 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                 tooltip: _isExpanded ? '접기' : '펴기',
                 visualDensity: VisualDensity.compact,
               ),
-              // Genre Dropdown
               Container(
                 height: 32,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -246,7 +240,10 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                      color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
+                    color: Theme.of(context)
+                        .dividerColor
+                        .withValues(alpha: 0.5),
+                  ),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
@@ -262,9 +259,11 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                         value: genre,
                         child: Row(
                           children: [
-                            Icon(Icons.library_music,
-                                size: 14,
-                                color: Theme.of(context).colorScheme.tertiary),
+                            Icon(
+                              Icons.library_music,
+                              size: 14,
+                              color: Theme.of(context).colorScheme.tertiary,
+                            ),
                             const SizedBox(width: 8),
                             Text(genre),
                           ],
@@ -287,7 +286,6 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
             ],
           ),
           const SizedBox(height: 16),
-          // Main Content: Songs + Detailed Info
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
@@ -297,18 +295,26 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                 : SingleChildScrollView(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
-                        // Mobile Breakpoint: 850px (adjusted to fit content)
                         final isMobile = constraints.maxWidth < 850;
 
                         if (isMobile) {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              _buildSongList(currentSongs, context),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: currentSongs
+                                    .map((songTitle) =>
+                                        FamousSongItem(songTitle: songTitle))
+                                    .toList(),
+                              ),
                               const SizedBox(height: 16),
-                              _buildDetailedInfoPanel(
-                                  context, matchedPreset, widget.session,
-                                  isMobile: true),
+                              FamousSongsDetailInfoPanel(
+                                matchedPreset: matchedPreset,
+                                session: widget.session,
+                                isMobile: true,
+                              ),
                             ],
                           );
                         }
@@ -317,15 +323,22 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              // Left side: Song List
                               Expanded(
-                                child: _buildSongList(currentSongs, context),
+                                child: Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: currentSongs
+                                      .map((songTitle) => FamousSongItem(
+                                          songTitle: songTitle))
+                                      .toList(),
+                                ),
                               ),
                               const SizedBox(width: 24),
-                              // Right side: Detailed Description
-                              _buildDetailedInfoPanel(
-                                  context, matchedPreset, widget.session,
-                                  isMobile: false),
+                              FamousSongsDetailInfoPanel(
+                                matchedPreset: matchedPreset,
+                                session: widget.session,
+                                isMobile: false,
+                              ),
                             ],
                           ),
                         );
@@ -338,514 +351,21 @@ class _FamousSongsPanelState extends State<FamousSongsPanel> {
     );
   }
 
-  Widget _buildSongList(List<String> songs, BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: songs.map((songTitle) => FamousSongItem(songTitle: songTitle)).toList(),
-    );
-  }
-
-  Widget _buildDetailedInfoPanel(
-      BuildContext context, dynamic matchedPreset, ProgressionSession session,
-      {required bool isMobile}) {
-    return SelectionArea(
-      child: Container(
-        width:
-            isMobile ? double.infinity : 450, // Removed fixed width for mobile
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
-          ),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Text Info (Left)
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    matchedPreset.title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    matchedPreset.description,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      height: 1.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            // Badges (Right) - Widths matched via IntrinsicWidth & stretch
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 180),
-              child: IntrinsicWidth(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.tertiaryContainer,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        session.progression
-                            .map((b) => b.chordSymbol)
-                            .join('  -  '),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontFamily: 'monospace',
-                          fontWeight: FontWeight.bold,
-                          color:
-                              Theme.of(context).colorScheme.onTertiaryContainer,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        // Distinct color for Roman Numerals
-                        color: Theme.of(context).colorScheme.secondary,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        TheoryUtils.parseProgressionText(
-                                matchedPreset.progression, 'C Major')
-                            .map((b) => b.functionTag ?? b.chordSymbol)
-                            .join('   -   '),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontFamily: 'monospace',
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.1,
-                          color: Theme.of(context).colorScheme.onSecondary,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAiSearchPanel(BuildContext context) {
-    // 1. 결과가 있는 경우: 기존 UI와 유사하게 표시
-    if (_aiGeneratedSongs != null && _aiGeneratedSongs!.isNotEmpty) {
-      // AI 결과가 있으면 해당 데이터로 UI 구성
-      // 현재 선택된 장르가 유효하지 않으면 첫 번째 장르로 초기화
-      final genres = _aiGeneratedSongs!.keys.toList();
-      if (_selectedGenre == null || !genres.contains(_selectedGenre)) {
-        _selectedGenre = genres.first;
-      }
-
-      final currentSongs =
-          (_aiGeneratedSongs![_selectedGenre] ?? []).take(5).toList();
-
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceContainer,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Theme.of(context)
-                .colorScheme
-                .primary
-                .withValues(alpha: 0.3), // AI 결과임을 강조하기 위해 테두리 색상 변경
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.05),
-              blurRadius: 10,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header: Responsive Title + Controls
-            LayoutBuilder(builder: (context, headerConstraints) {
-              final isNarrow = headerConstraints.maxWidth < 600;
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.smart_toy,
-                          size: 20,
-                          color: Theme.of(context).colorScheme.primary),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'AI가 찾은 유명 곡',
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      _buildAiBadge(context),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: Icon(
-                          _isExpanded ? Icons.expand_less : Icons.expand_more,
-                          size: 20,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                        onPressed: () =>
-                            setState(() => _isExpanded = !_isExpanded),
-                        tooltip: _isExpanded ? '접기' : '펴기',
-                        visualDensity: VisualDensity.compact,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      if (isNarrow) ...[
-                        const FamousSongModelBadge(),
-                        const SizedBox(width: 8),
-                      ],
-                      // Back to DB Results
-                      if (TheoryUtils.matchProgressionToPreset(
-                              widget.session.progression) !=
-                          null)
-                        _buildBackToDbButton(context),
-                      const Spacer(),
-                      _buildGenreDropdown(context, genres),
-                      const SizedBox(width: 8),
-                      _buildRegenerateButton(context),
-                    ],
-                  ),
-                ],
-              );
-            }),
-
-            const SizedBox(height: 16),
-
-            // Content: Songs + AI Info (Responsive)
-            AnimatedSize(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              alignment: Alignment.topCenter,
-              child: !_isExpanded
-                  ? const SizedBox.shrink()
-                  : LayoutBuilder(
-                      builder: (context, constraints) {
-                        final isMobile = constraints.maxWidth < 850;
-
-                        if (isMobile) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _buildSongList(currentSongs, context),
-                              const SizedBox(height: 16),
-                              FamousSongInfoBox(session: widget.session, isMobile: true),
-                            ],
-                          );
-                        }
-
-                        return IntrinsicHeight(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Expanded(
-                                  child: _buildSongList(currentSongs, context)),
-                              const SizedBox(width: 24),
-                              FamousSongInfoBox(session: widget.session, isMobile: false),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-            ),
-
-            // AI 안내 문구
-            if (_aiErrorMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: QuotaErrorWidget.isQuotaErrorDetected(_aiErrorMessage!)
-                    ? QuotaErrorWidget(
-                        errorMessage: _aiErrorMessage!,
-                        onRetry: () => _fetchFamousSongsFromAI(context),
-                      )
-                    : Text(_aiErrorMessage!,
-                        style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
-                            fontSize: 12)),
-              ),
-          ],
-        ),
-      );
-    }
-
-    final settings = context.watch<SettingsState>();
-    final bool hasApiKey = settings.currentApiKey.isNotEmpty;
-    final bool hasProgression = widget.session.progression.isNotEmpty;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            children: [
-              Icon(Icons.queue_music,
-                  size: 20, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '이 코드 진행이 쓰인 유명 곡 (Famous Songs)',
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              const FamousSongModelBadge(),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Content
-          // Content - Compact Horizontal Layout
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-            decoration: BoxDecoration(
-              color: Theme.of(context)
-                  .colorScheme
-                  .surfaceContainerHigh
-                  .withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: LayoutBuilder(builder: (context, promoConstraints) {
-              final isPromoNarrow = promoConstraints.maxWidth < 450;
-              return Row(
-                children: [
-                  if (!isPromoNarrow) ...[
-                    Icon(
-                      Icons.smart_toy_outlined,
-                      size: 32,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withValues(alpha: 0.5),
-                    ),
-                    const SizedBox(width: 16),
-                  ],
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '알려진 프리셋 진행이 아닙니다.',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          !hasProgression
-                              ? '먼저 코드 진행을 입력해주세요.'
-                              : hasApiKey
-                                  ? 'AI를 통해 이 진행이 사용된 곡을 찾아볼까?'
-                                  : 'AI 기능을 사용하려면 설정에서 API 키를 입력해주세요.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  if (_aiErrorMessage != null &&
-                      QuotaErrorWidget.isQuotaErrorDetected(_aiErrorMessage!))
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 200),
-                      child: QuotaErrorWidget(
-                        errorMessage: _aiErrorMessage!,
-                        onRetry: () => _fetchFamousSongsFromAI(context),
-                      ),
-                    )
-                  else ...[
-                    SizedBox(
-                      height: 40,
-                      child: FilledButton.icon(
-                        onPressed: (_isGenerating)
-                            ? null
-                            : (hasApiKey && hasProgression
-                                ? () => _fetchFamousSongsFromAI(context)
-                                : null),
-                        icon: _isGenerating
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                    strokeWidth: 2, color: Colors.white))
-                            : const Icon(Icons.auto_awesome, size: 16),
-                        label: Text(
-                            isPromoNarrow
-                                ? (_isGenerating ? '찾는 중...' : 'AI 찾기')
-                                : (_isGenerating ? '곡 찾는 중...' : 'AI로 유명곡 찾기'),
-                            style: const TextStyle(fontSize: 12)),
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                        ),
-                      ),
-                    ),
-                  ]
-                ],
-              );
-            }),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAiBadge(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        'BETA',
-        style: TextStyle(
-            fontSize: 9,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onPrimaryContainer),
-      ),
-    );
-  }
-
-  Widget _buildBackToDbButton(BuildContext context) {
-    return SizedBox(
-      height: 28,
-      child: TextButton.icon(
-        onPressed: () => setState(() => _showAiIfAvailable = false),
-        icon: const Icon(Icons.storage_rounded, size: 14),
-        label: const Text('기본 유명곡 보기', style: TextStyle(fontSize: 11)),
-        style: TextButton.styleFrom(
-          foregroundColor: Theme.of(context).colorScheme.secondary,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          backgroundColor:
-              Theme.of(context).colorScheme.secondaryContainer.withValues(alpha: 0.3),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGenreDropdown(BuildContext context, List<String> genres) {
-    return Container(
-      height: 32,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border:
-            Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedGenre,
-          icon: const Icon(Icons.arrow_drop_down, size: 20),
-          style: TextStyle(
-            fontSize: 13,
-            color: Theme.of(context).colorScheme.onSurface,
-            fontWeight: FontWeight.w500,
-          ),
-          items: genres.map((String genre) {
-            return DropdownMenuItem<String>(
-              value: genre,
-              child: Row(
-                children: [
-                  Icon(Icons.library_music,
-                      size: 14, color: Theme.of(context).colorScheme.tertiary),
-                  const SizedBox(width: 8),
-                  Text(genre),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
-            if (newValue != null) {
-              setState(() {
-                _selectedGenre = newValue;
-              });
-            }
-          },
-          borderRadius: BorderRadius.circular(12),
-          dropdownColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRegenerateButton(BuildContext context) {
-    return IconButton(
-      onPressed: _isGenerating ? null : () => _fetchFamousSongsFromAI(context),
-      icon: _isGenerating
-          ? const SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2))
-          : const Icon(Icons.refresh, size: 20),
-      tooltip: '다시 찾기',
+  Widget _buildAiView(BuildContext context) {
+    return FamousSongsAiSearchView(
+      session: widget.session,
+      aiGeneratedSongs: _aiGeneratedSongs,
+      isGenerating: _isGenerating,
+      aiErrorMessage: _aiErrorMessage,
+      selectedGenre: _selectedGenre,
+      isExpanded: _isExpanded,
+      hasMatchedPreset:
+          TheoryUtils.matchProgressionToPreset(widget.session.progression) !=
+              null,
+      onGenreSelected: (genre) => setState(() => _selectedGenre = genre),
+      onToggleExpanded: () => setState(() => _isExpanded = !_isExpanded),
+      onBackToDb: () => setState(() => _showAiIfAvailable = false),
+      onFetchFromAi: () => _fetchFamousSongsFromAI(context),
     );
   }
 }
