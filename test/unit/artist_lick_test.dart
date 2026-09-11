@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:guitar_theory_app/models/lick/artist_lick_model.dart';
 import 'package:guitar_theory_app/models/lick/artist_lick_presets.dart';
 import 'package:guitar_theory_app/models/lick/guitar_artist.dart';
 import 'package:guitar_theory_app/models/audio/band_sound_profile.dart';

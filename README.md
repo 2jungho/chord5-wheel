@@ -10,7 +10,7 @@
 
 **[👉 웹 데모 실행하기 (Live Demo)](https://chord5-wheel.web.app)** | **[📦 GitHub 저장소 바로가기](https://github.com/2jungho/chord5-wheel)**
 
-화성학 이론과 기타 연주 정보를 시각적으로 탐험하고, 다양한 최신 생성형 AI 모델(Gemini, ChatGPT, Claude, Ollama) 및 4인조 가상 밴드(드럼, 베이스, 건반, 기타) 세션과 함께 음악적 영감을 얻는 멀티 플랫폼 Flutter 애플리케이션입니다. 5도권(Circle of Fifths) 기반의 키 탐색부터, 고도화된 코드 보이싱 알고리즘, 실시간 타임라인 코드 진행 스튜디오, 스마트 카포 전조기, 화성학적 경과 화음 삽입기, 5트랙 DAW MIDI 익스포터, CAGED 펜타토닉 솔로 박스 내비게이터, 5가지 고품질 테마 팔레트, 그리고 통합 AI 음악 비서까지 음악인 및 작곡 입문자를 위한 올인원 환경을 제공합니다.
+화성학 이론과 기타 연주 정보를 시각적으로 탐험하고, 다양한 최신 생성형 AI 모델(Gemini, ChatGPT, Claude, Ollama) 및 4인조 가상 밴드(드럼, 베이스, 건반, 기타) 세션과 함께 음악적 영감을 얻는 멀티 플랫폼 Flutter 애플리케이션입니다. 5도권(Circle of Fifths) 기반의 키 탐색부터, 18대 전설적 기타 거장의 시그니처 릭 보관함(Artist Lick Vault), 5대 기타 사운드(통기타, 나일론, 클린, 오버드라이브, 디스토션) 톤 프리셋 엔진, 고도화된 코드 보이싱 알고리즘, 실시간 타임라인 코드 진행 스튜디오, 스마트 카포 전조기, 화성학적 경과 화음 삽입기, 5트랙 DAW MIDI 익스포터, CAGED 펜타토닉 솔로 박스 내비게이터, 5가지 고품질 테마 팔레트, 그리고 통합 AI 음악 비서까지 음악인 및 작곡 입문자를 위한 올인원 환경을 제공합니다.
 
 ---
 
@@ -106,12 +106,35 @@ git config user.email "jungho.lee@maius.co.kr"
 *   지판(Fretboard) 하단 뷰 컨트롤에서 **Box 1 ~ Box 5**를 선택하면, 해당 폼의 운지 영역만 스포트라이트로 격리 표시됩니다.
 *   **블루스 노트($\flat5$)** 및 루트(Root) 마커가 시각적으로 강조되어 기타 솔로 즉흥 연주(Improvisation) 학습에 최적화되어 있습니다.
 
-### 6. 🥁 4인조 가상 밴드 & AI 잼 세션 (4-Piece Virtual Band & AI Jam)
+### 6. 🎸 아티스트 릭 보관함 & 18대 거장 라이브러리 (Artist Lick Vault)
+*   **18대 전설적 기타 거장 & 40여 개 시그니처 릭**:
+    *   **Blues & Blues Rock**: 지미 헨드릭스(Jimi Hendrix), 에릭 클랩튼(Eric Clapton), 스티비 레이 본(Stevie Ray Vaughan), 게리 무어(Gary Moore)
+    *   **Classic & Hard Rock**: 지미 페이지(Jimmy Page), 에디 반 헤일런(Eddie Van Halen), 슬래시(Slash)
+    *   **Tone & Expressive**: 데이비드 길모어(David Gilmour), 제프 벡(Jeff Beck)
+    *   **Instrumental Rock**: 스티브 바이(Steve Vai), 조 사트리아니(Joe Satriani)
+    *   **Shred & Neo-Classical**: 잉베이 말름스틴(Yngwie Malmsteen), 폴 길버트(Paul Gilbert)
+    *   **Jazz & Fusion**: 웨스 몽고메리(Wes Montgomery), 조 패스(Joe Pass)
+    *   **Neo-Soul & Modern**: 존 메이어(John Mayer), 마테우스 아사토(Mateus Asato), 팀 헨슨(Tim Henson)
+*   **확장형 Repository 패턴 & 지연 로딩 (Lazy Loading)**: 장르별 분할 JSON 에셋(`assets/data/licks/*.json`)을 선택 시점에만 비동기 로드하고 인메모리 캐싱하여 가벼운 메모리 점유율과 제로 렉(0-lag) 보장.
+*   **인터랙티브 Guitar TAB 뷰어 & 실시간 단음 미리듣기**: 벤딩(Full, Half), 해머링 온, 풀링 오프, 슬라이드, 비브라토, 태핑('T'), 내추럴 하모닉스('NH') 기호 시각화 및 타브 악보 음표 클릭 시 즉시 톤 프리뷰 재생.
+*   **실시간 화성학 분석 & 연주 가이드**: 릭별 권장 연주 폼(CAGED 폼 및 펜타토닉 박스), 타겟 코드톤, 연주 팁, 그리고 각 음표의 화성적 역할(3도, 7도, 텐션, $\flat5$ 블루노트 등)을 자동 분석/표시.
+*   **키 자동 조옮김 (Auto Transposition)**: 5도권 휠의 현재 Key나 타임라인 선택 코드에 맞춰 릭의 음정과 기타 지판 운지를 실시간으로 조옮김.
+
+### 7. 🔊 5대 기타 사운드 & 톤 프리셋 시스템 (5 Guitar Tone Presets)
+*   하단 액션 바의 톤 선택 팝업 버튼을 통해 원하는 기타 사운드를 원클릭으로 변경할 수 있으며, 릭 재생 및 TAB 악보 단음 클릭 시 Web Audio(Tone.js) DSP 체인을 통해 실시간으로 사운드가 변환됩니다:
+    *   **🎸 스틸 통기타 (Acoustic Steel)**: 찰랑거리는 스틸현의 찰현음과 선명한 고음, 풍성한 어쿠스틱 바디 공명감 (Folk / Pop / Fingerstyle).
+    *   **🎸 나일론 기타 (Classical Nylon)**: 핑거링에 최적화된 부드러운 어택, 따뜻한 중저음과 부드러운 하이컷 롤오프 (Bossa Nova / Flamenco / Latin).
+    *   **🎸 클린 일렉 (Electric Clean)**: Fender Twin Reverb의 맑고 투명한 싱글 코일 차임 & 아날로그 코러스 공간감 (Neo-Soul / Funk / R&B / Pop).
+    *   **🎸 오버드라이브 (Tube Overdrive)**: 진공관 앰프를 크런치 시킨 끈적하고 펀치력 있는 블루스/록 질감 (Blues / Classic Rock / Funky Rock).
+    *   **🎸 디스토션 (High-Gain Lead)**: 헤비 록 & 메탈 리드 솔로용 강력한 하이게인, 배음 증폭 및 긴 서스테인 (Hard Rock / Heavy Metal / Shred).
+*   **스마트 사운드 추천**: 아티스트 선택 시 해당 아티스트의 음악 스타일과 장르에 가장 잘 어울리는 기타 사운드가 자동으로 기본 매핑됩니다.
+
+### 8. 🥁 4인조 가상 밴드 & AI 잼 세션 (4-Piece Virtual Band & AI Jam)
 *   **Multi-Instrument Realtime Accompaniment**: 드럼, 베이스, 건반(Rhodes), 기타가 어우러진 4인조 가상 밴드 사운드.
 *   **Dynamic Controls**: 60 ~ 180 BPM 템포 슬라이더, 볼륨 조절 및 원클릭 음소거/복원 토글.
 *   **7가지 음악 스타일**: Neo-Soul, Jazz Funk, Lofi Chill, Rock, Blues, City Pop, Acoustic Ballad.
 
-### 7. 🤖 대화형 AI 튜터 챗봇 & 앱 상태 제어
+### 9. 🤖 대화형 AI 튜터 챗봇 & 앱 상태 제어
 *   우측 패널에서 실시간 스트리밍으로 화성학 질문 답변 및 코드 진행 분석을 제공합니다.
 *   **LaTeX 수식 및 화살표 렌더러 탑재**: 답변 내 `$\rightarrow$`, `$\to$`, `$\Rightarrow$` 등의 화살표 문법 및 수식(`$$...$$`)이 깨짐 없이 시각적 기호로 깔끔하게 렌더링됩니다.
 *   사용자의 자연어 요청에 따라 앱의 5도권 키 및 모드를 실시간으로 변경(App State Command Execution)합니다.
@@ -141,12 +164,17 @@ git config user.email "jungho.lee@maius.co.kr"
 lib/
 ├── audio/                 # 하이브리드 오디오 브릿지 (VirtualBandSynth, Tone.js, Native SoLoud)
 ├── models/                # 데이터 모델 (Chord, Voicing, Scale, MusicConstants, AIProviderConfig, FretboardMarker)
-├── providers/             # 상태 관리자 (SettingsState, StudioState, ChatState, MusicState, ViewControlStateMixin)
+│   ├── audio/                 # 오디오 및 사운드 프로필 모델 (BandSoundProfile, SoundProfile)
+│   └── lick/                  # 릭 및 아티스트 모델 (ArtistLick, GuitarArtist, ArtistLickPresets)
+├── providers/             # 상태 관리자 (SettingsState, StudioState, ChatState, MusicState, LickVaultState)
 ├── services/              # 핵심 엔진 및 서비스
 │   ├── ai_service.dart          # 멀티 AI 프로바이더 팩토리 및 라우터
 │   ├── providers/               # 프로바이더별 SSE 스트리밍 구현체 (Gemini, Claude, OpenAI, DeepSeek, Ollama)
 │   ├── capo_service.dart        # 스마트 카포 오픈코드 난이도 계산 엔진
 │   ├── harmonic_suggestion_service.dart # 세컨더리 도미넌트/트라이톤/디미니시 경과음 계산기
+│   ├── lick/                    # 릭 저장소 레이어 (LickRepository, AssetLickRepository)
+│   ├── lick_analyzer_service.dart # 릭 화성학 분석 및 조옮김(Transpose) 엔진
+│   ├── lick_audio_player.dart   # 릭 및 TAB 단음 실시간 오디오 플레이어
 │   ├── midi/                    # Pure Dart SMF Type 1 멀티트랙 MIDI 파일 작성 및 다운로더
 │   ├── lyria/                   # 4인조 가상 밴드 시퀀서 및 오디오 브릿지
 │   └── music_theory_service.dart # 핵심 화성학 연산
@@ -158,13 +186,19 @@ lib/
 │       └── widgets/
 │           ├── timeline/                # 타임라인 코드 카드, 경과음 삽입 모달(ChordInsertDialog)
 │           ├── famous_songs/            # 모듈화된 유명곡 카드 및 AI 곡 탐색
-│           ├── lyria_jam_panel.dart     # 4인조 가상 밴드 세션 컨트롤 패널
+│           ├── jam/                     # 4인조 가상 밴드 세션 컨트롤 패널 (LyriaJamPanel 모듈)
 │           └── insight_report_widget.dart # AI 코드 진행 분석 리포트
 └── widgets/               # 공통 위젯
     ├── ai_chat/                 # AI 채팅 패널(AIChatPanel), 메시지 버블(ChatMessageBubble)
     ├── capo/                    # 스마트 카포 다이얼로그(CapoModal)
+    ├── lick/                    # 아티스트 릭 보관함 모달 시트 (ArtistLickVaultSheet)
     ├── common/                  # 앱 헤더, 5도권 휠, 프렛보드 맵, 뷰 컨트롤 패널, 테마/AI 설정 다이얼로그
     └── ...
+
+assets/
+└── data/
+    ├── artists/                 # 18대 기타 거장 메타데이터 (artists.json)
+    └── licks/                   # 장르별 분할 릭 데이터셋 (licks_blues, licks_rock, licks_tone 등)
 ```
 
 ---
@@ -194,7 +228,7 @@ flutter run -d windows
 # 정적 분석 (0 issues)
 dart analyze lib test
 
-# 전체 단위 및 위젯 테스트 실행 (48 tests)
+# 전체 단위 및 위젯 테스트 실행 (83 tests)
 flutter test
 ```
 
@@ -215,6 +249,29 @@ firebase deploy --only hosting
 ---
 
 ## 📝 변경 이력 (Changelog)
+
+### v2.9.0 (2026-09-11 - Artist Lick Vault 18 Masters Suite & 5 Guitar Tone Presets)
+* **🎸 아티스트 릭 보관함(Artist Lick Vault) 아키텍처 개편 & 18대 기타 거장 라이브러리 구축**:
+  * **확장형 Repository 패턴 전환**:
+    * `GuitarArtist` 엔티티 분리 및 정규화, `LickRepository` 인터페이스 및 `AssetLickRepository` 지연 로딩(Lazy Loading) & 인메모리 캐싱 도입.
+    * 하드코딩 구조를 탈피하여 `assets/data/artists/` 및 장르별 분할 JSON(`assets/data/licks/*.json`)으로 완전 외부화하여 무제한 확장성 확보.
+  * **18대 전설적 기타리스트 & 40여 개 시그니처 릭 탑재**:
+    * **Blues & Blues Rock**: 지미 헨드릭스, 에릭 클랩튼, 스티비 레이 본, 게리 무어
+    * **Classic & Hard Rock**: 지미 페이지, 에디 반 헤일런, 슬래시
+    * **Tone & Expressive**: 데이비드 길모어, 제프 벡
+    * **Instrumental Rock**: 스티브 바이, 조 사트리아니
+    * **Shred & Neo-Classical**: 잉베이 말름스틴, 폴 길버트
+    * **Jazz & Fusion**: 웨스 몽고메리, 조 패스
+    * **Neo-Soul & Modern**: 존 메이어, 마테우스 아사토, 팀 헨슨
+  * **인터랙티브 Guitar TAB 뷰어 & 화성학 분석 엔진**:
+    * 벤딩(Full/Half), 해머링온, 풀링오프, 슬라이드, 비브라토, 오른손 태핑('T'), 내추럴 하모닉스('NH') 테크닉 기호 렌더링.
+    * 탭 악보 음표 클릭 시 실시간 단음 미리듣기, CAGED 폼/펜타토닉 박스 가이드, 음표별 화성학 역할(3도, 7도, 텐션, $\flat5$ 블루노트 등) 분석 제공.
+    * 5도권 휠의 현재 Key 및 타임라인 선택 코드에 맞춘 실시간 자동 조옮김(Auto Transpose).
+* **🔊 5대 기타 사운드 & 톤 프리셋 시스템 (Web Audio / Tone.js DSP Chain Modeling)**:
+  * **5대 시그니처 톤 탑재**: 스틸 통기타(Acoustic Steel), 나일론 기타(Classical Nylon), 클린 일렉(Electric Clean), 튜브 오버드라이브(Tube Overdrive), 하이게인 디스토션(High-Gain Lead).
+  * **Tone.js DSP 체인 정밀 튜닝**: `guitarHighpass`, `guitarAmpEQ`, `guitarDrive` (Distortion), `guitarChorus`, `guitarCabFilter` (4x12 / 12" Jensen / Flat 롤오프) 파라미터 제어.
+  * **UI & 편의 기능**: 하단 액션 바에 사운드 프리셋 드롭다운 팝업 버튼 배치, 아티스트별 추천 톤 자동 매핑, TAB 단음 프리뷰 실시간 톤 연동.
+* **품질 보증**: 83개 전체 단위/위젯 테스트 100% 통과, `dart analyze` 0개 이슈, 웹 프로덕션 빌드 및 Firebase 호스팅 배포 완료.
 
 ### v2.8.0 (2026-09-11 - Full Clean Architecture Modularization & Codebase Refactoring)
 * **🏗️ 대규모 비대 소스 및 God Widget 전면 분리 & 모듈화 (Clean Architecture)**:
