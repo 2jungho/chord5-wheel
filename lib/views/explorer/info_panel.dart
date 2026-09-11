@@ -6,6 +6,7 @@ import '../../providers/lyria_state.dart';
 import '../../audio/audio_manager.dart';
 import '../../widgets/common/chord_info_section.dart';
 import '../../providers/settings_state.dart';
+import '../../widgets/lick/chord_lick_recommendation_card.dart';
 
 class InfoPanel extends StatelessWidget {
   final bool withContainer;
@@ -235,26 +236,37 @@ class InfoPanel extends StatelessWidget {
           instrument: context.watch<SettingsState>().selectedInstrument,
         );
 
-        Widget chordInfoCard = withContainer
-            ? Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Theme.of(context).dividerColor),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
-                        blurRadius: 4)
-                  ],
-                ),
-                child: chordInfoContent,
-              )
-            : SizedBox(
-                width: double.infinity,
-                child: chordInfoContent,
-              );
+        Widget chordInfoCard = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            withContainer
+                ? Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Theme.of(context).dividerColor),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
+                            blurRadius: 4)
+                      ],
+                    ),
+                    child: chordInfoContent,
+                  )
+                : SizedBox(
+                    width: double.infinity,
+                    child: chordInfoContent,
+                  ),
+            ChordLickRecommendationCard(
+              chordRoot: chord.root,
+              chordQuality: chord.quality,
+              keyContext: '$root ${mode.name}',
+            ),
+          ],
+        );
 
         return LayoutBuilder(
           builder: (context, constraints) {

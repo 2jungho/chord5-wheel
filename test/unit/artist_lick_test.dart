@@ -1,8 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:guitar_theory_app/models/lick/artist_lick_model.dart';
 import 'package:guitar_theory_app/models/lick/artist_lick_presets.dart';
 import 'package:guitar_theory_app/models/lick/guitar_artist.dart';
 import 'package:guitar_theory_app/models/audio/band_sound_profile.dart';
 import 'package:guitar_theory_app/services/lick_analyzer_service.dart';
+import 'package:guitar_theory_app/services/lick_audio_player.dart';
 import 'package:guitar_theory_app/providers/lick_vault_state.dart';
 
 void main() {
@@ -236,6 +238,163 @@ void main() {
         null,
       );
       expect(distortionSound.id, equals('guitar_distortion'));
+    });
+
+    test('CAGED 5 Box definitions contain 5 valid boxes', () {
+      final boxes = LickAnalyzerService.cagedBoxDefinitions;
+      expect(boxes.length, equals(5));
+      expect(boxes[0].boxNumber, equals(1));
+      expect(boxes[0].cagedForm, equals('E Form'));
+      expect(boxes[1].boxNumber, equals(2));
+      expect(boxes[1].cagedForm, equals('D Form'));
+      expect(boxes[2].boxNumber, equals(3));
+      expect(boxes[2].cagedForm, equals('C Form'));
+      expect(boxes[3].boxNumber, equals(4));
+      expect(boxes[3].cagedForm, equals('A Form'));
+      expect(boxes[4].boxNumber, equals(5));
+      expect(boxes[4].cagedForm, equals('G Form'));
+    });
+
+    test('mapLickToBox returns original lick when targetBox == pentatonicBox', () {
+      final claptonLick = kArtistLickPresets.firstWhere((l) => l.id == 'clapton_crossroads');
+      final mapped = LickAnalyzerService.mapLickToBox(claptonLick, claptonLick.pentatonicBox);
+      expect(mapped, equals(claptonLick));
+    });
+
+    test('mapLickToBox preserves note pitch class and maps to target box frets', () {
+      final claptonLick = kArtistLickPresets.firstWhere((l) => l.id == 'clapton_crossroads');
+      // Clapton Crossroads is in Box 1
+      expect(claptonLick.pentatonicBox, equals(1));
+
+      // Map to Box 2, 3, 4, 5
+      for (int box = 2; box <= 5; box++) {
+        final mapped = LickAnalyzerService.mapLickToBox(claptonLick, box);
+        expect(mapped.notes.length, equals(claptonLick.notes.length));
+
+        for (int i = 0; i < claptonLick.notes.length; i++) {
+          final origNote = claptonLick.notes[i];
+          final mappedNote = mapped.notes[i];
+
+          final origPitch = LickAnalyzerService.calculateAbsolutePitch(origNote.string, origNote.fret);
+          final mappedPitch = LickAnalyzerService.calculateAbsolutePitch(mappedNote.string, mappedNote.fret);
+
+          // The pitch class (note identity mod 12) must match
+          expect(mappedPitch % 12, equals(origPitch % 12),
+              reason: 'Note $i pitch class must match for Box $box');
+          expect(mappedNote.fret, inInclusiveRange(0, 24));
+          expect(mappedNote.string, inInclusiveRange(1, 6));
+        }
+      }
+    });
+
+    test('LickVaultState handles Box 1~5 selection and all-boxes mode', () {
+      final state = LickVaultState();
+      final claptonLick = kArtistLickPresets.firstWhere((l) => l.id == 'clapton_crossroads');
+      state.selectLick(claptonLick);
+
+      expect(state.selectedBox, equals(claptonLick.pentatonicBox));
+      expect(state.isAllBoxesMode, isFalse);
+
+      // Select Box 3
+      state.selectBox(3);
+      expect(state.selectedBox, equals(3));
+      expect(state.currentTransposedLick.notes.isNotEmpty, isTrue);
+
+      // Toggle all boxes mode
+      state.toggleAllBoxesMode();
+      expect(state.isAllBoxesMode, isTrue);
+
+      // getLickForBox returns lick mapped to that box
+      for (int b = 1; b <= 5; b++) {
+        final boxLick = state.getLickForBox(b);
+        expect(boxLick.notes.length, equals(claptonLick.notes.length));
+      }
+    });
+  });
+
+  group('Lick Recommendation Engine Tests', () {
+    test('findLicksForChord recommends matching licks for Dominant 7th chord (A7)', () {
+      final licks = LickAnalyzerService.findLicksForChord(
+        chordRoot: 'A',
+        chordQuality: '7',
+      );
+
+      expect(licks.isNotEmpty, isTrue);
+      // First lick should be Clapton Crossroads (A7) or blues dominant lick
+      final hasDominantOrBlues = licks.any((l) =>
+          l.targetChord.contains('7') || l.genre.toLowerCase().contains('blues'));
+      expect(hasDominantOrBlues, isTrue);
+    });
+
+    test('findLicksForChord recommends and transposes for Minor chord (Am)', () {
+      final licks = LickAnalyzerService.findLicksForChord(
+        chordRoot: 'A',
+        chordQuality: 'm',
+      );
+
+      expect(licks.isNotEmpty, isTrue);
+      for (final lick in licks) {
+        expect(lick.defaultKey, contains('A'));
+      }
+    });
+
+    test('findLicksForProgression recommends licks for 12-bar blues progression', () {
+      final licks = LickAnalyzerService.findLicksForProgression(
+        progressionChords: ['A7', 'D7', 'E7'],
+        selectedChord: 'A7',
+        key: 'A Major',
+      );
+
+      expect(licks.isNotEmpty, isTrue);
+      expect(licks.first.defaultKey, contains('A'));
+    });
+  });
+
+  group('Guitar Technique Audio Engine Tests', () {
+    test('LickAudioPlayer executes playback and emits onTechniqueStep', () async {
+      final player = LickAudioPlayer();
+      final hendrixLick = kArtistLickPresets.firstWhere((l) => l.id == 'hendrix_voodoo');
+
+      final techniquesReported = <NoteTechnique>[];
+      int notesReported = 0;
+
+      await player.playLick(
+        hendrixLick,
+        speed: 10.0, // High speed for test
+        onNoteStep: (idx) {
+          if (idx >= 0) notesReported++;
+        },
+        onTechniqueStep: (idx, tech) {
+          if (idx >= 0) techniquesReported.add(tech);
+        },
+      );
+
+      expect(notesReported, equals(hendrixLick.notes.length));
+      expect(techniquesReported.length, equals(hendrixLick.notes.length));
+      // Hendrix Voodoo contains bends or slides
+      final hasTechnique = techniquesReported.any((t) => t != NoteTechnique.none);
+      expect(hasTechnique, isTrue);
+    });
+
+    test('previewNote runs without throwing for technique notes', () {
+      final player = LickAudioPlayer();
+      const bendNote = LickNote(
+        string: 2,
+        fret: 15,
+        interval: 'b7',
+        noteName: 'D',
+        technique: NoteTechnique.bendFull,
+      );
+      const slideNote = LickNote(
+        string: 3,
+        fret: 14,
+        interval: '5',
+        noteName: 'B',
+        technique: NoteTechnique.slide,
+      );
+
+      expect(() => player.previewNote(bendNote), returnsNormally);
+      expect(() => player.previewNote(slideNote), returnsNormally);
     });
   });
 }

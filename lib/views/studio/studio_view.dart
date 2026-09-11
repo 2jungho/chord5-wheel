@@ -7,6 +7,7 @@ import '../../widgets/common/view_control_panel.dart';
 import 'widgets/studio_timeline.dart';
 import 'widgets/famous_songs_panel.dart';
 import 'widgets/lyria_jam_panel.dart';
+import '../../widgets/lick/progression_lick_panel.dart';
 
 import '../../utils/guitar_utils.dart';
 import '../../utils/guitar/pentatonic_box_calculator.dart';
@@ -118,22 +119,31 @@ class _StudioJamAndSongSection extends StatelessWidget {
                   const LyriaJamPanel(),
                   const SizedBox(height: 14),
                   FamousSongsPanel(session: session),
+                  const SizedBox(height: 14),
+                  ProgressionLickPanel(session: session),
                 ],
               );
             }
 
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Expanded(
-                  flex: 62,
-                  child: LyriaJamPanel(),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Expanded(
+                      flex: 62,
+                      child: LyriaJamPanel(),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      flex: 38,
+                      child: FamousSongsPanel(session: session),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  flex: 38,
-                  child: FamousSongsPanel(session: session),
-                ),
+                const SizedBox(height: 14),
+                ProgressionLickPanel(session: session),
               ],
             );
           },

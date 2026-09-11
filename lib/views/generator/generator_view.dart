@@ -13,6 +13,7 @@ import 'widgets/chord_voicing_section.dart';
 import 'widgets/extended_analysis_section.dart';
 import 'widgets/related_scales_section.dart';
 import 'widgets/scale_visualization_section.dart';
+import '../../widgets/lick/chord_lick_recommendation_card.dart';
 
 class GeneratorView extends StatelessWidget {
   const GeneratorView({super.key});
@@ -167,6 +168,10 @@ class _GeneratorMobileDashboard extends StatelessWidget {
               voicing: data.voicing,
               instrument: instrument,
             ),
+            ChordLickRecommendationCard(
+              chordRoot: data.root,
+              chordQuality: data.quality,
+            ),
             const SizedBox(height: 24),
             const _GeneratorMobileDashboardBody(),
           ],
@@ -213,32 +218,42 @@ class _GeneratorDesktopDashboard extends StatelessWidget {
           children: [
             // 1. Info Section (Left)
             Expanded(
-              flex: 2,
-              child: ChordInfoSection(
-                root: data.root,
-                quality: data.quality,
-                intervals: data.intervals,
-                notes: data.notes,
-                onPlay: () {
-                  if (data.voicing != null &&
-                      data.voicing!.frets.any((f) => f != -1)) {
-                    state.playVoicing(data.voicing!);
-                  } else {
-                    state.playChordStrum();
-                  }
-                },
-                onRestore: data.canRestore ? state.restoreInitialChord : null,
-                voicing: data.voicing,
-                instrument: instrument,
+              flex: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ChordInfoSection(
+                    root: data.root,
+                    quality: data.quality,
+                    intervals: data.intervals,
+                    notes: data.notes,
+                    onPlay: () {
+                      if (data.voicing != null &&
+                          data.voicing!.frets.any((f) => f != -1)) {
+                        state.playVoicing(data.voicing!);
+                      } else {
+                        state.playChordStrum();
+                      }
+                    },
+                    onRestore: data.canRestore ? state.restoreInitialChord : null,
+                    voicing: data.voicing,
+                    instrument: instrument,
+                  ),
+                  ChordLickRecommendationCard(
+                    chordRoot: data.root,
+                    chordQuality: data.quality,
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: 32),
+            const SizedBox(width: 24),
             // 2. Middle Section
             const Expanded(
-              flex: 6,
+              flex: 5,
               child: _GeneratorMobileDashboardBody(),
             ),
-            const SizedBox(width: 32),
+            const SizedBox(width: 24),
             // 3. Right Section
             Expanded(
               flex: 3,

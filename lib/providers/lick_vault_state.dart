@@ -30,6 +30,11 @@ class LickVaultState extends ChangeNotifier {
   String _activeKey = 'G Major';
   double _playbackSpeed = 1.0;
   int _activePlayingNoteIndex = -1;
+  NoteTechnique _activePlayingTechnique = NoteTechnique.none;
+
+  // 5대 CAGED / 펜타토닉 폼 선택 (1~5: Box 1~5)
+  int _selectedBox = 1;
+  bool _isAllBoxesMode = false;
 
   // 기타 사운드 프로필 (통기타, 나일론, 클린, 오버드라이브, 디스토션)
   SoundProfile _selectedGuitarSound = BandSoundProfiles.guitarOverdrive;
@@ -39,6 +44,7 @@ class LickVaultState extends ChangeNotifier {
       : _repository = repository ?? AssetLickRepository() {
     // 안전한 초기값 (로딩 전 기본 프리셋)
     _selectedLick = kArtistLickPresets.first;
+    _selectedBox = _selectedLick.pentatonicBox;
   }
 
   // Getters
@@ -53,9 +59,26 @@ class LickVaultState extends ChangeNotifier {
   String get activeKey => _activeKey;
   double get playbackSpeed => _playbackSpeed;
   int get activePlayingNoteIndex => _activePlayingNoteIndex;
+  NoteTechnique get activePlayingTechnique => _activePlayingTechnique;
   bool get isPlaying => _player.isPlaying;
+  int get selectedBox => _selectedBox;
+  bool get isAllBoxesMode => _isAllBoxesMode;
   SoundProfile get selectedGuitarSound => _selectedGuitarSound;
   List<SoundProfile> get availableGuitarSounds => BandSoundProfiles.allGuitar;
+
+  /// CAGED Box 폼(1~5) 선택
+  void selectBox(int boxNumber) {
+    if (_selectedBox == boxNumber) return;
+    _stopAndResetPlayer();
+    _selectedBox = boxNumber;
+    notifyListeners();
+  }
+
+  /// 5대 폼 모두 한눈에 보기(펼쳐보기) 토글
+  void toggleAllBoxesMode() {
+    _isAllBoxesMode = !_isAllBoxesMode;
+    notifyListeners();
+  }
 
   /// 기타 사운드 프로필 직접 선택 (통기타, 나일론, 클린, 오버드라이브, 디스토션)
   void selectGuitarSound(SoundProfile profile) {
@@ -111,11 +134,29 @@ class LickVaultState extends ChangeNotifier {
     return tags.toList();
   }
 
-  /// 현재 활성 키(_activeKey)에 맞춰 조옮김된 릭
+  /// 현재 활성 키(_activeKey) 및 선택된 CAGED Box(_selectedBox)에 맞춰 조옮김/매핑된 릭
   ArtistLick get currentTransposedLick {
-    return LickAnalyzerService.transposeLick(
+    final transposed = LickAnalyzerService.transposeLick(
       _selectedLick,
       toKey: _activeKey,
+    );
+    return LickAnalyzerService.mapLickToBox(
+      transposed,
+      _selectedBox,
+      key: _activeKey,
+    );
+  }
+
+  /// 특정 CAGED Box(1~5)에 대한 릭 반환 (모든 폼 동시 비교용)
+  ArtistLick getLickForBox(int boxNumber) {
+    final transposed = LickAnalyzerService.transposeLick(
+      _selectedLick,
+      toKey: _activeKey,
+    );
+    return LickAnalyzerService.mapLickToBox(
+      transposed,
+      boxNumber,
+      key: _activeKey,
     );
   }
 
@@ -153,6 +194,7 @@ class LickVaultState extends ChangeNotifier {
         _currentArtistLicks = await _repository.getLicksByArtist(_selectedArtist!.id);
         if (_currentArtistLicks.isNotEmpty) {
           _selectedLick = _currentArtistLicks.first;
+          _selectedBox = _selectedLick.pentatonicBox;
         }
         if (!_hasUserSelectedSound) {
           _selectedGuitarSound = getRecommendedSound(_selectedArtist, _selectedLick);
@@ -198,6 +240,7 @@ class LickVaultState extends ChangeNotifier {
       _currentArtistLicks = await _repository.getLicksByArtist(artist.id);
       if (_currentArtistLicks.isNotEmpty) {
         _selectedLick = _currentArtistLicks.first;
+        _selectedBox = _selectedLick.pentatonicBox;
       }
       if (!_hasUserSelectedSound) {
         _selectedGuitarSound = getRecommendedSound(artist, _selectedLick);
@@ -232,6 +275,7 @@ class LickVaultState extends ChangeNotifier {
   void selectLick(ArtistLick lick) {
     if (_selectedLick.id == lick.id) return;
     _selectedLick = lick;
+    _selectedBox = lick.pentatonicBox;
     _stopAndResetPlayer();
     notifyListeners();
   }
@@ -255,6 +299,7 @@ class LickVaultState extends ChangeNotifier {
     if (_player.isPlaying) {
       _player.stop();
       _activePlayingNoteIndex = -1;
+      _activePlayingTechnique = NoteTechnique.none;
       notifyListeners();
     } else {
       notifyListeners();
@@ -266,8 +311,13 @@ class LickVaultState extends ChangeNotifier {
           _activePlayingNoteIndex = index;
           notifyListeners();
         },
+        onTechniqueStep: (index, technique) {
+          _activePlayingTechnique = technique;
+          notifyListeners();
+        },
         onComplete: () {
           _activePlayingNoteIndex = -1;
+          _activePlayingTechnique = NoteTechnique.none;
           notifyListeners();
         },
       );
@@ -282,6 +332,7 @@ class LickVaultState extends ChangeNotifier {
   void _stopAndResetPlayer() {
     _player.stop();
     _activePlayingNoteIndex = -1;
+    _activePlayingTechnique = NoteTechnique.none;
   }
 
   /// 현재 릭의 타겟 코드를 스튜디오 진행에 추가합니다.

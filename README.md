@@ -117,6 +117,18 @@ git config user.email "jungho.lee@maius.co.kr"
     *   **Neo-Soul & Modern**: 존 메이어(John Mayer), 마테우스 아사토(Mateus Asato), 팀 헨슨(Tim Henson)
 *   **확장형 Repository 패턴 & 지연 로딩 (Lazy Loading)**: 장르별 분할 JSON 에셋(`assets/data/licks/*.json`)을 선택 시점에만 비동기 로드하고 인메모리 캐싱하여 가벼운 메모리 점유율과 제로 렉(0-lag) 보장.
 *   **인터랙티브 Guitar TAB 뷰어 & 실시간 단음 미리듣기**: 벤딩(Full, Half), 해머링 온, 풀링 오프, 슬라이드, 비브라토, 태핑('T'), 내추럴 하모닉스('NH') 기호 시각화 및 타브 악보 음표 클릭 시 즉시 톤 프리뷰 재생.
+*   **코드 & 코드 진행 맞춤 릭 자동 추천 (Contextual Lick Recommendation Engine)**:
+    *   **5도권 탐색기 & 코드 분석기 연동**: 현재 선택된 코드(예: `Am`, `C7`, `D7`, `Em` 등)의 루트음과 코드 성향(Major, Minor, Dominant 7th 등)을 실시간 분석하여 가장 잘 어울리는 18대 거장의 시그니처 릭을 자동 추천하고 타겟 코드 키로 자동 조옮김(Transpose)하여 카드 형태로 제공 (`ChordLickRecommendationCard`).
+    *   **코드 진행 스튜디오 타임라인 연동**: 스튜디오 타임라인에 등록된 코드 진행 패턴(2-5-1 진행, 1-6-2-5 진행, 1-4-5 진행 등) 및 현재 선택된 코드 블록에 적합한 아티스트 릭을 탐색·추천하고, 클릭 한 번으로 미리듣기 및 5대 Box 전체 보기 지원 (`ProgressionLickPanel`).
+*   **기타 연주 기법(아티큘레이션) 오디오 & 시각화 엔진 (Guitar Technique Audio Engine)**:
+    *   릭 재생 시 단순한 평면 피치가 아닌 기타 특유의 연주 테크닉을 오디오 DSP 및 시각적 애니메이션으로 리얼하게 표현:
+        *   **벤딩 (Bending `Full`, `½`)**: 기준 음을 피킹한 후 실시간 주파수 굴절(Pitch Glide)로 음정이 휘어 올라가는 초크 업 사운드 구현 및 오렌지색 벤딩 뱃지/글로우 점등.
+        *   **슬라이드 (Slide `/`, `\`)**: 시작 프렛에서 목표 프렛까지 미세 반음 글리산도(Glissando) 연결 및 시안색 슬라이드 뱃지 표시.
+        *   **해머링 온 (Hammer-on `h`)**: 부드러운 어택의 레가토 슬러(Legato Slur) 타현음 및 그린색 해머링 뱃지 표시.
+        *   **풀링 오프 (Pull-off `p`)**: 경쾌한 하향 릴리즈 핑거링 연주음 및 퍼플색 풀링 뱃지 표시.
+        *   **비브라토 (Vibrato `~`)**: 지속음에서 음높이가 미세하게 떨리는 비브라토 모듈레이션 표현.
+*   **5대 CAGED 폼 (Box 1 ~ Box 5) 실시간 운지 변환기**: 릭의 고유 포지션에 머무르지 않고, **Box 1 (E Form), Box 2 (D Form), Box 3 (C Form), Box 4 (A Form), Box 5 (G Form)** 중 원하는 포지션 탭을 선택하면 Viterbi 기반 최소 손이동 최적화 알고리즘을 통해 해당 지판 박스로 릭의 모든 운지와 TAB 악보가 실시간 재매핑됩니다.
+*   **5대 폼 전체 펼쳐보기 (All 5 Boxes Stack View)**: '5대 폼 전체 펼치기' 토글 버튼을 통해 5개 박스의 TAB 악보를 한 화면에서 수직으로 펼쳐 포지션별 핑거링 차이를 한눈에 대조 및 선택 가능.
 *   **실시간 화성학 분석 & 연주 가이드**: 릭별 권장 연주 폼(CAGED 폼 및 펜타토닉 박스), 타겟 코드톤, 연주 팁, 그리고 각 음표의 화성적 역할(3도, 7도, 텐션, $\flat5$ 블루노트 등)을 자동 분석/표시.
 *   **키 자동 조옮김 (Auto Transposition)**: 5도권 휠의 현재 Key나 타임라인 선택 코드에 맞춰 릭의 음정과 기타 지판 운지를 실시간으로 조옮김.
 
@@ -228,7 +240,7 @@ flutter run -d windows
 # 정적 분석 (0 issues)
 dart analyze lib test
 
-# 전체 단위 및 위젯 테스트 실행 (83 tests)
+# 전체 단위 및 위젯 테스트 실행 (92 tests)
 flutter test
 ```
 
