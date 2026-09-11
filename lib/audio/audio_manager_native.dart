@@ -405,6 +405,8 @@ class AudioManager {
 
   void setInstrument(String instrumentId) {}
 
+  void setGuitarSoundProfile(String profileId) {}
+
   void setVolume(double volume) {
     try {
       _soLoud?.setGlobalVolume(volume.clamp(0.0, 1.0));

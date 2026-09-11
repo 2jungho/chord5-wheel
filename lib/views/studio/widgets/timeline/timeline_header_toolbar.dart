@@ -7,6 +7,7 @@ import '../../dialogs/ai_arrange_dialog.dart';
 import '../../dialogs/ai_song_search_dialog.dart';
 import '../../../../widgets/capo/capo_modal.dart';
 import '../../../../services/midi/midi_export_service.dart';
+import '../../../../widgets/lick/artist_lick_vault_sheet.dart';
 
 class TimelineHeaderToolbar extends StatelessWidget {
   final StudioState studio;
@@ -155,6 +156,22 @@ class TimelineHeaderToolbar extends StatelessWidget {
     final toolButtons = [
       chordTypeToggleWidget,
       const SizedBox(width: 8),
+      OutlinedButton.icon(
+        onPressed: () {
+          ArtistLickVaultSheet.show(context);
+        },
+        icon: const Icon(Icons.electric_bolt, size: 15, color: Colors.amber),
+        label: const Text('아티스트 릭', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          visualDensity: VisualDensity.compact,
+          side: BorderSide(
+            color: Colors.amber.withValues(alpha: 0.6),
+          ),
+          backgroundColor: Colors.amber.withValues(alpha: 0.08),
+        ),
+      ),
+      const SizedBox(width: 6),
       OutlinedButton.icon(
         onPressed: () {
           final chords =

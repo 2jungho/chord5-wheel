@@ -6,6 +6,7 @@ import '../../providers/generator_state.dart';
 import '../../providers/settings_state.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/changelog_parser.dart';
+import '../lick/artist_lick_vault_sheet.dart';
 
 
 
@@ -445,6 +446,20 @@ class _AppHeaderState extends State<AppHeader> {
 
               SizedBox(width: isUltraMobile ? 4 : (isMobile ? 8 : 16)),
 
+              // Artist Lick Vault Button
+              SizedBox(
+                width: isUltraMobile ? 32 : 44,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  icon: Icon(
+                    Icons.electric_bolt,
+                    size: isUltraMobile ? 20 : 22,
+                    color: Colors.amber,
+                  ),
+                  tooltip: '아티스트 릭 보관함 (Hendrix, Clapton, SRV, Moore)',
+                  onPressed: () => ArtistLickVaultSheet.show(context),
+                ),
+              ),
 
               // AI Chat Button
               if (widget.hasApiKey) ...[

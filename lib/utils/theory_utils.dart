@@ -96,4 +96,32 @@ class TheoryUtils {
   static ProgressionPreset? matchProgressionToPreset(
           List<ChordBlock> progression) =>
       ProgressionUtils.matchProgressionToPreset(progression);
+
+  static String convertQuality(
+    String quality, {
+    required bool toSeventh,
+    String? functionTag,
+  }) =>
+      ChordUtils.convertQuality(quality,
+          toSeventh: toSeventh, functionTag: functionTag);
+
+  static String convertChordDensity(
+    String chordSymbol, {
+    required bool toSeventh,
+    String? functionTag,
+  }) =>
+      ChordUtils.convertChordDensity(chordSymbol,
+          toSeventh: toSeventh, functionTag: functionTag);
+
+  static List<({String symbol, String? tag, ChordBlock originalBlock})>
+      calculateRemappedChords({
+    required List<ChordBlock> progression,
+    required String oldKey,
+    required String newKey,
+  }) =>
+      ProgressionUtils.calculateRemappedChords(
+        progression: progression,
+        oldKey: oldKey,
+        newKey: newKey,
+      );
 }

@@ -187,6 +187,10 @@ class AudioManager {
     WebAudioApi.setInstrument(instrumentId);
   }
 
+  void setGuitarSoundProfile(String profileId) {
+    WebAudioApi.setSoundProfile('guitar', profileId);
+  }
+
   void setVolume(double volume) {
     WebAudioApi.setVolume(volume);
   }

@@ -1,0 +1,182 @@
+[
+  {
+    "id": "hendrix",
+    "name": "Jimi Hendrix",
+    "koreanName": "지미 헨드릭스",
+    "genre": "Blues & Blues Rock",
+    "era": "1960s",
+    "signatureGuitar": "Fender Stratocaster (Olympic White)",
+    "bio": "일렉트릭 기타의 문법을 완전히 새로 쓴 불멸의 혁신가. 엄지 베이스 운지와 더블스탑, 퍼즈/와우 페달을 융합한 독보적 사운드.",
+    "famousSongs": ["Little Wing", "Purple Haze", "Voodoo Child", "Castles Made of Sand"]
+  },
+  {
+    "id": "clapton",
+    "name": "Eric Clapton",
+    "koreanName": "에릭 클랩튼",
+    "genre": "Blues & Blues Rock",
+    "era": "1960s-1970s",
+    "signatureGuitar": "Fender Stratocaster 'Blackie' / Gibson SG",
+    "bio": "'슬로우핸드'라는 별명처럼 완벽한 비브라토와 절제된 톤으로 블루스를 가장 우아하게 노래하는 록 기타의 거장.",
+    "famousSongs": ["Crossroads", "Layla", "Wonderful Tonight", "Sunshine of Your Love"]
+  },
+  {
+    "id": "srv",
+    "name": "Stevie Ray Vaughan",
+    "koreanName": "스티비 레이 본",
+    "genre": "Blues & Blues Rock",
+    "era": "1980s",
+    "signatureGuitar": "Fender Stratocaster 'Number One' (013 게이지)",
+    "bio": "텍사스 블루스의 폭발적인 에너지. 굵은 줄에서 뿜어내는 괴물 같은 벤딩과 스윙 셔플 그루브의 화신.",
+    "famousSongs": ["Pride and Joy", "Texas Flood", "Scuttle Buttin'", "Cold Shot"]
+  },
+  {
+    "id": "moore",
+    "name": "Gary Moore",
+    "koreanName": "게리 무어",
+    "genre": "Blues & Blues Rock",
+    "era": "1980s-1990s",
+    "signatureGuitar": "Gibson Les Paul Standard (1959 'Greeny')",
+    "bio": "심장을 찢는 듯한 무한 서스테인과 강렬한 비브라토. 록과 블루스를 결합한 애절한 기타 발라드의 절대 군주.",
+    "famousSongs": ["Still Got The Blues", "Parisienne Walkways", "The Loner", "Over the Hills and Far Away"]
+  },
+  {
+    "id": "page",
+    "name": "Jimmy Page",
+    "koreanName": "지미 페이지",
+    "genre": "Classic & Hard Rock",
+    "era": "1970s",
+    "signatureGuitar": "Gibson Les Paul Standard 'Number One' / EDS-1275",
+    "bio": "레드 제플린(Led Zeppelin)을 이끈 하드 록 리프의 창시자. 변칙 튜닝과 드라마틱한 펜타토닉 런의 거장.",
+    "famousSongs": ["Stairway to Heaven", "Whole Lotta Love", "Black Dog", "Kashmir"]
+  },
+  {
+    "id": "van_halen",
+    "name": "Eddie Van Halen",
+    "koreanName": "에디 밴 헤일런",
+    "genre": "Classic & Hard Rock",
+    "era": "1970s-1980s",
+    "signatureGuitar": "Frankenstrat / EVH Wolfgang",
+    "bio": "양손 태핑(Two-handed Tapping)과 플로이드 로즈 아밍 혁명으로 현대 록 기타 연주법을 완전히 재정의한 천재.",
+    "famousSongs": ["Eruption", "Hot for Teacher", "Panama", "Ain't Talkin' 'bout Love"]
+  },
+  {
+    "id": "slash",
+    "name": "Slash",
+    "koreanName": "슬래시",
+    "genre": "Classic & Hard Rock",
+    "era": "1980s-1990s",
+    "signatureGuitar": "Gibson Les Paul Standard (Kris Derrig Replica)",
+    "bio": "건즈 앤 로지스(Guns N' Roses)의 영혼. 노래하듯 아름다운 멜로딕 벤딩과 마샬 앰프의 로우(Raw)한 드라이브 톤.",
+    "famousSongs": ["Sweet Child O' Mine", "November Rain", "Paradise City", "Don't Cry"]
+  },
+  {
+    "id": "gilmour",
+    "name": "David Gilmour",
+    "koreanName": "데이비드 길모어",
+    "genre": "Tone & Expressive",
+    "era": "1970s",
+    "signatureGuitar": "Fender Stratocaster 'The Black Strat'",
+    "bio": "핑크 플로이드(Pink Floyd)의 소리 풍경을 창조한 톤의 연금술사. 한 음 한 음에 영혼을 담는 2온음 오버벤딩의 달인.",
+    "famousSongs": ["Comfortably Numb", "Shine On You Crazy Diamond", "Time", "Wish You Were Here"]
+  },
+  {
+    "id": "beck",
+    "name": "Jeff Beck",
+    "koreanName": "제프 벡",
+    "genre": "Tone & Expressive",
+    "era": "1970s-1980s",
+    "signatureGuitar": "Fender Stratocaster (Olympic White, Roller Nut)",
+    "bio": "피크를 버리고 오직 손가락 탄현과 볼륨 노브, 트레몰로 암만으로 인간의 목소리보다 더 유려한 마이크로톤을 연주한 선구자.",
+    "famousSongs": ["Cause We've Ended as Lovers", "Beck's Bolero", "People Get Ready", "Going Down"]
+  },
+  {
+    "id": "vai",
+    "name": "Steve Vai",
+    "koreanName": "스티브 바이",
+    "genre": "Instrumental Rock",
+    "era": "1980s-1990s",
+    "signatureGuitar": "Ibanez JEM 7V (Monkey Grip)",
+    "bio": "프랭크 자파 밴드 출신으로, 리디안 모드와 초인적인 테크닉을 결합하여 악기의 물리적 한계를 뛰어넘은 비르투오소.",
+    "famousSongs": ["For the Love of God", "The Attitude Song", "Tender Surrender", "Bad Horsie"]
+  },
+  {
+    "id": "satriani",
+    "name": "Joe Satriani",
+    "koreanName": "조 사트리아니",
+    "genre": "Instrumental Rock",
+    "era": "1980s-1990s",
+    "signatureGuitar": "Ibanez JS Series",
+    "bio": "스티브 바이, 커크 해밋 등의 스승. 피치 액시스(Pitch Axis) 이론을 록에 도입하여 대중성과 예술성을 모두 잡은 인스트루멘탈 록의 대부.",
+    "famousSongs": ["Always with Me, Always with You", "Surfing with the Alien", "Satch Boogie", "Summer Song"]
+  },
+  {
+    "id": "malmsteen",
+    "name": "Yngwie Malmsteen",
+    "koreanName": "잉베이 말름스틴",
+    "genre": "Shred & Neo-Classical",
+    "era": "1980s",
+    "signatureGuitar": "Fender Stratocaster (Scalloped Fretboard)",
+    "bio": "바흐와 파가니니의 바로크 클래식을 헤비메탈에 이식한 네오클래시컬 속주의 제왕. 디미니쉬드 스윕 피킹의 개척자.",
+    "famousSongs": ["Far Beyond the Sun", "Black Star", "Trilogy Suite Op: 5", "Rising Force"]
+  },
+  {
+    "id": "gilbert",
+    "name": "Paul Gilbert",
+    "koreanName": "폴 길버트",
+    "genre": "Shred & Neo-Classical",
+    "era": "1980s-1990s",
+    "signatureGuitar": "Ibanez PGM Series",
+    "bio": "Mr. Big과 Racer X의 기타리스트. 세계에서 가장 정확한 얼터네이트 피킹과 스트링 스키핑 아르페지오의 거장.",
+    "famousSongs": ["Technical Difficulties", "Scarified", "To Be with You", "Colorado Bulldog"]
+  },
+  {
+    "id": "montgomery",
+    "name": "Wes Montgomery",
+    "koreanName": "웨스 몽고메리",
+    "genre": "Jazz & Fusion",
+    "era": "1960s",
+    "signatureGuitar": "Gibson L-5 CES",
+    "bio": "엄지손가락 단독 탄현과 혁신적인 옥타브 주법, 블록 코드 솔로로 모던 재즈 기타의 정초를 다진 거인.",
+    "famousSongs": ["Four on Six", "West Coast Blues", "Round Midnight", "D-Natural Blues"]
+  },
+  {
+    "id": "pass",
+    "name": "Joe Pass",
+    "koreanName": "조 패스",
+    "genre": "Jazz & Fusion",
+    "era": "1960s-1970s",
+    "signatureGuitar": "Gibson ES-175",
+    "bio": "기타 한 대로 워킹 베이스 라인, 코드 화성, 즉흥 멜로디를 동시에 연주하는 독주(Virtuoso) 재즈의 전설.",
+    "famousSongs": ["Autumn Leaves", "Joy Spring", "Stella by Starlight", "Have You Met Miss Jones"]
+  },
+  {
+    "id": "mayer",
+    "name": "John Mayer",
+    "koreanName": "존 메이어",
+    "genre": "Neo-Soul & Modern",
+    "era": "2000s",
+    "signatureGuitar": "PRS Silver Sky / Fender 'The Black1'",
+    "bio": "헨드릭스와 SRV의 블루스를 21세기 팝과 네오소울로 완벽히 재해석한 현대 기타리스트들의 우상.",
+    "famousSongs": ["Slow Dancing in a Burning Room", "Gravity", "Neon", "Belief"]
+  },
+  {
+    "id": "asato",
+    "name": "Mateus Asato",
+    "koreanName": "마테우스 아사토",
+    "genre": "Neo-Soul & Modern",
+    "era": "Modern",
+    "signatureGuitar": "Suhr Classic T / S Mateus Asato Signature",
+    "bio": "인스타그램과 유튜브 세대를 뒤흔든 네오소울의 시각적 마에스트로. 정교한 하이브리드 피킹과 10도 보이싱의 마술사.",
+    "famousSongs": ["Lyrical Chord Solo", "Don't Dream It's Over Rework", "Melodic Double-Stop Fills"]
+  },
+  {
+    "id": "henson",
+    "name": "Tim Henson",
+    "koreanName": "팀 헨슨",
+    "genre": "Neo-Soul & Modern",
+    "era": "Modern",
+    "signatureGuitar": "Ibanez TOD10N (Nylon Electric) / THBB10",
+    "bio": "Polyphia의 프론트맨. 트랩 비트와 힙합, 클래시컬 나일론 기타를 하이브리드 피킹과 썸 스랩으로 융합한 젠지(Gen Z)의 혁명가.",
+    "famousSongs": ["Playing God", "G.O.A.T.", "ABC", "Ego Death"]
+  }
+]

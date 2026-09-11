@@ -166,4 +166,92 @@ class ProgressionUtils {
     }
     return null;
   }
+
+  /// 키 또는 모드가 변경되었을 때 코드 진행의 각 코드를 전조 및 다이아토닉 매핑하여 반환합니다.
+  static List<({String symbol, String? tag, ChordBlock originalBlock})>
+      calculateRemappedChords({
+    required List<ChordBlock> progression,
+    required String oldKey,
+    required String newKey,
+  }) {
+    if (oldKey == newKey || progression.isEmpty) {
+      return progression
+          .map((b) => (
+                symbol: b.chordSymbol,
+                tag: b.functionTag,
+                originalBlock: b,
+              ))
+          .toList();
+    }
+
+    final oldKeyParts = oldKey.split(' ');
+    final oldRootStr = NoteUtils.normalizeNoteName(oldKeyParts[0]);
+    final oldMode = oldKeyParts.length > 1 ? oldKeyParts[1] : 'Major';
+
+    final newKeyParts = newKey.split(' ');
+    final newRootStr = NoteUtils.normalizeNoteName(newKeyParts[0]);
+    final newMode = newKeyParts.length > 1 ? newKeyParts[1] : 'Major';
+
+    final oldIdx = NoteUtils.getNoteIndex(oldRootStr);
+    final newIdx = NoteUtils.getNoteIndex(newRootStr);
+    final semitones = newIdx - oldIdx;
+
+    if (oldMode != newMode) {
+      final oldScaleName = oldMode == 'Minor' ? 'Aeolian' : 'Ionian';
+      final newScaleName = newMode == 'Minor' ? 'Aeolian' : 'Ionian';
+
+      final oldScaleNotes =
+          ScaleUtils.calculateScaleNotes(oldRootStr, oldScaleName);
+      final newDiatonics = ChordUtils.getDiatonicChords(
+          ScaleUtils.calculateScaleNotes(newRootStr, newScaleName),
+          newScaleName);
+
+      return progression.map((block) {
+        final chord = ChordUtils.analyzeChord(block.chordSymbol);
+        final chordRootIdx = NoteUtils.getNoteIndex(chord.root);
+
+        int degreeIndex = -1;
+        for (int i = 0; i < oldScaleNotes.length; i++) {
+          final noteIdx = NoteUtils.getNoteIndex(oldScaleNotes[i]);
+          if (noteIdx == chordRootIdx) {
+            degreeIndex = i;
+            break;
+          }
+        }
+
+        if (degreeIndex != -1 && degreeIndex < newDiatonics.length) {
+          final newChordData = newDiatonics[degreeIndex];
+          final newSymbol = newChordData.root + newChordData.quality;
+          final isMinor = newMode == 'Minor';
+          final newTag = isMinor
+              ? ChordUtils.getMinorRomanNumeral(degreeIndex + 1)
+              : ChordUtils.getRomanNumeral(degreeIndex + 1);
+
+          return (
+            symbol: newSymbol,
+            tag: newTag,
+            originalBlock: block,
+          );
+        } else {
+          final newSymbol =
+              ChordUtils.transposeChord(block.chordSymbol, semitones);
+          return (
+            symbol: newSymbol,
+            tag: block.functionTag,
+            originalBlock: block,
+          );
+        }
+      }).toList();
+    } else {
+      return progression.map((block) {
+        final newSymbol =
+            ChordUtils.transposeChord(block.chordSymbol, semitones);
+        return (
+          symbol: newSymbol,
+          tag: block.functionTag,
+          originalBlock: block,
+        );
+      }).toList();
+    }
+  }
 }

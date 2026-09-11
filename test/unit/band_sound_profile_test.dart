@@ -4,11 +4,11 @@ import 'package:guitar_theory_app/providers/lyria_state.dart';
 
 void main() {
   group('BandSoundProfiles Model & Catalog Tests', () {
-    test('Should have exactly 4 sound profiles per instrument category (16 total)', () {
+    test('Should have sound profiles per instrument category', () {
       expect(BandSoundProfiles.allDrums.length, 4);
       expect(BandSoundProfiles.allBass.length, 4);
       expect(BandSoundProfiles.allKeys.length, 4);
-      expect(BandSoundProfiles.allGuitar.length, 4);
+      expect(BandSoundProfiles.allGuitar.length, 5);
 
       expect(
         BandSoundProfiles.getProfilesForCategory(BandInstrumentCategory.drums).length,
@@ -24,7 +24,7 @@ void main() {
       );
       expect(
         BandSoundProfiles.getProfilesForCategory(BandInstrumentCategory.guitar).length,
-        4,
+        5,
       );
     });
 

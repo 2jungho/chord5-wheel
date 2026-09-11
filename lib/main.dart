@@ -11,6 +11,7 @@ import 'providers/settings_state.dart';
 import 'providers/chat_state.dart';
 import 'providers/studio_state.dart';
 import 'providers/lyria_state.dart';
+import 'providers/lick_vault_state.dart';
 
 import 'views/home_screen.dart';
 
@@ -120,6 +121,8 @@ class _MyAppState extends State<MyApp> with WindowListener {
         ChangeNotifierProvider(create: (_) => SettingsState()),
         // StudioState: 코드 스튜디오 상태 관리
         ChangeNotifierProvider(create: (_) => StudioState()),
+        // LickVaultState: 아티스트 릭 분석 및 재생 상태 관리
+        ChangeNotifierProvider(create: (_) => LickVaultState()),
         // LyriaState: AI 잼 세션 및 사운드스케이프 상태 관리 (SettingsState의 Gemini Key 동기화)
         ChangeNotifierProxyProvider<SettingsState, LyriaState>(
           create: (_) => LyriaState(),

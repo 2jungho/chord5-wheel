@@ -210,6 +210,16 @@ class BandSoundProfiles {
     icon: Icons.spa_rounded,
   );
 
+  static const guitarOverdrive = SoundProfile(
+    id: 'guitar_overdrive',
+    category: BandInstrumentCategory.guitar,
+    name: '오버드라이브 일렉기타 (Tube Overdrive)',
+    shortName: '오버드라이브',
+    description: '진공관 앰프를 드라이브시킨 거칠고 펀치력 있는 블루스/록 질감',
+    genreTag: 'Blues / Rock / Funk',
+    icon: Icons.fireplace_rounded,
+  );
+
   static const guitarCrunch = SoundProfile(
     id: 'guitar_crunch',
     category: BandInstrumentCategory.guitar,
@@ -218,6 +228,16 @@ class BandSoundProfiles {
     description: '진공관 앰프를 살짝 드라이브시킨 거칠고 펀치력 있는 록 질감',
     genreTag: 'Rock / Blues / Funky Rock',
     icon: Icons.fireplace_rounded,
+  );
+
+  static const guitarDistortion = SoundProfile(
+    id: 'guitar_distortion',
+    category: BandInstrumentCategory.guitar,
+    name: '디스토션 일렉기타 (High-Gain Lead)',
+    shortName: '디스토션',
+    description: '헤비 록 & 메탈 리드 솔로용 강력한 하이게인과 폭발적인 서스테인',
+    genreTag: 'Hard Rock / Metal / Shred',
+    icon: Icons.whatshot_rounded,
   );
 
   static const List<SoundProfile> allDrums = [
@@ -243,9 +263,10 @@ class BandSoundProfiles {
 
   static const List<SoundProfile> allGuitar = [
     guitarAcoustic,
-    guitarClean,
     guitarNylon,
-    guitarCrunch,
+    guitarClean,
+    guitarOverdrive,
+    guitarDistortion,
   ];
 
   static List<SoundProfile> getProfilesForCategory(BandInstrumentCategory category) {
@@ -262,6 +283,9 @@ class BandSoundProfiles {
   }
 
   static SoundProfile getProfileById(String id, BandInstrumentCategory category) {
+    if (category == BandInstrumentCategory.guitar && id == 'guitar_crunch') {
+      return guitarOverdrive;
+    }
     final list = getProfilesForCategory(category);
     return list.firstWhere((p) => p.id == id, orElse: () => list.first);
   }

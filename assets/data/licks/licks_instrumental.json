@@ -1,0 +1,101 @@
+[
+  {
+    "id": "vai_for_the_love_of_god",
+    "artistId": "vai",
+    "artist": "Steve Vai",
+    "genre": "Instrumental Rock",
+    "title": "For the Love of God Legato & Lydian Flight",
+    "difficulty": "Advanced",
+    "defaultKey": "E Minor",
+    "targetChord": "Em",
+    "applicableDegrees": ["i"],
+    "scaleUsed": "E Lydian / Aeolian Hybrid",
+    "cagedForm": "E Form (High 12th fret)",
+    "pentatonicBox": 1,
+    "description": "7일간의 단식 후 녹음했다는 인스트루멘탈 록의 성배 'For the Love of God'의 초절기교 벤딩 앤 레가토 릭입니다.",
+    "theoryTips": "단3도(G)에서 4도(A)를 거쳐 #4 증4도 텐션(A#)을 스치며 이국적이고 신비로운 리디안 분위기를 연출한 뒤 하이 옥타브 루트(E)로 활공합니다.",
+    "tags": ["Lydian", "Legato", "Virtuoso", "Expressive Bend"],
+    "notes": [
+      {"string": 3, "fret": 12, "duration": 0.25, "interval": "b3", "noteName": "G", "technique": "none", "isTargetNote": false},
+      {"string": 3, "fret": 14, "duration": 0.25, "interval": "4", "noteName": "A", "technique": "hammer", "isTargetNote": false},
+      {"string": 2, "fret": 12, "duration": 0.25, "interval": "5", "noteName": "B", "technique": "none", "isTargetNote": false},
+      {"string": 2, "fret": 15, "duration": 0.5, "interval": "b7", "noteName": "D", "technique": "bendFull", "isTargetNote": false},
+      {"string": 1, "fret": 12, "duration": 0.25, "interval": "R", "noteName": "E", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 15, "duration": 0.5, "interval": "b3", "noteName": "G", "technique": "bendFull", "isTargetNote": false},
+      {"string": 1, "fret": 17, "duration": 0.75, "interval": "4", "noteName": "A", "technique": "vibrato", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "vai_attitude_song",
+    "artistId": "vai",
+    "artist": "Steve Vai",
+    "genre": "Instrumental Rock",
+    "title": "The Attitude Song Wild Legato Run",
+    "difficulty": "Advanced",
+    "defaultKey": "A Major",
+    "targetChord": "A",
+    "applicableDegrees": ["I"],
+    "scaleUsed": "A Mixolydian / Major Scale",
+    "cagedForm": "A Form",
+    "pentatonicBox": 2,
+    "description": "한 손으로만 지판을 물 흐르듯 주파하는 스티브 바이의 시그니처 와일드 레가토 해머링/풀오프 릭입니다.",
+    "theoryTips": "피킹을 최소화하고 오직 왼손가락의 타건력으로 음을 연결하여 기타 소리가 마치 색소폰처럼 매끄럽고 연속적으로 울리도록 만듭니다.",
+    "tags": ["Fast Legato", "Hammer & Pull", "Mixolydian", "Speed"],
+    "notes": [
+      {"string": 1, "fret": 9, "duration": 0.125, "interval": "3", "noteName": "C#", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 10, "duration": 0.125, "interval": "4", "noteName": "D", "technique": "hammer", "isTargetNote": false},
+      {"string": 1, "fret": 12, "duration": 0.25, "interval": "5", "noteName": "E", "technique": "hammer", "isTargetNote": false},
+      {"string": 1, "fret": 10, "duration": 0.125, "interval": "4", "noteName": "D", "technique": "pull", "isTargetNote": false},
+      {"string": 1, "fret": 9, "duration": 0.125, "interval": "3", "noteName": "C#", "technique": "pull", "isTargetNote": true},
+      {"string": 2, "fret": 12, "duration": 0.25, "interval": "5", "noteName": "E", "technique": "none", "isTargetNote": false},
+      {"string": 2, "fret": 10, "duration": 0.5, "interval": "R", "noteName": "A", "technique": "vibrato", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "satriani_always_with_me",
+    "artistId": "satriani",
+    "artist": "Joe Satriani",
+    "genre": "Instrumental Rock",
+    "title": "Always with Me, Always with You Singing Melody",
+    "difficulty": "Intermediate",
+    "defaultKey": "B Major",
+    "targetChord": "B",
+    "applicableDegrees": ["I", "V"],
+    "scaleUsed": "B Major Scale",
+    "cagedForm": "E Form (High 7th-11th)",
+    "pentatonicBox": 1,
+    "description": "세계에서 가장 아름다운 인스트루멘탈 록 멜로디로 불리는 사트리아니의 감미로운 서정 릭입니다.",
+    "theoryTips": "장3도(D#)와 9도(C#)를 우아하게 연결한 후, 슬라이드로 5도(F#)를 터치하여 대중적이면서도 세련된 메이저 멜로디의 교과서를 보여줍니다.",
+    "tags": ["Lyrical Rock", "Major Scale", "Sweet Tone", "Add9"],
+    "notes": [
+      {"string": 2, "fret": 7, "duration": 0.5, "interval": "5", "noteName": "F#", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 7, "duration": 0.5, "interval": "R", "noteName": "B", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 9, "duration": 0.25, "interval": "9", "noteName": "C#", "technique": "none", "isTargetNote": false},
+      {"string": 1, "fret": 11, "duration": 0.75, "interval": "3", "noteName": "D#", "technique": "vibrato", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "satriani_surfing",
+    "artistId": "satriani",
+    "artist": "Joe Satriani",
+    "genre": "Instrumental Rock",
+    "title": "Surfing with the Alien Pitch Axis Flare",
+    "difficulty": "Advanced",
+    "defaultKey": "G Major",
+    "targetChord": "G7",
+    "applicableDegrees": ["I"],
+    "scaleUsed": "G Mixolydian + Blues Note",
+    "cagedForm": "A Form",
+    "pentatonicBox": 2,
+    "description": "우주선을 타고 외계 행성을 서핑하는 듯한 속도감과 와와 페달 특유의 펑키한 드라이브 릭입니다.",
+    "theoryTips": "동일한 루트 G 위에서 믹솔리디안의 단7도(F)와 블루노트(Db)를 오가며 모드(Mode)를 전환하는 피치 액시스 사운드의 정수입니다.",
+    "tags": ["Pitch Axis", "Mixolydian", "Blues Flare", "Funky Rock"],
+    "notes": [
+      {"string": 3, "fret": 10, "duration": 0.25, "interval": "F", "noteName": "F", "technique": "bendFull", "isTargetNote": false},
+      {"string": 2, "fret": 8, "duration": 0.25, "interval": "R", "noteName": "G", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 9, "duration": 0.25, "interval": "b5", "noteName": "Db", "technique": "none", "isTargetNote": false},
+      {"string": 1, "fret": 10, "duration": 0.5, "interval": "5", "noteName": "D", "technique": "slide", "isTargetNote": true},
+      {"string": 1, "fret": 13, "duration": 0.75, "interval": "b7", "noteName": "F", "technique": "bendFull", "isTargetNote": true}
+    ]
+  }
+]

@@ -1,0 +1,96 @@
+[
+  {
+    "id": "gilmour_comfortably_numb",
+    "artistId": "gilmour",
+    "artist": "David Gilmour",
+    "genre": "Tone & Expressive",
+    "title": "Comfortably Numb Epic 2-Step Bend",
+    "difficulty": "Advanced",
+    "defaultKey": "B Minor",
+    "targetChord": "Bm",
+    "applicableDegrees": ["i", "VI", "VII"],
+    "scaleUsed": "B Minor Pentatonic",
+    "cagedForm": "E Form (High 7th-10th fret)",
+    "pentatonicBox": 1,
+    "description": "세계 최고의 기타 솔로 1위로 단골 선정되는 'Comfortably Numb' 아웃트로의 상징적인 2온음(Two-Step) 오버벤딩 릭입니다.",
+    "theoryTips": "2번줄 10프렛 단7도(A)를 일반적인 1온음이 아니라 무려 2온음(4세미톤)을 끌어올려 고음부 장3도(C#) 이상까지 울부짖게 만드는 톤의 정점입니다.",
+    "tags": ["Epic Bend", "Overbend", "Long Sustain", "Big Muff"],
+    "notes": [
+      {"string": 2, "fret": 10, "duration": 1.0, "interval": "b7", "noteName": "A", "technique": "bendFull", "isTargetNote": false},
+      {"string": 1, "fret": 7, "duration": 0.25, "interval": "4", "noteName": "E", "technique": "none", "isTargetNote": false},
+      {"string": 1, "fret": 10, "duration": 0.75, "interval": "b7", "noteName": "A", "technique": "bendFull", "isTargetNote": false},
+      {"string": 1, "fret": 7, "duration": 0.5, "interval": "4", "noteName": "E", "technique": "vibrato", "isTargetNote": false},
+      {"string": 2, "fret": 7, "duration": 0.75, "interval": "5", "noteName": "F#", "technique": "vibrato", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "gilmour_shine_on",
+    "artistId": "gilmour",
+    "artist": "David Gilmour",
+    "genre": "Tone & Expressive",
+    "title": "Shine On You Crazy Diamond 4-Note Theme",
+    "difficulty": "Beginner",
+    "defaultKey": "G Minor",
+    "targetChord": "Gm",
+    "applicableDegrees": ["i"],
+    "scaleUsed": "G Natural Minor (Aeolian)",
+    "cagedForm": "E Form (Open/3rd)",
+    "pentatonicBox": 1,
+    "description": "신디사이저 패드 위에서 허공을 가르며 등장하는 불후의 4음 멜로디 테마입니다.",
+    "theoryTips": "단 4개의 음(Bb, F, G, E)으로 단조의 서글픔과 신비로운 도리안(Dorian 6th인 E음) 사운드를 동시에 환기하는 미니멀리즘의 극치입니다.",
+    "tags": ["Atmospheric", "Minimalist", "Dorian 6th", "Iconic Theme"],
+    "notes": [
+      {"string": 3, "fret": 3, "duration": 0.5, "interval": "b3", "noteName": "Bb", "technique": "none", "isTargetNote": true},
+      {"string": 2, "fret": 6, "duration": 0.5, "interval": "b7", "noteName": "F", "technique": "none", "isTargetNote": false},
+      {"string": 2, "fret": 8, "duration": 0.75, "interval": "R", "noteName": "G", "technique": "vibrato", "isTargetNote": true},
+      {"string": 2, "fret": 5, "duration": 1.0, "interval": "6", "noteName": "E", "technique": "vibrato", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "beck_cause_we_ended",
+    "artistId": "beck",
+    "artist": "Jeff Beck",
+    "genre": "Tone & Expressive",
+    "title": "Cause We've Ended as Lovers Expressive Cry",
+    "difficulty": "Advanced",
+    "defaultKey": "C Minor",
+    "targetChord": "Cm",
+    "applicableDegrees": ["i"],
+    "scaleUsed": "C Natural Minor",
+    "cagedForm": "E Form",
+    "pentatonicBox": 1,
+    "description": "스티비 원더가 헌정한 명곡에서 손가락 살로 현을 뜯으며 인간의 흐느낌을 그대로 옮겨놓은 감성 릭입니다.",
+    "theoryTips": "마이너 6도(Ab) 음을 하프 벤딩과 섬세한 비브라토로 지탱하여 슬픔의 정서를 극대화한 뒤 5도(G)로 흘러내리는 멜로디입니다.",
+    "tags": ["Fingerstyle", "Volume Swell", "Minor 6th", "Vocal Expression"],
+    "notes": [
+      {"string": 2, "fret": 9, "duration": 0.75, "interval": "b6", "noteName": "Ab", "technique": "bendHalf", "isTargetNote": false},
+      {"string": 2, "fret": 8, "duration": 0.25, "interval": "5", "noteName": "G", "technique": "none", "isTargetNote": true},
+      {"string": 3, "fret": 8, "duration": 0.5, "interval": "b3", "noteName": "Eb", "technique": "none", "isTargetNote": true},
+      {"string": 3, "fret": 10, "duration": 0.25, "interval": "4", "noteName": "F", "technique": "slide", "isTargetNote": false},
+      {"string": 3, "fret": 12, "duration": 0.75, "interval": "5", "noteName": "G", "technique": "vibrato", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "beck_microtonal_scoop",
+    "artistId": "beck",
+    "artist": "Jeff Beck",
+    "genre": "Tone & Expressive",
+    "title": "Beck's Microtonal Scoop & Whammy Flutter",
+    "difficulty": "Advanced",
+    "defaultKey": "A Minor",
+    "targetChord": "A7",
+    "applicableDegrees": ["I", "i"],
+    "scaleUsed": "A Blues / Microtonal",
+    "cagedForm": "D Form",
+    "pentatonicBox": 2,
+    "description": "트레몰로 암(Tremolo Arm)을 손바닥에 쥐고 음정을 미세하게 들어 올렸다 떨어뜨리는 제프 벡 전매특허 주법입니다.",
+    "theoryTips": "완전5도(E)와 단7도(G) 사이의 미분음(Microtone)을 암으로 건드리며 인도 음악이나 전통 블루스의 슬라이드 느낌을 자아냅니다.",
+    "tags": ["Tremolo Arm", "Microtone", "Finger Picking", "Slide Attack"],
+    "notes": [
+      {"string": 2, "fret": 10, "duration": 0.5, "interval": "R", "noteName": "A", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 8, "duration": 0.25, "interval": "b3", "noteName": "C", "technique": "hammer", "isTargetNote": false},
+      {"string": 1, "fret": 10, "duration": 0.5, "interval": "4", "noteName": "D", "technique": "bendHalf", "isTargetNote": false},
+      {"string": 1, "fret": 12, "duration": 0.75, "interval": "5", "noteName": "E", "technique": "vibrato", "isTargetNote": true}
+    ]
+  }
+]

@@ -69,4 +69,6 @@ flutter:
     - assets/fonts/
     - assets/sounds/
     - assets/images/
+    - assets/data/artists/
+    - assets/data/licks/
     - README.md

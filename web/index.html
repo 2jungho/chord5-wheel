@@ -336,29 +336,37 @@
             }
           } else if (category === "guitar") {
             if (profileId === "guitar_nylon") {
+              // Warm Classical Nylon Guitar: Soft Transient + Warm Mids + High-Cut Rolloff
               if (guitarHighpass) guitarHighpass.frequency.value = 60;
-              if (guitarAmpEQ) { guitarAmpEQ.low.value = 2.0; guitarAmpEQ.mid.value = 1.0; guitarAmpEQ.high.value = -5.0; }
+              if (guitarAmpEQ) { guitarAmpEQ.low.value = 2.5; guitarAmpEQ.mid.value = 0.5; guitarAmpEQ.high.value = -6.0; }
               if (guitarDrive) { guitarDrive.distortion = 0.0; guitarDrive.wet.value = 0.0; }
               if (guitarChorus) guitarChorus.wet.value = 0.0;
-              if (guitarCabFilter) guitarCabFilter.frequency.value = 3400;
-            } else if (profileId === "guitar_crunch") {
-              // Marshall JCM800 Tube Crunch: Bass Tightening + Mid Boost + Smooth Tube Saturation + 4x12 Cab
-              if (guitarHighpass) guitarHighpass.frequency.value = 130;
-              if (guitarAmpEQ) { guitarAmpEQ.low.value = 1.0; guitarAmpEQ.mid.value = 5.0; guitarAmpEQ.high.value = 1.5; }
-              if (guitarDrive) { guitarDrive.distortion = 0.22; guitarDrive.wet.value = 0.55; }
+              if (guitarCabFilter) guitarCabFilter.frequency.value = 3200;
+            } else if (profileId === "guitar_crunch" || profileId === "guitar_overdrive") {
+              // Tube Overdrive / Blues-Rock Crunch: Tight Lows + Tube Screamer Mid-Hump + Smooth Saturation
+              if (guitarHighpass) guitarHighpass.frequency.value = 120;
+              if (guitarAmpEQ) { guitarAmpEQ.low.value = 1.0; guitarAmpEQ.mid.value = 5.5; guitarAmpEQ.high.value = 2.0; }
+              if (guitarDrive) { guitarDrive.distortion = 0.35; guitarDrive.wet.value = 0.70; }
               if (guitarChorus) guitarChorus.wet.value = 0.0;
-              if (guitarCabFilter) guitarCabFilter.frequency.value = 3400;
+              if (guitarCabFilter) guitarCabFilter.frequency.value = 3600;
+            } else if (profileId === "guitar_distortion") {
+              // Searing High-Gain Lead Distortion: Tight Cut + Aggressive Harmonics + Vintage 30 Cab Presence
+              if (guitarHighpass) guitarHighpass.frequency.value = 150;
+              if (guitarAmpEQ) { guitarAmpEQ.low.value = 2.0; guitarAmpEQ.mid.value = 6.0; guitarAmpEQ.high.value = 4.0; }
+              if (guitarDrive) { guitarDrive.distortion = 0.72; guitarDrive.wet.value = 0.95; }
+              if (guitarChorus) { guitarChorus.frequency.value = 0.8; guitarChorus.depth.value = 0.20; guitarChorus.wet.value = 0.15; }
+              if (guitarCabFilter) guitarCabFilter.frequency.value = 4200;
             } else if (profileId === "guitar_clean") {
               // Fender Twin Reverb Clean: Highpass 90Hz + Glassy Chime EQ + 12" Jensen Cab + Analog Chorus
               if (guitarHighpass) guitarHighpass.frequency.value = 90;
-              if (guitarAmpEQ) { guitarAmpEQ.low.value = -3.0; guitarAmpEQ.mid.value = -2.0; guitarAmpEQ.high.value = 4.0; }
-              if (guitarDrive) { guitarDrive.distortion = 0.03; guitarDrive.wet.value = 0.12; }
-              if (guitarChorus) { guitarChorus.frequency.value = 1.6; guitarChorus.depth.value = 0.50; guitarChorus.wet.value = 0.35; }
-              if (guitarCabFilter) guitarCabFilter.frequency.value = 6800;
+              if (guitarAmpEQ) { guitarAmpEQ.low.value = -2.0; guitarAmpEQ.mid.value = -1.5; guitarAmpEQ.high.value = 4.5; }
+              if (guitarDrive) { guitarDrive.distortion = 0.02; guitarDrive.wet.value = 0.08; }
+              if (guitarChorus) { guitarChorus.frequency.value = 1.5; guitarChorus.depth.value = 0.45; guitarChorus.wet.value = 0.30; }
+              if (guitarCabFilter) guitarCabFilter.frequency.value = 6500;
             } else {
-              // guitar_acoustic (Transparent High-Fidelity Room Acoustic)
+              // guitar_acoustic (Transparent High-Fidelity Room Acoustic Steel)
               if (guitarHighpass) guitarHighpass.frequency.value = 40;
-              if (guitarAmpEQ) { guitarAmpEQ.low.value = 0.0; guitarAmpEQ.mid.value = 0.0; guitarAmpEQ.high.value = 0.0; }
+              if (guitarAmpEQ) { guitarAmpEQ.low.value = 0.0; guitarAmpEQ.mid.value = 0.0; guitarAmpEQ.high.value = 1.0; }
               if (guitarDrive) { guitarDrive.distortion = 0.0; guitarDrive.wet.value = 0.0; }
               if (guitarChorus) guitarChorus.wet.value = 0.0;
               if (guitarCabFilter) guitarCabFilter.frequency.value = 16000;
@@ -433,13 +441,17 @@
         }
       };
 
-      window.playWebGuitarNote = async function (note, octave) {
+      window.playWebGuitarNote = async function (note, octave, profileId) {
         try {
           if (Tone.context.state !== "running") {
             await Tone.start();
             if (Tone.context.resume) {
               await Tone.context.resume();
             }
+          }
+
+          if (profileId) {
+            window.setWebSoundProfile("guitar", profileId);
           }
 
           // Normalize note string (e.g. CSharp -> C#)

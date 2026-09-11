@@ -477,4 +477,69 @@ class ChordUtils {
     }
     return chords;
   }
+
+  /// 3화음(Triad)과 7화음(7th) 간의 코드 퀄리티를 변환합니다.
+  static String convertQuality(
+    String quality, {
+    required bool toSeventh,
+    String? functionTag,
+  }) {
+    if (toSeventh) {
+      if (quality.isEmpty || quality == 'M') {
+        final tag = functionTag ?? '';
+        if (tag == 'V' || tag == '5' || tag == '57') {
+          return '7';
+        } else {
+          return 'Maj7';
+        }
+      } else if (quality == 'm' || quality == 'min') {
+        return 'm7';
+      } else if (quality == 'dim' || quality == 'o') {
+        return 'm7b5';
+      } else if (quality == 'aug' || quality == '+') {
+        return '7#5';
+      }
+      return quality;
+    } else {
+      if (quality == 'Maj7' ||
+          quality == 'maj7' ||
+          quality == 'M7' ||
+          quality == '7' ||
+          quality == '9' ||
+          quality == 'Maj9' ||
+          quality == '6') {
+        return '';
+      } else if (quality == 'm7' ||
+          quality == 'min7' ||
+          quality == 'm9' ||
+          quality == 'm11' ||
+          quality == 'm6' ||
+          quality == 'mMaj7') {
+        return 'm';
+      } else if (quality == 'm7b5' ||
+          quality == 'dim7' ||
+          quality == 'dim' ||
+          quality == 'o7') {
+        return 'dim';
+      } else if (quality == '7#5' || quality == 'aug7') {
+        return 'aug';
+      }
+      return quality;
+    }
+  }
+
+  /// 주어진 코드 심볼의 퀄리티를 3화음 <-> 7화음으로 변환하여 새로운 코드 심볼을 반환합니다.
+  static String convertChordDensity(
+    String chordSymbol, {
+    required bool toSeventh,
+    String? functionTag,
+  }) {
+    final analyzed = analyzeChord(chordSymbol);
+    final newQuality = convertQuality(
+      analyzed.quality,
+      toSeventh: toSeventh,
+      functionTag: functionTag,
+    );
+    return '${analyzed.root}$newQuality';
+  }
 }

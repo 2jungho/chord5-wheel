@@ -8,6 +8,7 @@ import '../utils/guitar_utils.dart';
 import '../models/fretboard_marker.dart';
 import '../models/chord_model.dart';
 import '../utils/theory/voice_leading_calculator.dart';
+import '../services/music_theory_service.dart';
 
 class StudioState extends ChangeNotifier with ViewControlStateMixin {
   ProgressionSession _session;
@@ -98,9 +99,12 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
       if (block.chordDetail == null) return block;
       final voicings = GuitarUtils.generateAllVoicings(
           block.chordDetail!.root, block.chordDetail!.quality);
-      final newVoicing = _findBestVoicingForStyle(
-          voicings, _timelineVoicingStyle,
-          previousVoicing: lastVoicing);
+      final newVoicing = MusicTheoryService.findBestVoicingForStyle(
+        voicings,
+        _timelineVoicingStyle,
+        key: _session.key,
+        previousVoicing: lastVoicing,
+      );
       lastVoicing = newVoicing;
       return block.copyWith(voicing: newVoicing);
     }).toList();
@@ -111,164 +115,15 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
     notifyListeners();
   }
 
-  ChordVoicing? _findBestVoicingForStyle(
-      List<ChordVoicing> voicings, String style,
-      {ChordVoicing? previousVoicing}) {
-    if (voicings.isEmpty) return null;
-
-    int targetFret;
-
-    if (style == 'Auto') {
-      // Auto: 직전 코드의 위치를 따라감 (흐름 중시)
-      targetFret = previousVoicing?.startFret ?? 0;
-      if (previousVoicing == null) return voicings.first;
-    } else {
-      // CAGED Form: Key Root의 해당 폼 위치를 기준으로 고정 (포지션 중시)
-      // 예: C Key, E Form -> C 코드를 E Form으로 잡는 8프렛이 기준
-      targetFret = VoiceLeadingCalculator.calculateAnchorFret(
-        key: _session.key,
-        formStyle: style,
-      );
-    }
-
-    // Target Fret과 가장 가까운(거리 차이가 적은) 보이싱 찾기
-    final sorted = List<ChordVoicing>.from(voicings);
-    sorted.sort((a, b) {
-      final diffA = (a.startFret - targetFret).abs();
-      final diffB = (b.startFret - targetFret).abs();
-      int compare = diffA.compareTo(diffB);
-
-      // 거리가 같다면? CAGED 폼 이름이 일치하는 것 우선 (옵션)
-      // 또는 프렛 번호가 낮은 것 우선
-      if (compare == 0) {
-        return a.startFret.compareTo(b.startFret);
-      }
-      return compare;
-    });
-
-    return sorted.first;
-  }
-
-  /// 코드 심볼로부터 ChordBlock의 화성 분석 및 최적 보이싱을 계산하여 반환
-  ChordBlock _createOrUpdateBlockVoicing({
-    ChordBlock? existingBlock,
-    required String chordSymbol,
-    String? functionTag,
-    int? duration,
-    ChordVoicing? previousVoicing,
-  }) {
-    final analyzed = TheoryUtils.analyzeChord(chordSymbol);
-    final voicings =
-        GuitarUtils.generateAllVoicings(analyzed.root, analyzed.quality);
-    final bestVoicing = _findBestVoicingForStyle(
-      voicings,
-      _timelineVoicingStyle,
-      previousVoicing: previousVoicing,
-    );
-
-    if (existingBlock != null) {
-      return existingBlock.copyWith(
-        chordSymbol: chordSymbol,
-        functionTag: functionTag,
-        chordDetail: analyzed,
-        voicing: bestVoicing,
-      );
-    }
-
-    return ChordBlock(
-      chordSymbol: chordSymbol,
-      duration: duration ?? 4,
-      chordDetail: analyzed,
-      voicing: bestVoicing,
-      functionTag: functionTag,
-    );
-  }
-
   void updateKey(String newKeyString) {
     if (_session.key == newKeyString) return;
 
-    final oldKeyParts = _session.key.split(' ');
-    final oldRootStr = TheoryUtils.normalizeNoteName(oldKeyParts[0]);
-    final oldMode = oldKeyParts.length > 1 ? oldKeyParts[1] : 'Major';
-
-    final newKeyParts = newKeyString.split(' ');
-    final newRootStr = TheoryUtils.normalizeNoteName(newKeyParts[0]);
-    final newMode = newKeyParts.length > 1 ? newKeyParts[1] : 'Major';
-
-    List<ChordBlock> newProgression = [];
-
-    // Check if Mode Changed (Major <-> Minor)
-    if (oldMode != newMode) {
-      // 1. Prepare Scale Info
-      final oldScaleName = oldMode == 'Minor' ? 'Aeolian' : 'Ionian';
-      final newScaleName = newMode == 'Minor' ? 'Aeolian' : 'Ionian';
-
-      final oldScaleNotes =
-          TheoryUtils.calculateScaleNotes(oldRootStr, oldScaleName);
-
-      final newDiatonics = TheoryUtils.getDiatonicChords(
-          TheoryUtils.calculateScaleNotes(newRootStr, newScaleName),
-          newScaleName);
-
-      // 2. Map chords by Degree
-      newProgression = _session.progression.map((block) {
-        final chord = TheoryUtils.analyzeChord(block.chordSymbol);
-        final chordRootIdx = TheoryUtils.getNoteIndex(chord.root);
-
-        // Find Degree in Old Scale
-        int degreeIndex = -1;
-        for (int i = 0; i < oldScaleNotes.length; i++) {
-          final noteIdx = TheoryUtils.getNoteIndex(oldScaleNotes[i]);
-          if (noteIdx == chordRootIdx) {
-            degreeIndex = i;
-            break;
-          }
-        }
-
-        if (degreeIndex != -1 && degreeIndex < newDiatonics.length) {
-          // Found Diatonic Match -> Switch to New Diatonic Chord
-          final newChordData = newDiatonics[degreeIndex];
-          final newSymbol = newChordData.root + newChordData.quality;
-
-          final isMinor = newMode == 'Minor';
-          final newTag = isMinor
-              ? TheoryUtils.getMinorRomanNumeral(degreeIndex + 1)
-              : TheoryUtils.getRomanNumeral(degreeIndex + 1);
-
-          return _createOrUpdateBlockVoicing(
-            existingBlock: block,
-            chordSymbol: newSymbol,
-            functionTag: newTag,
-          );
-        } else {
-          // Non-diatonic: Fallback to Simple Transposition (Semitone)
-          final oldIdx = TheoryUtils.getNoteIndex(oldRootStr);
-          final newIdx = TheoryUtils.getNoteIndex(newRootStr);
-          final semitones = newIdx - oldIdx;
-
-          final newSymbol =
-              TheoryUtils.transposeChord(block.chordSymbol, semitones);
-          return _createOrUpdateBlockVoicing(
-            existingBlock: block,
-            chordSymbol: newSymbol,
-          );
-        }
-      }).toList();
-    } else {
-      // Same Mode: Simple Transposition
-      final oldIdx = TheoryUtils.getNoteIndex(oldRootStr);
-      final newIdx = TheoryUtils.getNoteIndex(newRootStr);
-      final semitones = newIdx - oldIdx;
-
-      newProgression = _session.progression.map((block) {
-        final newSymbol =
-            TheoryUtils.transposeChord(block.chordSymbol, semitones);
-        return _createOrUpdateBlockVoicing(
-          existingBlock: block,
-          chordSymbol: newSymbol,
-        );
-      }).toList();
-    }
+    final newProgression = MusicTheoryService.remapProgression(
+      progression: _session.progression,
+      oldKey: _session.key,
+      newKey: newKeyString,
+      style: _timelineVoicingStyle,
+    );
 
     _session = _session.copyWith(
       key: newKeyString,
@@ -280,24 +135,18 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
   }
 
   void addChord(ChordBlock chord) {
-    // 인터벌 태그 자동 생성
-    String? tag = chord.functionTag;
-    tag ??= TheoryUtils.getFunctionTag(_session.key, chord.chordSymbol);
-
-    final analyzed = TheoryUtils.analyzeChord(chord.chordSymbol);
-    final voicings =
-        GuitarUtils.generateAllVoicings(analyzed.root, analyzed.quality);
     final lastVoicing = _session.progression.isNotEmpty
         ? _session.progression.last.voicing
         : null;
-    final defaultVoicing = _findBestVoicingForStyle(
-        voicings, _timelineVoicingStyle,
-        previousVoicing: lastVoicing);
 
-    final newChord = chord.copyWith(
-      chordDetail: analyzed,
-      voicing: defaultVoicing,
-      functionTag: tag,
+    final newChord = MusicTheoryService.buildChordBlock(
+      chordSymbol: chord.chordSymbol,
+      key: _session.key,
+      style: _timelineVoicingStyle,
+      previousVoicing: lastVoicing,
+      functionTag: chord.functionTag,
+      duration: chord.duration,
+      existingBlock: chord,
     );
 
     _session = _session.copyWith(
@@ -314,31 +163,38 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
         : null;
 
     final newBlocks = parsedBlocks.map((block) {
-      final analyzed = TheoryUtils.analyzeChord(block.chordSymbol);
-      final voicings =
-          GuitarUtils.generateAllVoicings(analyzed.root, analyzed.quality);
-      final defaultVoicing = _findBestVoicingForStyle(
-          voicings, _timelineVoicingStyle,
-          previousVoicing: lastVoicing);
-      lastVoicing = defaultVoicing;
-
-      return block.copyWith(
-        chordDetail: analyzed,
-        voicing: defaultVoicing,
+      final newBlock = MusicTheoryService.buildChordBlock(
+        chordSymbol: block.chordSymbol,
+        key: _session.key,
+        style: _timelineVoicingStyle,
+        previousVoicing: lastVoicing,
+        functionTag: block.functionTag,
+        duration: block.duration,
+        existingBlock: block,
       );
+      lastVoicing = newBlock.voicing;
+      return newBlock;
     }).toList();
 
     if (newBlocks.isNotEmpty) {
       if (replace) {
         _session = _session.copyWith(
           progression: newBlocks,
-          title: title ?? (text.trim().isNotEmpty ? text.trim() : 'Untitled Progression'),
+          title: title ??
+              (text.trim().isNotEmpty ? text.trim() : 'Untitled Progression'),
         );
       } else {
-        final existingTitle = (_session.title.isNotEmpty && _session.title != 'Untitled Progression') ? _session.title : null;
+        final existingTitle = (_session.title.isNotEmpty &&
+                _session.title != 'Untitled Progression')
+            ? _session.title
+            : null;
         _session = _session.copyWith(
           progression: [..._session.progression, ...newBlocks],
-          title: title ?? existingTitle ?? [..._session.progression, ...newBlocks].map((b) => b.chordSymbol).join('-'),
+          title: title ??
+              existingTitle ??
+              [..._session.progression, ...newBlocks]
+                  .map((b) => b.chordSymbol)
+                  .join('-'),
         );
       }
 
@@ -347,84 +203,33 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
     }
   }
 
-
-
   /// 타임라인 진행의 모든 코드를 3화음(Triad) <-> 7화음(7th)으로 일괄 변환
   void convertProgressionDensity({required bool toSeventh}) {
     if (_session.progression.isEmpty) return;
 
     ChordVoicing? lastVoicing;
     final newProgression = _session.progression.map((block) {
-      final analyzed = TheoryUtils.analyzeChord(block.chordSymbol);
-      final root = analyzed.root;
-      final quality = analyzed.quality;
-
-      String newQuality = quality;
-
-      if (toSeventh) {
-        // 3화음 -> 7화음 확장
-        if (quality.isEmpty || quality == 'M') {
-          final tag = block.functionTag ?? '';
-          if (tag == 'V' || tag == '5' || tag == '57') {
-            newQuality = '7';
-          } else {
-            newQuality = 'Maj7';
-          }
-        } else if (quality == 'm' || quality == 'min') {
-          newQuality = 'm7';
-        } else if (quality == 'dim' || quality == 'o') {
-          newQuality = 'm7b5';
-        } else if (quality == 'aug' || quality == '+') {
-          newQuality = '7#5';
-        }
-      } else {
-        // 7화음/텐션 -> 기본 3화음으로 단순화
-        if (quality == 'Maj7' ||
-            quality == 'maj7' ||
-            quality == 'M7' ||
-            quality == '7' ||
-            quality == '9' ||
-            quality == 'Maj9' ||
-            quality == '6') {
-          newQuality = '';
-        } else if (quality == 'm7' ||
-            quality == 'min7' ||
-            quality == 'm9' ||
-            quality == 'm11' ||
-            quality == 'm6' ||
-            quality == 'mMaj7') {
-          newQuality = 'm';
-        } else if (quality == 'm7b5' ||
-            quality == 'dim7' ||
-            quality == 'dim' ||
-            quality == 'o7') {
-          newQuality = 'dim';
-        } else if (quality == '7#5' || quality == 'aug7') {
-          newQuality = 'aug';
-        }
-      }
-
-      final newSymbol = '$root$newQuality';
-      final newAnalyzed = TheoryUtils.analyzeChord(newSymbol);
-      final voicings = GuitarUtils.generateAllVoicings(
-          newAnalyzed.root, newAnalyzed.quality);
-      final newVoicing = _findBestVoicingForStyle(
-          voicings, _timelineVoicingStyle,
-          previousVoicing: lastVoicing);
-      lastVoicing = newVoicing;
-
-      return block.copyWith(
-        chordSymbol: newSymbol,
-        chordDetail: newAnalyzed,
-        voicing: newVoicing,
+      final newSymbol = TheoryUtils.convertChordDensity(
+        block.chordSymbol,
+        toSeventh: toSeventh,
+        functionTag: block.functionTag,
       );
+
+      final newBlock = MusicTheoryService.buildChordBlock(
+        chordSymbol: newSymbol,
+        key: _session.key,
+        style: _timelineVoicingStyle,
+        previousVoicing: lastVoicing,
+        existingBlock: block,
+      );
+      lastVoicing = newBlock.voicing;
+      return newBlock;
     }).toList();
 
     _session = _session.copyWith(progression: newProgression);
     _calculateVoiceLeading();
     notifyListeners();
   }
-
 
   /// 새로운 코드 진행으로 전체를 교체합니다. (AI 검색 등에서 사용)
   void setProgression(List<ChordBlock> blocks,
@@ -433,24 +238,18 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
       String? arrangementStyle,
       bool clearArrangement = false}) {
     ChordVoicing? lastVoicing;
+    final activeKey = (key != null && key.isNotEmpty) ? key : _session.key;
 
     final processedBlocks = blocks.map((block) {
-      final analyzed = TheoryUtils.analyzeChord(block.chordSymbol);
-      final voicings =
-          GuitarUtils.generateAllVoicings(analyzed.root, analyzed.quality);
-      final defaultVoicing = _findBestVoicingForStyle(
-        voicings,
-        _timelineVoicingStyle,
+      final newBlock = MusicTheoryService.buildChordBlock(
+        chordSymbol: block.chordSymbol,
+        key: activeKey,
+        style: _timelineVoicingStyle,
         previousVoicing: lastVoicing,
+        existingBlock: block,
       );
-      lastVoicing = defaultVoicing;
-
-      return block.copyWith(
-        chordDetail: analyzed,
-        voicing: defaultVoicing,
-        functionTag:
-            TheoryUtils.getFunctionTag(key ?? _session.key, block.chordSymbol),
-      );
+      lastVoicing = newBlock.voicing;
+      return newBlock;
     }).toList();
 
     _session = _session.copyWith(
@@ -495,17 +294,11 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
   }
 
   void insertChordAt(int index, String chordSymbol, {int duration = 4}) {
-    final analyzed = TheoryUtils.analyzeChord(chordSymbol);
-    final voicings = GuitarUtils.generateAllVoicings(analyzed.root, analyzed.quality);
-    final defaultVoicing = _findBestVoicingForStyle(voicings, _timelineVoicingStyle);
-    final tag = TheoryUtils.getFunctionTag(_session.key, chordSymbol);
-
-    final newBlock = ChordBlock(
+    final newBlock = MusicTheoryService.buildChordBlock(
       chordSymbol: chordSymbol,
+      key: _session.key,
+      style: _timelineVoicingStyle,
       duration: duration,
-      chordDetail: analyzed,
-      voicing: defaultVoicing,
-      functionTag: tag,
     );
 
     final newList = List<ChordBlock>.from(_session.progression);
@@ -517,33 +310,23 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
     notifyListeners();
   }
 
-
-
   void applyTransposedChords(List<String> newChordSymbols) {
     if (newChordSymbols.isEmpty) return;
     ChordVoicing? lastVoicing;
 
     final newBlocks = newChordSymbols.map((symbol) {
-      final analyzed = TheoryUtils.analyzeChord(symbol);
-      final voicings = GuitarUtils.generateAllVoicings(analyzed.root, analyzed.quality);
-      final defaultVoicing = _findBestVoicingForStyle(
-        voicings,
-        _timelineVoicingStyle,
+      final newBlock = MusicTheoryService.buildChordBlock(
+        chordSymbol: symbol,
+        key: _session.key,
+        style: _timelineVoicingStyle,
         previousVoicing: lastVoicing,
       );
-      lastVoicing = defaultVoicing;
-      final tag = TheoryUtils.getFunctionTag(_session.key, symbol);
-
-      return ChordBlock(
-        chordSymbol: symbol,
-        duration: 4,
-        chordDetail: analyzed,
-        voicing: defaultVoicing,
-        functionTag: tag,
-      );
+      lastVoicing = newBlock.voicing;
+      return newBlock;
     }).toList();
 
-    final existingTitle = (_session.title.isNotEmpty && _session.title != 'Untitled Progression')
+    final existingTitle = (_session.title.isNotEmpty &&
+            _session.title != 'Untitled Progression')
         ? '${_session.title} (Capo)'
         : newChordSymbols.join('-');
 
@@ -678,64 +461,61 @@ class StudioState extends ChangeNotifier with ViewControlStateMixin {
     notifyListeners();
   }
 
-  void toggleRhythmStep(int position) {
+  void _updateRhythmSteps(void Function(List<RhythmStep> steps) update) {
     final currentSteps = List<RhythmStep>.from(_session.rhythmPattern.steps);
-    final index = currentSteps.indexWhere((s) => s.position == position);
-
-    if (index >= 0) {
-      // Rotate: Down -> Up -> Mute -> None
-      // Rotate: Down -> Up -> Mute -> Bass -> None -> Down
-      final currentAction = currentSteps[index].action;
-      RhythmActionType nextAction;
-      switch (currentAction) {
-        case RhythmActionType.down:
-          nextAction = RhythmActionType.up;
-          break;
-        case RhythmActionType.up:
-          nextAction = RhythmActionType.mute;
-          break;
-        case RhythmActionType.mute:
-          nextAction = RhythmActionType.bass;
-          break;
-        case RhythmActionType.bass:
-          nextAction = RhythmActionType.none;
-          break;
-        case RhythmActionType.none:
-          nextAction = RhythmActionType.down;
-          break;
-      }
-
-      if (nextAction == RhythmActionType.none) {
-        currentSteps.removeAt(index);
-      } else {
-        currentSteps[index] = currentSteps[index].copyWith(action: nextAction);
-      }
-    } else {
-      currentSteps
-          .add(RhythmStep(position: position, action: RhythmActionType.down));
-    }
-
+    update(currentSteps);
     currentSteps.sort((a, b) => a.position.compareTo(b.position));
     _session = _session.copyWith(
       rhythmPattern: _session.rhythmPattern.copyWith(steps: currentSteps),
     );
-
     notifyListeners();
   }
 
+  void toggleRhythmStep(int position) {
+    _updateRhythmSteps((steps) {
+      final index = steps.indexWhere((s) => s.position == position);
+
+      if (index >= 0) {
+        // Rotate: Down -> Up -> Mute -> Bass -> None -> Down
+        final currentAction = steps[index].action;
+        RhythmActionType nextAction;
+        switch (currentAction) {
+          case RhythmActionType.down:
+            nextAction = RhythmActionType.up;
+            break;
+          case RhythmActionType.up:
+            nextAction = RhythmActionType.mute;
+            break;
+          case RhythmActionType.mute:
+            nextAction = RhythmActionType.bass;
+            break;
+          case RhythmActionType.bass:
+            nextAction = RhythmActionType.none;
+            break;
+          case RhythmActionType.none:
+            nextAction = RhythmActionType.down;
+            break;
+        }
+
+        if (nextAction == RhythmActionType.none) {
+          steps.removeAt(index);
+        } else {
+          steps[index] = steps[index].copyWith(action: nextAction);
+        }
+      } else {
+        steps.add(RhythmStep(position: position, action: RhythmActionType.down));
+      }
+    });
+  }
+
   void toggleAccent(int position) {
-    final currentSteps = List<RhythmStep>.from(_session.rhythmPattern.steps);
-    final index = currentSteps.indexWhere((s) => s.position == position);
-
-    if (index >= 0) {
-      currentSteps[index] =
-          currentSteps[index].copyWith(isAccent: !currentSteps[index].isAccent);
-      _session = _session.copyWith(
-        rhythmPattern: _session.rhythmPattern.copyWith(steps: currentSteps),
-      );
-
-      notifyListeners();
-    }
+    _updateRhythmSteps((steps) {
+      final index = steps.indexWhere((s) => s.position == position);
+      if (index >= 0) {
+        steps[index] =
+            steps[index].copyWith(isAccent: !steps[index].isAccent);
+      }
+    });
   }
 
   void _calculateVoiceLeading() {

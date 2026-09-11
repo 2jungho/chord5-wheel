@@ -1,0 +1,99 @@
+[
+  {
+    "id": "montgomery_four_on_six",
+    "artistId": "montgomery",
+    "artist": "Wes Montgomery",
+    "genre": "Jazz & Fusion",
+    "title": "Four on Six Bebop Octave Groove",
+    "difficulty": "Intermediate",
+    "defaultKey": "G Minor",
+    "targetChord": "Gm7",
+    "applicableDegrees": ["i"],
+    "scaleUsed": "G Dorian / Minor Blues",
+    "cagedForm": "E Form (3rd-6th fret)",
+    "pentatonicBox": 1,
+    "description": "재즈 기타의 상징인 웨스 몽고메리식 엄지손가락 옥타브 주법(Octaves)으로 스윙감을 극대화한 비밥 릭입니다.",
+    "theoryTips": "3번줄과 1번줄(또는 4번과 2번)의 같은 음을 한 옥타브 차이로 동시에 뜯으며, 중간 줄을 왼손 살로 뮤트하여 풍성하고 따뜻한 톤을 만듭니다.",
+    "tags": ["Octave Technique", "Thumb Picking", "Dorian Groove", "Bebop Swing"],
+    "notes": [
+      {"string": 3, "fret": 3, "duration": 0.25, "interval": "b3", "noteName": "Bb", "technique": "none", "isTargetNote": true},
+      {"string": 3, "fret": 5, "duration": 0.25, "interval": "4", "noteName": "C", "technique": "none", "isTargetNote": false},
+      {"string": 3, "fret": 6, "duration": 0.25, "interval": "b5", "noteName": "Db", "technique": "none", "isTargetNote": false},
+      {"string": 3, "fret": 7, "duration": 0.5, "interval": "5", "noteName": "D", "technique": "slide", "isTargetNote": true},
+      {"string": 2, "fret": 8, "duration": 0.5, "interval": "R", "noteName": "G", "technique": "none", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "montgomery_d_natural",
+    "artistId": "montgomery",
+    "artist": "Wes Montgomery",
+    "genre": "Jazz & Fusion",
+    "title": "D-Natural Blues Smooth Swing Phrasing",
+    "difficulty": "Intermediate",
+    "defaultKey": "D Major",
+    "targetChord": "D7",
+    "applicableDegrees": ["I"],
+    "scaleUsed": "D Mixolydian / Major Blues",
+    "cagedForm": "A Form",
+    "pentatonicBox": 2,
+    "description": "피크 대신 엄지손가락으로 뜯어 부드럽고 둥글둥글한 사운드로 9도와 13도 재즈 텐션을 풀어내는 릭입니다.",
+    "theoryTips": "단순 블루스 스케일에 머물지 않고 도미넌트 7th의 13도(B)와 9도(E)를 섞어 스윙 빅밴드 브라스 섹션 같은 세련된 사운드를 구현합니다.",
+    "tags": ["Jazz Blues", "13th Tension", "Swing Phrasing", "Warm Tone"],
+    "notes": [
+      {"string": 2, "fret": 7, "duration": 0.25, "interval": "3", "noteName": "F#", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 7, "duration": 0.25, "interval": "6", "noteName": "B", "technique": "none", "isTargetNote": false},
+      {"string": 1, "fret": 5, "duration": 0.25, "interval": "5", "noteName": "A", "technique": "none", "isTargetNote": true},
+      {"string": 2, "fret": 7, "duration": 0.25, "interval": "3", "noteName": "F#", "technique": "none", "isTargetNote": true},
+      {"string": 2, "fret": 5, "duration": 0.5, "interval": "9", "noteName": "E", "technique": "none", "isTargetNote": false},
+      {"string": 3, "fret": 7, "duration": 0.75, "interval": "R", "noteName": "D", "technique": "none", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "pass_autumn_leaves",
+    "artistId": "pass",
+    "artist": "Joe Pass",
+    "genre": "Jazz & Fusion",
+    "title": "Autumn Leaves Walking Bass & Chord Fill",
+    "difficulty": "Advanced",
+    "defaultKey": "G Minor",
+    "targetChord": "Cm7 to F7",
+    "applicableDegrees": ["ii", "V"],
+    "scaleUsed": "Jazz ii-V-I Voicing & Chromatic Walk",
+    "cagedForm": "C Form / A Form",
+    "pentatonicBox": 2,
+    "description": "기타 한 대로 베이스 라인과 상단 코드 텐션 보이싱을 번갈아 연주하는 조 패스 시그니처 코드 솔로 릭입니다.",
+    "theoryTips": "저음 5번줄에서 ii-V 진행의 베이스(C -> F)를 짚으면서, 고음부에서 단7도(Bb)와 3도(A)를 가이드톤으로 해결하는 전형적인 독주 재즈 편곡입니다.",
+    "tags": ["Walking Bass", "Chord Melody", "ii-V-I", "Guide Tones"],
+    "notes": [
+      {"string": 5, "fret": 3, "duration": 0.5, "interval": "ii-Root", "noteName": "C", "technique": "none", "isTargetNote": true},
+      {"string": 3, "fret": 3, "duration": 0.25, "interval": "b7", "noteName": "Bb", "technique": "none", "isTargetNote": false},
+      {"string": 2, "fret": 4, "duration": 0.25, "interval": "b3", "noteName": "Eb", "technique": "none", "isTargetNote": true},
+      {"string": 4, "fret": 3, "duration": 0.5, "interval": "V-Root", "noteName": "F", "technique": "none", "isTargetNote": true},
+      {"string": 3, "fret": 2, "duration": 0.5, "interval": "3", "noteName": "A", "technique": "none", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "pass_joy_spring",
+    "artistId": "pass",
+    "artist": "Joe Pass",
+    "genre": "Jazz & Fusion",
+    "title": "Joy Spring Bebop Chromatic Approach",
+    "difficulty": "Advanced",
+    "defaultKey": "F Major",
+    "targetChord": "Fmaj7",
+    "applicableDegrees": ["I"],
+    "scaleUsed": "F Bebop Major Scale",
+    "cagedForm": "E Form (High)",
+    "pentatonicBox": 1,
+    "description": "클리포드 브라운의 비밥 명곡 위에서 반음계(Chromatic) 접근음으로 코드톤을 포위하여 명쾌하게 해결하는 릭입니다.",
+    "theoryTips": "코드톤인 장3도(A)나 5도(C)를 바로 치지 않고, 반음 위/아래의 어프로치 노트(Enclosure)를 거쳐 안착시킴으로써 재즈 특유의 세련미를 완성합니다.",
+    "tags": ["Bebop", "Chromatic Approach", "Enclosure", "Targeting"],
+    "notes": [
+      {"string": 2, "fret": 9, "duration": 0.125, "interval": "Appr", "noteName": "G#", "technique": "none", "isTargetNote": false},
+      {"string": 2, "fret": 10, "duration": 0.25, "interval": "3", "noteName": "A", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 7, "duration": 0.125, "interval": "Appr", "noteName": "B", "technique": "none", "isTargetNote": false},
+      {"string": 1, "fret": 8, "duration": 0.5, "interval": "5", "noteName": "C", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 12, "duration": 0.75, "interval": "7", "noteName": "E", "technique": "vibrato", "isTargetNote": true}
+    ]
+  }
+]
