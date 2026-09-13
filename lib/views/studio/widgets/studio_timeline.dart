@@ -3,12 +3,13 @@ import 'package:provider/provider.dart';
 import '../../../providers/studio_state.dart';
 import '../../../models/progression/progression_models.dart';
 import '../../../utils/theory_utils.dart';
-import 'timeline/timeline_chord_card.dart';
 import 'timeline/timeline_key_panel.dart';
 import 'timeline/timeline_analysis_panel.dart';
 import 'timeline/timeline_quick_add_bar.dart';
 import 'timeline/timeline_sections_bar.dart';
 import 'timeline/timeline_header_toolbar.dart';
+import 'timeline/timeline_caged_bar.dart';
+import 'timeline/timeline_cards_grid.dart';
 
 class StudioTimeline extends StatefulWidget {
   const StudioTimeline({super.key});
@@ -249,185 +250,13 @@ class _StudioTimelineState extends State<StudioTimeline> {
         TimelineSectionsBar(studio: studio, session: session),
 
         // CAGED Voicing Selector Toolbar
-        Container(
-          width: double.infinity,
-          height: 44,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            border: Border(
-              bottom: BorderSide(
-                color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
-              ),
-            ),
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final showLabel = constraints.maxWidth > 300;
-              final showIcon = constraints.maxWidth > 40;
+        TimelineCagedBar(studio: studio),
 
-              return Row(
-                children: [
-                  if (showIcon) ...[
-                    Icon(Icons.grid_on,
-                        size: 16,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant),
-                    if (showLabel) ...[
-                      const SizedBox(width: 8),
-                      Text(
-                        'Voicing Shape (CAGED)',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                    SizedBox(width: showLabel ? 16 : 8),
-                  ],
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, innerConstraints) {
-                        return SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                                minWidth: innerConstraints.maxWidth),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                for (final style in [
-                                  'C',
-                                  'C-A',
-                                  'A',
-                                  'A-G',
-                                  'G',
-                                  'G-E',
-                                  'E',
-                                  'E-D',
-                                  'D',
-                                  'D-C'
-                                ])
-                                  _buildCagedNode(context, studio, style),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
-        ),
+        // Timeline Chord Cards Grid
         Expanded(
-          child: Stack(
-            children: [
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  if (constraints.maxWidth < 60) return const SizedBox.shrink();
-
-                  int crossAxisCount = (constraints.maxWidth / 160).floor();
-                  double sidePadding = 24.0;
-                  double spacing = 16.0;
-
-                  if (constraints.maxWidth < 360) {
-                    crossAxisCount = 2;
-                    sidePadding = 8.0;
-                    spacing = 8.0;
-                  }
-
-                  if (constraints.maxWidth < 220) {
-                    crossAxisCount = 1;
-                    sidePadding = 4.0;
-                    spacing = 4.0;
-                  } else if (crossAxisCount < 2) {
-                    crossAxisCount = 2;
-                  }
-
-                  if (crossAxisCount > 4) crossAxisCount = 4;
-
-                  return GridView.builder(
-                    padding:
-                        EdgeInsets.fromLTRB(sidePadding, 24, sidePadding, 48),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: spacing,
-                      mainAxisSpacing: 24,
-                      childAspectRatio: 0.85,
-                    ),
-                    itemCount: session.progression.length,
-                    itemBuilder: (context, index) {
-                      final block = session.progression[index];
-                      return TimelineChordCard(
-                        block: block,
-                        index: index,
-                        studio: studio,
-                      );
-                    },
-                  );
-                },
-              ),
-              _buildMoreBarsBadge(context, session),
-            ],
-          ),
+          child: TimelineCardsGrid(studio: studio, session: session),
         ),
       ],
-    );
-  }
-
-  Widget _buildCagedNode(
-      BuildContext context, StudioState studio, String style) {
-    final isMainNode = !style.contains('-');
-    final isSelected = studio.timelineVoicingStyle == style;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: isMainNode ? 2 : 1),
-      child: Tooltip(
-        message: isMainNode ? '$style Form' : 'Bridge: $style',
-        child: InkWell(
-          onTap: () => studio.setTimelineVoicingStyle(style),
-          borderRadius: BorderRadius.circular(isMainNode ? 20 : 8),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: isMainNode ? 32 : 36,
-            height: isMainNode ? 32 : 20,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              shape: isMainNode ? BoxShape.circle : BoxShape.rectangle,
-              borderRadius: isMainNode ? null : BorderRadius.circular(6),
-              color: isSelected
-                  ? colorScheme.primary
-                  : (isMainNode
-                      ? colorScheme.surfaceContainerHigh
-                      : colorScheme.surfaceContainerHighest
-                          .withValues(alpha: 0.3)),
-              border: isSelected
-                  ? Border.all(color: colorScheme.primary, width: 1.5)
-                  : (isMainNode
-                      ? Border.all(
-                          color: colorScheme.outline.withValues(alpha: 0.2))
-                      : null),
-            ),
-            child: Text(
-              isMainNode ? style : 'BR',
-              style: TextStyle(
-                fontSize: isMainNode ? 12 : 9,
-                fontWeight: isSelected
-                    ? FontWeight.bold
-                    : (isMainNode ? FontWeight.w600 : FontWeight.w500),
-                color: isSelected
-                    ? colorScheme.onPrimary
-                    : (isMainNode
-                        ? colorScheme.onSurface
-                        : colorScheme.onSurfaceVariant),
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -512,48 +341,6 @@ class _StudioTimelineState extends State<StudioTimeline> {
                 ],
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMoreBarsBadge(BuildContext context, ProgressionSession session) {
-    if (session.progression.length <= 4) return const SizedBox.shrink();
-    return Positioned(
-      bottom: 16,
-      left: 0,
-      right: 0,
-      child: IgnorePointer(
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Theme.of(context)
-                  .colorScheme
-                  .secondaryContainer
-                  .withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                )
-              ],
-            ),
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Icon(Icons.keyboard_double_arrow_down,
-                  size: 14,
-                  color: Theme.of(context).colorScheme.onSecondaryContainer),
-              const SizedBox(width: 6),
-              Text('${session.progression.length - 4} More Bars Below',
-                  style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color:
-                          Theme.of(context).colorScheme.onSecondaryContainer)),
-            ]),
           ),
         ),
       ),

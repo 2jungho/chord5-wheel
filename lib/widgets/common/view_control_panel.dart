@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../models/instrument_model.dart';
+import 'view_controls/intervals_selector.dart';
+import 'view_controls/tuning_dropdown.dart';
 
 class ViewControlPanel extends StatelessWidget {
   final Set<String> visibleIntervals;
@@ -65,7 +67,10 @@ class ViewControlPanel extends StatelessWidget {
                                 fontSize: 14)),
                         if (onSelectTuning != null) ...[
                           const SizedBox(width: 8),
-                          _buildTuningDropdown(context),
+                          TuningDropdown(
+                            tuningPreset: tuningPreset,
+                            onSelectTuning: onSelectTuning,
+                          ),
                         ],
                       ],
                     ),
@@ -98,7 +103,11 @@ class ViewControlPanel extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildIntervalsSection(context),
+                IntervalsSelector(
+                  visibleIntervals: visibleIntervals,
+                  availableIntervals: availableIntervals,
+                  onToggleInterval: onToggleInterval,
+                ),
                 const SizedBox(height: 8),
                 Divider(height: 1, color: Theme.of(context).dividerColor),
                 const SizedBox(height: 8),
@@ -117,144 +126,7 @@ class ViewControlPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildTuningDropdown(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
-    return Container(
-      height: 26,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.primary.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(13),
-        border: Border.all(
-          color: theme.colorScheme.primary.withValues(alpha: 0.4),
-        ),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<TuningPreset>(
-          value: tuningPreset,
-          dropdownColor: isDark ? const Color(0xFF1E2433) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          elevation: 8,
-          icon: Icon(Icons.arrow_drop_down,
-              size: 18, color: theme.colorScheme.primary),
-          isDense: true,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-            color: theme.colorScheme.primary,
-          ),
-          onChanged: (TuningPreset? newPreset) {
-            if (newPreset != null) {
-              onSelectTuning?.call(newPreset);
-            }
-          },
-          items: TuningPreset.values.map((preset) {
-            final isSelected = preset == tuningPreset;
-            return DropdownMenuItem<TuningPreset>(
-              value: preset,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (isSelected) ...[
-                    Icon(Icons.check, size: 14, color: theme.colorScheme.primary),
-                    const SizedBox(width: 6),
-                  ] else ...[
-                    const SizedBox(width: 20),
-                  ],
-                  Text(
-                    preset.shortName,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                      color: isSelected
-                          ? theme.colorScheme.primary
-                          : (isDark ? Colors.white : Colors.black87),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '(${preset.notes.join(' ')})',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.normal,
-                      color: isSelected
-                          ? theme.colorScheme.primary.withValues(alpha: 0.8)
-                          : (isDark ? Colors.white60 : Colors.black54),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildIntervalsSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text('Intervals',
-                style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontSize: 11)),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Row 1: Natural Intervals
-            Row(
-              children: [
-                _buildFixedToggleButton(context, '1P', 'R', Colors.redAccent),
-                const SizedBox(width: 4),
-                _buildFixedToggleButton(context, 'M2', '2', Colors.grey),
-                const SizedBox(width: 4),
-                _buildFixedToggleButton(context, 'M3', '3', Colors.amber),
-                const SizedBox(width: 4),
-                _buildFixedToggleButton(context, 'P4', '4', Colors.grey),
-                const SizedBox(width: 4),
-                _buildFixedToggleButton(context, 'P5', '5',
-                    Theme.of(context).colorScheme.onSurface),
-                const SizedBox(width: 4),
-                _buildFixedToggleButton(context, 'M6', '6', Colors.grey),
-                const SizedBox(width: 4),
-                _buildFixedToggleButton(context, 'M7', '7', Colors.cyanAccent),
-              ],
-            ),
-            const SizedBox(height: 2),
-            // Row 2: Flat/Sharp Intervals (Staggered)
-            Row(
-              children: [
-                _buildIntervalsRow2(context),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildIntervalsRow2(BuildContext context) {
-    return Row(
-      children: [
-        const SizedBox(width: 60),
-        _buildFixedToggleButton(context, 'm3', 'b3', Colors.amber),
-        const SizedBox(width: 44),
-        _buildFixedToggleButton(
-            context, 'd5', 'b5', Theme.of(context).colorScheme.onSurface),
-        const SizedBox(width: 44),
-        _buildFixedToggleButton(context, 'm7', 'b7', Colors.cyanAccent),
-      ],
-    );
-  }
 
   Widget _buildFormFocusSection(BuildContext context) {
     return Row(
@@ -358,72 +230,6 @@ class ViewControlPanel extends StatelessWidget {
     );
   }
 
-
-  Widget _buildFixedToggleButton(
-      BuildContext context, String intervalKey, String label, Color color) {
-    final isAvailable =
-        availableIntervals == null || availableIntervals!.contains(intervalKey);
-    final isSelected = visibleIntervals.contains(intervalKey);
-
-    if (!isAvailable) {
-      return SizedBox(
-        width: 36,
-        height: 26,
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            border: Border.all(
-                color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
-                width: 1),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Center(
-            child: Text(label,
-                style: TextStyle(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurfaceVariant
-                        .withValues(alpha: 0.5),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10)),
-          ),
-        ),
-      );
-    }
-
-    return SizedBox(
-      width: 36,
-      height: 26,
-      child: InkWell(
-        onTap: () => onToggleInterval(intervalKey),
-        borderRadius: BorderRadius.circular(4),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? color.withValues(alpha: 0.2)
-                : Theme.of(context).colorScheme.surface,
-            border: Border.all(
-                color: isSelected
-                    ? color.withValues(alpha: 0.8)
-                    : Theme.of(context).dividerColor.withValues(alpha: 0.8),
-                width: 1),
-            borderRadius: BorderRadius.circular(4),
-          ),
-          child: Center(
-            child: Text(label,
-                style: TextStyle(
-                  color: isSelected
-                      ? color
-                      : Theme.of(context).colorScheme.onSurface,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 10,
-                )),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildCagedButton(BuildContext context, String? form,
       {String? label}) {

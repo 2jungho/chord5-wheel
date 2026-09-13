@@ -7,6 +7,7 @@ import '../../providers/lick_vault_state.dart';
 import '../../services/lick_analyzer_service.dart';
 import '../../services/lick_audio_player.dart';
 import 'artist_lick_vault_sheet.dart';
+import 'components/mini_lick_player_card.dart';
 
 /// 코드 진행 탭(StudioView)에서 현재 타임라인의 코드 진행 및 선택 블록에 어울리는 기타 거장의 시그니처 릭을 표시하는 패널
 class ProgressionLickPanel extends StatefulWidget {
@@ -225,234 +226,34 @@ class _ProgressionLickPanelState extends State<ProgressionLickPanel> {
                     final lick = matchedLicks[index];
                     final isPlaying = _currentlyPlayingLickId == lick.id;
 
-                    return _buildProgressionLickCard(context, lick, isPlaying, vault, studio);
+                    return MiniLickPlayerCard(
+                      lick: lick,
+                      isPlaying: isPlaying,
+                      activeNoteIndex: _activePlayingNoteIndex,
+                      activeTechnique: _activePlayingTechnique,
+                      width: 255,
+                      onTogglePlay: () => _togglePlayLick(lick),
+                      onOpenVault: () {
+                        _player.stop();
+                        vault.selectLick(lick);
+                        ArtistLickVaultSheet.show(context);
+                      },
+                      onInsertChord: () {
+                        studio.addProgressionFromText(lick.targetChord);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${lick.targetChord} 코드가 타임라인에 추가되었습니다.'),
+                            duration: const Duration(seconds: 1),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      vaultActionText: '5대 Box 펼치기',
+                    );
                   },
                 ),
               ),
           ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProgressionLickCard(
-    BuildContext context,
-    ArtistLick lick,
-    bool isPlaying,
-    LickVaultState vault,
-    StudioState studio,
-  ) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Container(
-      width: 255,
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: isPlaying
-            ? colorScheme.primaryContainer.withValues(alpha: 0.3)
-            : colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isPlaying
-              ? colorScheme.primary
-              : colorScheme.outlineVariant.withValues(alpha: 0.4),
-          width: isPlaying ? 1.5 : 1.0,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // 상단 아티스트 & 재생
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            lick.artist,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.primary,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            lick.cagedForm,
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      lick.title,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              IconButton.filledTonal(
-                onPressed: () => _togglePlayLick(lick),
-                icon: Icon(
-                  isPlaying ? Icons.stop : Icons.play_arrow,
-                  size: 16,
-                  color: isPlaying ? Colors.redAccent : colorScheme.primary,
-                ),
-                style: IconButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  padding: const EdgeInsets.all(6),
-                ),
-                tooltip: isPlaying ? '정지' : '미리듣기 (테크닉 반영)',
-              ),
-            ],
-          ),
-
-          // 중앙 음표 시퀀스 & 실시간 테크닉 뱃지
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: lick.notes.asMap().entries.map((entry) {
-                        final noteIdx = entry.key;
-                        final note = entry.value;
-                        final isThisNotePlaying =
-                            isPlaying && _activePlayingNoteIndex == noteIdx;
-
-                        return Container(
-                          margin: const EdgeInsets.only(right: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: isThisNotePlaying
-                                ? Colors.amber
-                                : colorScheme.surface,
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(
-                              color: isThisNotePlaying
-                                  ? Colors.amber
-                                  : colorScheme.outlineVariant.withValues(alpha: 0.4),
-                            ),
-                          ),
-                          child: Text(
-                            '${note.fret}${note.technique.symbol}',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: isThisNotePlaying
-                                  ? Colors.black
-                                  : colorScheme.onSurface,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ),
-                if (isPlaying && _activePlayingTechnique != NoteTechnique.none) ...[
-                  const SizedBox(width: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(color: Colors.orange, width: 1),
-                    ),
-                    child: Text(
-                      _activePlayingTechnique.label,
-                      style: const TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.orange,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-
-          // 하단 버튼들: 타임라인 코드 추가 + 5대 폼 열기
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              TextButton.icon(
-                onPressed: () {
-                  studio.addProgressionFromText(lick.targetChord);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${lick.targetChord} 코드가 타임라인에 추가되었습니다.'),
-                      duration: const Duration(seconds: 1),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.add, size: 12),
-                label: Text('${lick.targetChord} 삽입', style: const TextStyle(fontSize: 10)),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  visualDensity: VisualDensity.compact,
-                  minimumSize: Size.zero,
-                ),
-              ),
-              InkWell(
-                onTap: () {
-                  _player.stop();
-                  vault.selectLick(lick);
-                  ArtistLickVaultSheet.show(context);
-                },
-                borderRadius: BorderRadius.circular(4),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '5대 Box 펼치기',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 2),
-                      Icon(Icons.arrow_forward_ios, size: 9, color: colorScheme.primary),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );

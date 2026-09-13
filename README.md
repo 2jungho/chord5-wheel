@@ -189,22 +189,26 @@ lib/
 │   ├── lick_audio_player.dart   # 릭 및 TAB 단음 실시간 오디오 플레이어
 │   ├── midi/                    # Pure Dart SMF Type 1 멀티트랙 MIDI 파일 작성 및 다운로더
 │   ├── lyria/                   # 4인조 가상 밴드 시퀀서 및 오디오 브릿지
+│   │   └── patterns/            # 악기별 스타일 연주 패턴 (drum, bass, keys, guitar)
 │   └── music_theory_service.dart # 핵심 화성학 연산
 ├── utils/                 # 기타/피아노 지판 연산, CAGED 펜타토닉 박스 계산기, 테마 프리셋(AppTheme)
 ├── views/                 # 메인 화면
 │   ├── explorer/                # 5도권 탐색기 대시보드 및 변조 다이얼로그
+│   │   └── widgets/             # 모드 정보 및 AI 사운드스케이프 트리거 (ModeInfoSection)
 │   ├── generator/               # 코드 분석기 및 스타일별 보이싱 탭
 │   └── studio/                  # 타임라인 코드 진행 작업실
+│       ├── dialogs/             # AI 곡 코드 진행 추출/검색 다이얼로그 및 컴포넌트(components/)
 │       └── widgets/
-│           ├── timeline/                # 타임라인 코드 카드, 경과음 삽입 모달(ChordInsertDialog)
-│           ├── famous_songs/            # 모듈화된 유명곡 카드 및 AI 곡 탐색
-│           ├── jam/                     # 4인조 가상 밴드 세션 컨트롤 패널 (LyriaJamPanel 모듈)
+│           ├── timeline/        # 타임라인 CAGED 바, 코드 카드 그리드, 경과음 삽입 모달
+│           ├── famous_songs/    # 모듈화된 유명곡 카드 및 AI 곡 탐색
+│           ├── jam/             # 4인조 가상 밴드 세션 컨트롤 패널 (LyriaJamPanel 모듈)
 │           └── insight_report_widget.dart # AI 코드 진행 분석 리포트
 └── widgets/               # 공통 위젯
     ├── ai_chat/                 # AI 채팅 패널(AIChatPanel), 메시지 버블(ChatMessageBubble)
     ├── capo/                    # 스마트 카포 다이얼로그(CapoModal)
-    ├── lick/                    # 아티스트 릭 보관함(ArtistLickVaultSheet) 및 분해된 컴포넌트(components/)
-    ├── common/                  # 앱 헤더, 5도권 휠, 프렛보드 맵, 뷰 컨트롤 패널, 테마/AI 설정 다이얼로그
+    ├── lick/                    # 아티스트 릭 보관함(ArtistLickVaultSheet) 및 미니 릭 플레이어(components/)
+    ├── settings/                # 모듈화된 설정 다이얼로그 및 섹션 (sections/)
+    ├── common/                  # 앱 헤더, 5도권 휠, 프렛보드 맵, 뷰 컨트롤(view_controls/)
     └── ...
 
 assets/
