@@ -6,6 +6,7 @@ import 'package:guitar_theory_app/utils/theory/progression_utils.dart';
 import 'package:guitar_theory_app/utils/guitar/voicing_generator.dart';
 import 'package:guitar_theory_app/utils/theory/voice_leading_calculator.dart';
 import 'package:guitar_theory_app/models/progression/progression_models.dart';
+import 'package:guitar_theory_app/models/caged_model.dart';
 
 void main() {
   group('NoteUtils Tests', () {
@@ -141,6 +142,50 @@ void main() {
       );
       // No voicing assigned, so returns empty list
       expect(lines, isEmpty);
+    });
+  });
+
+  group('Refactoring & Deduplication Tests', () {
+    test('calculateVoicingFromCagedPattern computes correct frets and display start', () {
+      final pattern = majorCagedPatterns.first; // E Form
+      final voicing = VoicingGenerator.calculateVoicingFromCagedPattern(pattern, 3);
+      expect(voicing.rootString, 6);
+      expect(voicing.frets.length, 6);
+      expect(voicing.tags, contains('CAGED'));
+      expect(voicing.startFret, isNonNegative);
+    });
+
+    test('formatDisplayQuality formats chord qualities cleanly', () {
+      expect(ChordUtils.formatDisplayQuality('m'), 'minor');
+      expect(ChordUtils.formatDisplayQuality('maj7'), 'major 7');
+      expect(ChordUtils.formatDisplayQuality('Maj7'), 'major 7');
+      expect(ChordUtils.formatDisplayQuality('7'), '7');
+      expect(ChordUtils.formatDisplayQuality('sus4'), 'sus4');
+    });
+
+    test('intervalToSemitone handles classical and jazz notation', () {
+      expect(NoteUtils.intervalToSemitone('1P'), 0);
+      expect(NoteUtils.intervalToSemitone('m3'), 3);
+      expect(NoteUtils.intervalToSemitone('b3'), 3);
+      expect(NoteUtils.intervalToSemitone('P5'), 7);
+      expect(NoteUtils.intervalToSemitone('5'), 7);
+      expect(NoteUtils.intervalToSemitone('m7'), 10);
+      expect(NoteUtils.intervalToSemitone('b7'), 10);
+      expect(NoteUtils.intervalToSemitone('M7'), 11);
+      expect(NoteUtils.intervalToSemitone('7'), 11);
+    });
+
+    test('normalizeInterval and getIntervalSynonyms keep interval sets in sync', () {
+      expect(NoteUtils.normalizeInterval('b7'), 'm7');
+      expect(NoteUtils.normalizeInterval('m7'), 'm7');
+      expect(NoteUtils.normalizeInterval('b5'), 'd5');
+      expect(NoteUtils.normalizeInterval('d5'), 'd5');
+
+      final m7Synonyms = NoteUtils.getIntervalSynonyms('m7');
+      expect(m7Synonyms, containsAll(['m7', 'b7']));
+
+      final d5Synonyms = NoteUtils.getIntervalSynonyms('d5');
+      expect(d5Synonyms, containsAll(['d5', 'b5', '#4']));
     });
   });
 }

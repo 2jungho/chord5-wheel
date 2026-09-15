@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../../../audio/audio_manager.dart';
-import '../../../../models/instrument_model.dart';
 import '../../../../models/progression/progression_models.dart';
-import '../../../../providers/settings_state.dart';
 import '../../../../providers/studio_state.dart';
 
 
 import '../../../../utils/theory_utils.dart';
-import '../../../../widgets/common/guitar/guitar_chord_widget.dart';
-import '../../../../widgets/common/piano/piano_chord_widget.dart';
+import '../../../../widgets/common/chords/adaptive_chord_diagram.dart';
 import '../../../../widgets/common/rhythm/strum_tab_strip.dart';
 import 'chord_insert_dialog.dart';
 
@@ -258,41 +254,18 @@ class TimelineChordCard extends StatelessWidget {
                 const SizedBox(height: 2),
 
                 // Instrument Voicing Diagram
-                if (block.voicing != null)
-                  Expanded(
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: Consumer<SettingsState>(
-                        builder: (context, settings, _) {
-                          if (settings.selectedInstrument.type ==
-                              InstrumentType.piano) {
-                            return PianoChordWidget(
-                              notes: TheoryUtils.analyzeChord(
-                                      block.chordSymbol)
-                                  .notes,
-                              width: 130,
-                              height: 80,
-                              showLabels: true,
-                            );
-                          }
-                          return GuitarChordWidget(
-                            voicing: block.voicing!,
-                            width: 130,
-                            height: 100,
-                            stringCount:
-                                settings.selectedInstrument.stringCount,
-                          );
-                        },
-                      ),
-                    ),
-                  )
-                else
-                  const Expanded(
-                    child: Center(
-                      child: Icon(Icons.music_off,
-                          size: 24, color: Colors.grey),
+                Expanded(
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: AdaptiveChordDiagram(
+                      voicing: block.voicing,
+                      notes: TheoryUtils.analyzeChord(block.chordSymbol).notes,
+                      width: 130,
+                      height: 100,
+                      showLabels: true,
                     ),
                   ),
+                ),
 
                 const SizedBox(height: 4),
 

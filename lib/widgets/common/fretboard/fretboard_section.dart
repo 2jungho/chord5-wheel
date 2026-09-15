@@ -502,16 +502,13 @@ class _FretboardSectionState extends State<FretboardSection> {
         ? minContentWidth
         : effectiveViewportWidth;
 
-    // Mobile: Force wide scrollable area for readability
-    // Tablet (600-1100px): Use full width to fill the screen
-    // Desktop (>1100px): Use 0.72 factor to compress spacing as requested
+    // Mobile (<600px): Force wide scrollable area (850px) for readability
+    // Tablet & Desktop (>=600px): Fill full available width naturally (no artificial compression)
     double contentWidth;
     if (constraints.maxWidth < 600) {
       contentWidth = 850.0;
-    } else if (constraints.maxWidth < 1100) {
-      contentWidth = baseWidth;
     } else {
-      contentWidth = baseWidth * 0.72;
+      contentWidth = baseWidth;
     }
 
     if ((baseWidth - _lastViewportWidth).abs() > 1.0) {
@@ -523,10 +520,12 @@ class _FretboardSectionState extends State<FretboardSection> {
       _lastViewportWidth = baseWidth;
     }
 
+    final bool isScrollable = contentWidth > baseWidth;
+
     return Scrollbar(
       controller: _scrollController,
-      thumbVisibility: true,
-      trackVisibility: true,
+      thumbVisibility: isScrollable,
+      trackVisibility: isScrollable,
       child: SingleChildScrollView(
         controller: _scrollController,
         scrollDirection: Axis.horizontal,

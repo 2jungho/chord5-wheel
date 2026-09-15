@@ -1,61 +1,28 @@
 import 'package:flutter/material.dart';
 import '../../../../utils/changelog_parser.dart';
 import '../../../../models/changelog_model.dart';
+import 'app_dialog_frame.dart';
 
 class ChangelogDialog extends StatelessWidget {
   const ChangelogDialog({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        width: 600,
-        constraints: const BoxConstraints(maxHeight: 700),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('✨ What\'s New',
-                          style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Theme.of(context).colorScheme.onSurface)),
-                      const SizedBox(height: 4),
-                      Text('최신 업데이트 내역을 확인하세요. (From README.md)',
-                          style: TextStyle(
-                              fontSize: 14,
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant)),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: Icon(Icons.close,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Divider(color: Theme.of(context).dividerColor, height: 1),
-            const SizedBox(height: 16),
-
-            // Content List (FutureBuilder)
-            Expanded(
-              child: FutureBuilder<List<ChangelogItem>>(
+    return AppDialogFrame(
+      title: '✨ What\'s New',
+      subtitle: '최신 업데이트 내역을 확인하세요. (From README.md)',
+      width: 600,
+      height: 700,
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('닫기',
+              style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold)),
+        ),
+      ],
+      body: FutureBuilder<List<ChangelogItem>>(
                 future: ChangelogParser.loadFromReadme(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -192,22 +159,6 @@ class ChangelogDialog extends StatelessWidget {
                   );
                 },
               ),
-            ),
-
-            const SizedBox(height: 16),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('닫기',
-                    style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.bold)),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

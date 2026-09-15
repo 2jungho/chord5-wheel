@@ -30,114 +30,125 @@ class ExplorerView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraints) {
-      // Unified Scrollable Layout for all screen sizes
-      return SingleChildScrollView(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            // 1. Unified Explorer Dashboard
-            _buildDashboard(context),
-            const SizedBox(height: 16),
-            // 2. Full Fretboard Map
-            _buildFretboardSection(context),
-            const SizedBox(height: 40),
-          ],
-        ),
-      );
+      final isDesktop = constraints.maxWidth >= 960;
+
+      if (isDesktop) {
+        return _buildDesktopDashboard(context, constraints);
+      } else {
+        return _buildMobileDashboard(context, constraints);
+      }
     });
   }
 
-  Widget _buildDashboard(BuildContext context) {
-    return GlassContainer(
-      padding: const EdgeInsets.all(12),
-      opacity: 0.6,
-      child: LayoutBuilder(builder: (context, constraints) {
-        bool isDesktop = constraints.maxWidth > 900;
-        if (isDesktop) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Left Panel: Controller
-              SizedBox(
-                width: 380,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.topCenter,
-                  child: SizedBox(
-                    width: 380,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _buildWheel(context),
-                        const SizedBox(height: 12),
-                        _buildChordTypeToggle(context),
-                        const SizedBox(height: 12),
-                        _buildModeSelector(context),
-                      ],
-                    ),
+  /// 데스크톱(PC) 전용: 휠과 지판을 1화면에 동시에 배치하는 2분할 올인원 레이아웃
+  Widget _buildDesktopDashboard(
+      BuildContext context, BoxConstraints constraints) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      child: GlassContainer(
+        padding: const EdgeInsets.all(12),
+        opacity: 0.6,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Left Panel: Controller Dock (폭 380px 고정)
+            SizedBox(
+              width: 380,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildWheel(context, size: 300),
+                  const SizedBox(height: 10),
+                  _buildChordTypeToggle(context),
+                  const SizedBox(height: 10),
+                  _buildModeSelector(context),
+                ],
+              ),
+            ),
+            const SizedBox(width: 20),
+            // Right Panel: Integrated Theory, CAGED & Fretboard Dock
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const InfoPanel(withContainer: false),
+                  const SizedBox(height: 10),
+                  Divider(color: Theme.of(context).dividerColor, height: 1),
+                  const SizedBox(height: 10),
+                  // Side-by-side: CAGED & Diatonic (중복 토글 제거)
+                  const Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: CagedList(),
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        flex: 6,
+                        child: DiatonicList(showChordTypeToggle: false),
+                      ),
+                    ],
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  Divider(color: Theme.of(context).dividerColor, height: 1),
+                  const SizedBox(height: 10),
+                  // Full Fretboard Map
+                  _buildFretboardSection(context),
+                ],
               ),
-              // Vertical Spacer (No Divider to avoid intrinsic height issues)
-              const SizedBox(width: 48),
-              // Right Panel: Information Display
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const InfoPanel(withContainer: false),
-                    const SizedBox(height: 16),
-                    Divider(color: Theme.of(context).dividerColor),
-                    const SizedBox(height: 8),
-                    // Side-by-side lists with enough vertical space
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: CagedList(),
-                        ),
-                        const SizedBox(width: 24),
-                        Expanded(
-                          child: DiatonicList(),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        } else {
-          // Mobile Layout: Simplified but complete
-          return Column(
-            mainAxisSize: MainAxisSize.min, // Reduced size
-            children: [
-              _buildWheel(context, size: min(constraints.maxWidth - 20, 320.0)),
-              const SizedBox(height: 12),
-              _buildChordTypeToggle(context),
-              const SizedBox(height: 12),
-              _buildModeSelector(context),
-              const SizedBox(height: 16),
-              Divider(color: Theme.of(context).dividerColor),
-              const InfoPanel(withContainer: false),
-              const SizedBox(height: 16),
-              Divider(color: Theme.of(context).dividerColor),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: CagedList(),
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: DiatonicList(),
-              ),
-            ],
-          );
-        }
-      }),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildWheel(BuildContext context, {double size = 360}) {
+  /// 모바일/태블릿(차선 대응): 작은 화면을 위한 터치 친화적 1단 세로 스크롤 레이아웃
+  Widget _buildMobileDashboard(
+      BuildContext context, BoxConstraints constraints) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          GlassContainer(
+            padding: const EdgeInsets.all(12),
+            opacity: 0.6,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildWheel(context,
+                    size: min(constraints.maxWidth - 20, 320.0)),
+                const SizedBox(height: 12),
+                _buildChordTypeToggle(context),
+                const SizedBox(height: 12),
+                _buildModeSelector(context),
+                const SizedBox(height: 16),
+                Divider(color: Theme.of(context).dividerColor),
+                const InfoPanel(withContainer: false),
+                const SizedBox(height: 16),
+                Divider(color: Theme.of(context).dividerColor),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: CagedList(),
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: DiatonicList(showChordTypeToggle: false),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildFretboardSection(context),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWheel(BuildContext context, {double size = 300}) {
     return Selector<
         MusicState,
         ({

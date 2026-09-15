@@ -6,7 +6,9 @@ import '../../capo/capo_modal.dart';
 
 
 class DiatonicList extends StatelessWidget {
-  const DiatonicList({super.key});
+  final bool showChordTypeToggle;
+
+  const DiatonicList({super.key, this.showChordTypeToggle = true});
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +43,10 @@ class DiatonicList extends StatelessWidget {
                           color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 15,
                           fontWeight: FontWeight.bold)),
-                  const SizedBox(width: 12),
-                  _buildChordTypeToggle(context, data.isSeventhMode),
+                  if (showChordTypeToggle) ...[
+                    const SizedBox(width: 12),
+                    _buildChordTypeToggle(context, data.isSeventhMode),
+                  ],
                   const SizedBox(width: 12),
                   Tooltip(
                     message: '현재 Key의 다이아토닉 코드 오픈코드 카포 위치 추천',

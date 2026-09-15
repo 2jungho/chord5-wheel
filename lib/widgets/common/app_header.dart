@@ -29,7 +29,7 @@ class AppHeader extends StatefulWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(85);
+  Size get preferredSize => const Size.fromHeight(60);
 
   @override
   State<AppHeader> createState() => _AppHeaderState();
@@ -76,20 +76,20 @@ class _AppHeaderState extends State<AppHeader> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 8),
+      margin: const EdgeInsets.only(left: 16, right: 16, top: 4, bottom: 4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: const [
           BoxShadow(
             color: Colors.black26,
-            blurRadius: 8,
-            offset: Offset(0, 2),
+            blurRadius: 6,
+            offset: Offset(0, 1),
             spreadRadius: 0,
           ),
         ],
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
       child: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -122,8 +122,8 @@ class _AppHeaderState extends State<AppHeader> {
     return Row(
       children: [
         Container(
-          width: isUltraMobile ? 32 : 40,
-          height: isUltraMobile ? 32 : 40,
+          width: isUltraMobile ? 30 : 36,
+          height: isUltraMobile ? 30 : 36,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -141,7 +141,7 @@ class _AppHeaderState extends State<AppHeader> {
             ],
           ),
           child: Padding(
-            padding: EdgeInsets.all(isUltraMobile ? 4.0 : 6.0),
+            padding: EdgeInsets.all(isUltraMobile ? 3.0 : 5.0),
             child: Image.asset(
               'assets/images/app_icon.png',
               fit: BoxFit.contain,
@@ -149,7 +149,7 @@ class _AppHeaderState extends State<AppHeader> {
           ),
         ),
         if (!isMobile) ...[
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           if (widget.currentTab != AppTab.generator)
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -159,15 +159,16 @@ class _AppHeaderState extends State<AppHeader> {
                   widget.currentTab == AppTab.explorer
                       ? 'Guitar & Theory'
                       : 'Music Studio',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text(
                   '${widget.currentTab == AppTab.explorer ? 'Circle of Fifths' : 'Chord Flow & Rhythm'}${_latestVersion.isNotEmpty ? '  ${_latestVersion.startsWith('v') ? _latestVersion : 'v$_latestVersion'}' : ''}',
                   style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontSize: 12,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -187,7 +188,7 @@ class _AppHeaderState extends State<AppHeader> {
             children: [
               Expanded(
                 child: Container(
-                  height: 44,
+                  height: 38,
                   margin:
                       EdgeInsets.symmetric(horizontal: isMobile ? 8 : 24),
                   child: TextField(
@@ -487,7 +488,7 @@ class _TabButton extends StatelessWidget {
       borderRadius: BorderRadius.circular(6),
       child: Container(
         padding:
-            EdgeInsets.symmetric(horizontal: compact ? 8 : 12, vertical: 8),
+            EdgeInsets.symmetric(horizontal: compact ? 8 : 12, vertical: 5),
         decoration: BoxDecoration(
           color: isActive ? activeColor : Colors.transparent,
           borderRadius: BorderRadius.circular(6),

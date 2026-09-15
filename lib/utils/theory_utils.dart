@@ -38,6 +38,11 @@ class TheoryUtils {
 
   static String getIntervalName(int st) => NoteUtils.getIntervalName(st);
 
+  static String normalizeInterval(String iv) => NoteUtils.normalizeInterval(iv);
+
+  static Set<String> getIntervalSynonyms(String iv) =>
+      NoteUtils.getIntervalSynonyms(iv);
+
   static List<Chord> getDiatonicChords(
           List<String> scaleNotes, String modeName,
           {bool isSeventh = true}) =>
@@ -45,6 +50,9 @@ class TheoryUtils {
 
   static (List<String> intervals, String displayStr, bool isMinor)
       parseChordQuality(String q) => ChordUtils.parseChordQuality(q);
+
+  static String formatDisplayQuality(String quality) =>
+      ChordUtils.formatDisplayQuality(quality);
 
   static int intervalToSemitone(String iv) => NoteUtils.intervalToSemitone(iv);
 

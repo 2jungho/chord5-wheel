@@ -273,7 +273,7 @@ class _GeneratorDesktopDashboard extends StatelessWidget {
             // 2. Middle Section
             const Expanded(
               flex: 5,
-              child: _GeneratorMobileDashboardBody(),
+              child: _GeneratorMobileDashboardBody(showExtendedAnalysis: false),
             ),
             const SizedBox(width: 24),
             // 3. Right Section
@@ -301,7 +301,9 @@ class _GeneratorDesktopDashboard extends StatelessWidget {
 
 /// 대시보드 공통 바디 (Voicing + Scales + Visualization)
 class _GeneratorMobileDashboardBody extends StatelessWidget {
-  const _GeneratorMobileDashboardBody();
+  final bool showExtendedAnalysis;
+
+  const _GeneratorMobileDashboardBody({this.showExtendedAnalysis = true});
 
   @override
   Widget build(BuildContext context) {
@@ -377,8 +379,8 @@ class _GeneratorMobileDashboardBody extends StatelessWidget {
               onPlayChord: generatorState.playChordStrum,
               hasContainer: false,
             ),
-            const SizedBox(height: 16),
-            if (MediaQuery.of(context).size.width <= 1100)
+            if (showExtendedAnalysis) ...[
+              const SizedBox(height: 16),
               ExtendedAnalysisSection(
                 root: data.root,
                 quality: data.quality,
@@ -386,6 +388,7 @@ class _GeneratorMobileDashboardBody extends StatelessWidget {
                 onChordSelected: (val) =>
                     generatorState.analyzeChord(val, isNavigation: true),
               ),
+            ],
           ],
         );
       },

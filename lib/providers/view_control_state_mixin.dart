@@ -1,24 +1,21 @@
 import 'package:flutter/foundation.dart';
+import '../utils/theory_utils.dart';
 
 mixin ViewControlStateMixin on ChangeNotifier {
-  // 기본 표시 인터벌 세트
-  static const Set<String> _defaultIntervals = {
-    '1P',
-    'm2',
-    'M2',
-    'm3',
-    'M3',
-    'P4',
-    '#4',
-    'b5',
-    'd5',
-    'P5',
-    'm6',
-    'M6',
-    'b7',
-    'm7',
-    '7M',
-    'M7'
+  // 기본 표시 인터벌 세트 (표준 정규화 키 및 연관 동의어 일괄 포함)
+  static final Set<String> _defaultIntervals = {
+    '1P', '1',
+    'm2', 'b2',
+    'M2', '2',
+    'm3', 'b3',
+    'M3', '3',
+    'P4', '4',
+    '#4', 'b5', 'd5', 'A4',
+    'P5', '5',
+    'm6', 'b6', '#5', 'A5',
+    'M6', '6', 'bb7',
+    'm7', 'b7',
+    'M7', '7', '7M'
   };
 
   Set<String> _visibleIntervals = Set.from(_defaultIntervals);
@@ -33,10 +30,13 @@ mixin ViewControlStateMixin on ChangeNotifier {
 
   void toggleInterval(String interval) {
     final newSet = Set<String>.from(_visibleIntervals);
-    if (newSet.contains(interval)) {
-      newSet.remove(interval);
+    final synonyms = NoteUtils.getIntervalSynonyms(interval);
+
+    final isVisible = synonyms.any((s) => newSet.contains(s));
+    if (isVisible) {
+      newSet.removeAll(synonyms);
     } else {
-      newSet.add(interval);
+      newSet.addAll(synonyms);
     }
     _visibleIntervals = newSet;
     notifyListeners();

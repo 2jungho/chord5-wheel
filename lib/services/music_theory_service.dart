@@ -80,35 +80,10 @@ class MusicTheoryService {
     }
 
     if (bestPattern != null) {
-      // Calculate voicing manually as in original MusicState logic
-      // Or use VoicingGenerator if it supports specific pattern generation?
-      // VoicingGenerator has _addVoicingToResult but it's private and tied to "Generate All".
-      // We should replicate the logic or make VoicingGenerator expose specific form generation.
-      // For now, I'll replicate the simple logic from MusicState to keep it consistent.
-      
-      List<int> frets = [-1, -1, -1, -1, -1, -1];
-      for (var dot in bestPattern.dots) {
-        int strIdx = 6 - dot.s;
-        int realFret = bestStartFret + dot.o;
-        if (frets[strIdx] == -1) {
-          frets[strIdx] = realFret;
-        }
-      }
-
-      int minFret = 999;
-      for (int f in frets) {
-        if (f != -1 && f < minFret) minFret = f;
-      }
-      int displayStartFret = minFret != 999 ? minFret : (bestStartFret > 0 ? bestStartFret : 1);
-      if (minFret == 0) displayStartFret = 1;
-
-      final voicing = ChordVoicing(
-        frets: frets,
-        startFret: displayStartFret,
-        rootString: bestPattern.rootString,
-        name: bestPattern.cagedName,
+      final voicing = VoicingGenerator.calculateVoicingFromCagedPattern(
+        bestPattern,
+        bestStartFret,
       );
-      
       return (bestPattern.name, voicing);
     }
     return null;

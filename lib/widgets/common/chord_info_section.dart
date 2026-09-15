@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/chord_model.dart';
 import '../../models/instrument_model.dart';
-import 'guitar/guitar_chord_widget.dart';
-import 'chord_detail_dialog.dart';
-import 'piano/piano_chord_widget.dart';
+import '../../utils/theory_utils.dart';
+import 'chords/adaptive_chord_diagram.dart';
 
 class ChordInfoSection extends StatelessWidget {
   final String root;
@@ -34,12 +33,7 @@ class ChordInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 퀄리티 표시용 문자열 변환
-    String displayQuality = quality;
-    if (quality == 'm') {
-      displayQuality = 'minor';
-    } else if (quality == 'maj7') {
-      displayQuality = 'major 7';
-    }
+    final displayQuality = TheoryUtils.formatDisplayQuality(quality);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,45 +108,19 @@ class ChordInfoSection extends StatelessWidget {
             // 180 (Diagram) + 16 (Gap) + 130 (Min Text width) = 326
             final bool useRow = constraints.maxWidth > 330;
 
-            Widget diagramWidget;
-            if (instrument.type == InstrumentType.piano) {
-              diagramWidget = PianoChordWidget(
-                notes: notes,
-                width: 180,
-                height: 120,
-              );
-            } else {
-              diagramWidget = InkWell(
-                onTap: () {
-                  if (instrument.type == InstrumentType.piano) return;
-                  if (voicing == null) return;
-
-                  showDialog(
-                    context: context,
-                    builder: (context) => ChordDetailDialog(
-                      root: root,
-                      quality: quality,
-                      voicing: voicing!,
-                      notes: notes,
-                      onPlay: onPlay,
-                      characterNote: characterNote,
-                    ),
-                  );
-                },
-                borderRadius: BorderRadius.circular(8),
-                child: GuitarChordWidget(
-                  voicing: voicing ??
-                      ChordVoicing(
-                          frets: [-1, -1, -1, -1, -1, -1],
-                          startFret: 0,
-                          rootString: 6),
-                  width: 180,
-                  height: 140,
-                  isMain: true,
-                  stringCount: instrument.stringCount,
-                ),
-              );
-            }
+            final diagramWidget = AdaptiveChordDiagram(
+              voicing: voicing,
+              notes: notes,
+              width: 180,
+              height: 140,
+              isMain: true,
+              root: root,
+              quality: quality,
+              characterNote: characterNote,
+              onPlay: onPlay,
+              enableDetailDialog: true,
+              instrument: instrument,
+            );
 
             if (useRow) {
               return Row(

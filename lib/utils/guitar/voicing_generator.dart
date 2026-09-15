@@ -1,9 +1,41 @@
 import '../../models/chord_model.dart';
+import '../../models/caged_model.dart';
 import '../theory/note_utils.dart';
 import '../theory/chord_utils.dart';
 import 'tuning_utils.dart';
 
 class VoicingGenerator {
+  /// 주어진 CAGED 패턴과 시작 프렛 정보를 기반으로 단일화된 ChordVoicing을 계산합니다.
+  static ChordVoicing calculateVoicingFromCagedPattern(
+    CagedPattern pattern,
+    int startFret,
+  ) {
+    List<int> frets = [-1, -1, -1, -1, -1, -1];
+    for (var dot in pattern.dots) {
+      int strIdx = 6 - dot.s;
+      int realFret = startFret + dot.o;
+      if (frets[strIdx] == -1) {
+        frets[strIdx] = realFret;
+      }
+    }
+
+    int minFret = 999;
+    for (int f in frets) {
+      if (f != -1 && f < minFret) minFret = f;
+    }
+    int displayStartFret =
+        minFret != 999 ? minFret : (startFret > 0 ? startFret : 1);
+    if (minFret == 0) displayStartFret = 1;
+
+    return ChordVoicing(
+      frets: frets,
+      startFret: displayStartFret,
+      rootString: pattern.rootString,
+      name: pattern.cagedName,
+      tags: const ['CAGED'],
+    );
+  }
+
   static ChordVoicing calculateChordShape(String root, String quality) {
     final normRoot = NoteUtils.normalizeNoteName(root);
     final r6 = TuningUtils.get6thStringFret(normRoot);

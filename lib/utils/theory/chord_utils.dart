@@ -77,6 +77,13 @@ class ChordUtils {
     return (intervals, intervalStr, isMinor);
   }
 
+  /// 코드의 퀄리티 문자열을 사용자 친화적 표시 이름(예: 'm' -> 'minor', 'maj7' -> 'major 7')으로 변환합니다.
+  static String formatDisplayQuality(String quality) {
+    if (quality == 'm') return 'minor';
+    if (quality == 'maj7' || quality == 'Maj7') return 'major 7';
+    return quality;
+  }
+
   static List<String> getGuideTones(String root, String quality) {
     List<String> targetIntervals = [];
 

@@ -266,6 +266,29 @@ firebase deploy --only hosting
 
 ## 📝 변경 이력 (Changelog)
 
+### v3.0.0 (2026-09-15 - PC Zero-Scroll Dashboard & Complete Codebase Redundancy Refactoring)
+* **🖥️ PC 화면 최적화 '스크롤 제로(Zero-Scroll)' 2분할 대시보드 레이아웃 구축**:
+  * **ExplorerView 2분할 올인원 대시보드**:
+    * 데스크톱 모드(`maxWidth >= 960`)에서 좌측 380px 컨트롤 독(300px 5도권 휠 + 3/7화음 단일 토글 + 7모드 셀렉터)과 우측 통합 시각화 독(모드 정보 + CAGED 5개 폼 + 다이아토닉 7코드 + 와이드 프렛보드 맵)으로 전면 재배치.
+    * 1600x900 및 1080p 데스크톱에서 상하 스크롤바 없이 한눈에 모든 화성학 데이터를 관찰하고 조작하는 제로 스크롤 UX 실현.
+    * 모바일 및 태블릿 환경(`maxWidth < 960`)에서는 직관적인 터치 친화적 1단 세로 스크롤 레이아웃을 완벽하게 자동 보존.
+  * **공통 레이아웃 최적화**:
+    * 공통 헤더(`AppHeader`) 높이를 85px에서 60px로 슬림화하여 상하 25px 이상의 추가 뷰포트 확보.
+    * 프렛보드(`FretboardSection`)의 인위적 0.72 축소 비율 제거로 데스크톱 100% 와이드 지판 렌더링 지원.
+    * 다이아토닉 코드 리스트 내 중복 3/7화음 토글 제거로 공간 낭비 및 시각적 피로도 해소.
+* **🧩 컴포넌트 기능 중복 제거 및 확장성 강화 (Complete Redundancy Refactoring)**:
+  * **도메인 로직 단일화 (Phase 1)**:
+    * `VoicingGenerator.calculateVoicingFromCagedPattern` 신설로 `caged_list.dart`와 `music_theory_service.dart`에 3중 중복되어 있던 50줄 이상의 프렛 역산 루프 및 하드코딩된 조율 배열을 단일 원천으로 일원화.
+    * `ChordUtils.formatDisplayQuality` 및 `TheoryUtils.formatDisplayQuality` 표준 헬퍼 함수를 추가하여 UI 레이어의 중복 if/else 표기 분기 해소.
+  * **악기 다형성 UI 컴포넌트 & 다이얼로그 표준화 (Phase 2)**:
+    * `AdaptiveChordDiagram` 범용 다형성 위젯을 신설하여 현재 선택된 악기(기타/피아노)에 따라 건반(`PianoChordWidget`) 또는 지판(`GuitarChordWidget`)을 자동 렌더링.
+    * `ChordInfoSection`, `TimelineChordCard`, `ChordVoicingSection`에 적용하여 제너레이터 뷰의 피아노 모드 누락 문제 및 기타 코드 강제 출력 버그 완전 해결.
+    * `ChordDetailDialog`, `SettingsDialog`, `ChangelogDialog`를 검증된 공통 모달 프레임 `AppDialogFrame`으로 전면 일원화.
+  * **인터벌 표기 일원화 및 상태 관리 동기화 (Phase 3)**:
+    * `NoteUtils.intervalToSemitone`이 재즈 표기(`1, b3, 5, b7`)와 클래식 표기(`1P, m3, P5, m7`)를 모두 정확한 반음 수로 계산하도록 확장하고, `normalizeInterval` 및 `getIntervalSynonyms` 구현.
+    * `ViewControlStateMixin`의 `toggleInterval`이 동의어(`d5` ↔ `b5` ↔ `#4`, `m7` ↔ `b7`)를 일괄 동기화하도록 개선하여 지판 필터링 누락 버그 원천 차단.
+* **품질 보증**: 단위 테스트 19건 전체 100% 통과, `dart analyze` 컴파일 에러/경고 0건 달성.
+
 ### v2.9.1 (2026-09-11 - Comprehensive Clean Architecture Refactoring & Stability Hardening)
 * **🏛️ 대규모 코드베이스 리팩토링 및 클린 아키텍처 고도화 (Behavior-Preserving Refactoring)**:
   * **1단계: 화성학 서비스 연동 및 데드코드 해소 (`MusicTheoryService`)**:

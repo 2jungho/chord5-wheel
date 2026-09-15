@@ -62,7 +62,7 @@ class SettingsDrawer extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('v1.9.2 • 2jungho@gmail.com',
+                  Text('v3.0.0 • 2jungho@gmail.com',
                       style: TextStyle(
                           fontSize: 11,
                           color: Theme.of(context)

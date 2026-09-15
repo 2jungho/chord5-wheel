@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../models/chord_model.dart';
-import '../../../widgets/common/guitar/guitar_chord_widget.dart';
 import '../../../widgets/common/chord_detail_dialog.dart';
+import '../../../widgets/common/chords/adaptive_chord_diagram.dart';
 import '../../../providers/settings_state.dart';
 
 class ChordVoicingSection extends StatelessWidget {
@@ -163,20 +163,14 @@ class ChordVoicingSection extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 8),
-                              SizedBox(
-                                height: 100, // Reduced height
-                                width: 130, // Increased width
-                                child: CustomPaint(
-                                  painter: GuitarChordPainter(
-                                    voicing: voicing,
-                                    isMainChord: false,
-                                    stringCount: currentInstrument
-                                        .stringCount, // stringCount 전달
-                                    colorScheme: Theme.of(context).colorScheme,
-                                    dividerColor:
-                                        Theme.of(context).dividerColor,
-                                  ),
-                                ),
+                              AdaptiveChordDiagram(
+                                voicing: voicing,
+                                root: root,
+                                quality: quality,
+                                notes: notes,
+                                width: 130,
+                                height: 100,
+                                instrument: currentInstrument,
                               ),
                             ],
                           ),

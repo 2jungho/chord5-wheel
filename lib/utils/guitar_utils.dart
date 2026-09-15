@@ -1,4 +1,5 @@
 import '../models/chord_model.dart';
+import '../models/caged_model.dart';
 import '../models/fretboard_marker.dart';
 import '../models/progression/progression_models.dart';
 import 'guitar/pentatonic_box_calculator.dart';
@@ -39,6 +40,10 @@ class GuitarUtils {
   static List<ChordVoicing> generateCAGEDVoicings(
           String root, String quality) =>
       VoicingGenerator.generateCAGEDVoicings(root, quality);
+
+  static ChordVoicing calculateVoicingFromCagedPattern(
+          CagedPattern pattern, int startFret) =>
+      VoicingGenerator.calculateVoicingFromCagedPattern(pattern, startFret);
 
   static List<ChordVoicing> generateShellVoicings(
           String root, String quality) =>

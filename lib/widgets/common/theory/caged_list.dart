@@ -6,6 +6,7 @@ import '../../../models/chord_model.dart';
 import '../../../utils/theory_utils.dart';
 
 import '../../../audio/audio_manager.dart';
+import '../../../utils/guitar_utils.dart';
 import '../guitar/guitar_chord_widget.dart';
 import '../../../models/caged_model.dart';
 import '../../../providers/settings_state.dart';
@@ -67,7 +68,7 @@ class _CagedListState extends State<CagedList> {
             startFret -= 12;
           }
           // Calculate Voicing immediately for display
-          final result = _calculateCagedVoicing(pattern, startFret, isMinor);
+          final result = _calculateCagedVoicing(pattern, startFret, chord.root);
 
           return _CagedItemData(pattern, startFret, result);
         }).toList();
@@ -132,58 +133,13 @@ class _CagedListState extends State<CagedList> {
   }
 
   _CagedResult _calculateCagedVoicing(
-      CagedPattern pattern, int startFret, bool isMinor) {
-    List<int> frets = [-1, -1, -1, -1, -1, -1];
-    List<String> notes = [];
-
-    // All dots in pattern are valid chord tones now
-    for (var dot in pattern.dots) {
-      int strIdx = 6 - dot.s;
-      int realFret = startFret + dot.o;
-      if (frets[strIdx] == -1) {
-        frets[strIdx] = realFret;
-      }
-    }
-
-    // Min Fret logic (for display start)
-    int minFret = 999;
-    int maxFret = -1;
-    for (int f in frets) {
-      if (f != -1) {
-        if (f < minFret) minFret = f;
-        if (f > maxFret) maxFret = f;
-      }
-    }
-
-    // Auto-Shift Logic:
-    // If we have a wide stretch or high fret, try to frame it nicely.
-    // Standard box is 5 frets.
-    // If minFret is the "start", we show minFret to minFret+4.
-    // Ensure this covers all notes if possible.
-    int finalStartFret =
-        minFret != 999 ? minFret : (startFret > 0 ? startFret : 1);
-    // If any note is below finalStartFret (impossible if min is min)
-    // If any note is > finalStartFret + 4, we might need to adjust, but usually minFret is best start.
-    // Exception: Open strings (fret 0).
-    // If we have fret 0, startFret usually should be 1 (and 0 is drawn as open).
-    if (minFret == 0) finalStartFret = 1;
-
-    // Collect Notes
-    for (int i = 0; i < 6; i++) {
-      if (frets[i] != -1) {
-        final tuningIndices = [4, 9, 2, 7, 11, 4]; // E A D G B E
-        int noteIdx = (tuningIndices[i] + frets[i]) % 12;
-        notes.add(TheoryUtils.getNoteName(noteIdx, true));
-      }
-    }
+      CagedPattern pattern, int startFret, String root) {
+    final voicing =
+        GuitarUtils.calculateVoicingFromCagedPattern(pattern, startFret);
+    final notes = TheoryUtils.getNotesFromVoicing(voicing, root);
 
     return _CagedResult(
-      voicing: ChordVoicing(
-        frets: frets,
-        startFret: finalStartFret,
-        rootString: pattern.rootString,
-        name: pattern.cagedName,
-      ),
+      voicing: voicing,
       notes: notes,
     );
   }
