@@ -38,9 +38,10 @@ git config user.email "jungho.lee@maius.co.kr"
 
 ## 📱 지원 플랫폼 (Platforms)
 
-*   **Web** (Primary Target - Firebase Hosting & WASM 지원)
-*   **Windows Desktop** (Native C++ Engine & Inno Setup 패키징 지원)
-*   **Android** (모바일 최적화)
+*   **Web / PWA** (Primary Target - Firebase Hosting, WASM 및 Chrome/Edge 데스크톱 앱 설치(PWA) 지원)
+*   **Windows Desktop** (Native C++ Engine & Inno Setup 설치 패키징 지원)
+*   **Android** (모바일 최적화 및 적응형 런처 아이콘)
+*   **iOS** (모바일 최적화 및 런처 아이콘)
 *   **macOS / Linux** (실험적 지원)
 
 ---
@@ -265,6 +266,17 @@ firebase deploy --only hosting
 ---
 
 ## 📝 변경 이력 (Changelog)
+
+### v3.0.1 (2026-09-17 - Full-Platform App Icon Redesign & PWA/Desktop Deployment)
+* **🎨 전 플랫폼(Web PWA, Windows 데스크톱, Android, iOS) 전용 앱 아이콘 브랜딩 개편**:
+  * 기존 기본 Flutter 템플릿 로고(하늘색)에서 고유의 **보라색 기타 피크 시그니처 로고(`app_icon.png` / `app_icon.ico`)**로 전면 전환.
+  * `flutter_launcher_icons` 설정을 Web 및 Windows 플랫폼까지 확장 구성하여 일괄 자동 생성 파이프라인 구축 (`pubspec.yaml`).
+  * **Web PWA 최적화**: PWA 매니페스트(`web/manifest.json`), 마스크형 아이콘(`Icon-maskable-192.png`, `Icon-maskable-512.png`), 192/512px 표준 아이콘 및 `favicon.png`/`favicon.ico` 듀얼 파비콘 링킹 최적화. Chrome/Edge에서 데스크톱 앱 설치 시 선명한 커스텀 아이콘으로 바로가기 생성.
+  * **Windows 데스크톱 최적화**: 네이티브 실행 파일 256×256 규격 리소스(`windows/runner/resources/app_icon.ico`) 갱신 및 Inno Setup 인스톨러 스크립트(`5-Chord-Wheel.iss`) `SetupIconFile` 지정으로 배포 패키지 및 설치 프로그램 아이콘 일원화.
+  * **모바일 최적화**: Android/iOS 전 해상도 런처 아이콘 동기화 적용.
+* **🚀 Firebase Hosting 웹 프로덕션 최신 릴리즈 빌드 및 배포 완료**:
+  * `flutter build web --release` 및 `firebase deploy --only hosting` 완료.
+  * 라이브 서비스: [https://chord5-wheel.web.app](https://chord5-wheel.web.app)
 
 ### v3.0.0 (2026-09-15 - PC Zero-Scroll Dashboard & Complete Codebase Redundancy Refactoring)
 * **🖥️ PC 화면 최적화 '스크롤 제로(Zero-Scroll)' 2분할 대시보드 레이아웃 구축**:

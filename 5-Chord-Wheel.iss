@@ -3,7 +3,7 @@
 ; Non-commercial use only
 
 #define MyAppName "5-Chord-Wheel"
-#define MyAppVersion "1.0"
+#define MyAppVersion "3.0.1"
 #define MyAppPublisher "2jungho@gmail.com"
 #define MyAppExeName "guitar_theory_app.exe"
 #define MyAppAssocName MyAppName + " File"
@@ -20,6 +20,7 @@ AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\{#MyAppName}
 UninstallDisplayIcon={app}\{#MyAppExeName}
+SetupIconFile=windows\runner\resources\app_icon.ico
 ; "ArchitecturesAllowed=x64compatible" specifies that Setup cannot run
 ; on anything but x64 and Windows 11 on Arm.
 ArchitecturesAllowed=x64compatible
