@@ -29,6 +29,7 @@ class ModeInfoSection extends StatelessWidget {
 
     final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -198,7 +199,8 @@ class ModeInfoSection extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      constraints: const BoxConstraints(minHeight: 238),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(12),

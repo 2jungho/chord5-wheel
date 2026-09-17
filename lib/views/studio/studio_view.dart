@@ -22,8 +22,8 @@ class StudioView extends StatefulWidget {
 }
 
 class _StudioViewState extends State<StudioView> {
-  // 타임라인 영역의 높이
-  double _timelineHeight = 340.0;
+  // 타임라인 영역의 높이 (기본 420px로 설정하여 좌측 5도권 휠이 280px 지름을 온전히 확보하도록 함)
+  double _timelineHeight = 420.0;
 
   @override
   Widget build(BuildContext context) {

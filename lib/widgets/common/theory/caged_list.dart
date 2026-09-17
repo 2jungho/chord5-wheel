@@ -83,16 +83,19 @@ class _CagedListState extends State<CagedList> {
                 Text('🔥 CAGED System',
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface,
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold)),
                 if (chord.displayName.isNotEmpty)
-                  Text(' : ${chord.displayName}',
-                      style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          fontSize: 14)),
+                  Expanded(
+                    child: Text(' : ${chord.displayName}',
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            fontSize: 13),
+                        overflow: TextOverflow.ellipsis),
+                  ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Scrollbar(
               controller: _scrollController,
               thumbVisibility: true,
@@ -100,7 +103,7 @@ class _CagedListState extends State<CagedList> {
               child: SingleChildScrollView(
                 controller: _scrollController,
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(bottom: 12), // 스크롤바 공간 확보
+                padding: const EdgeInsets.only(bottom: 8), // 스크롤바 공간 확보
                 child: Row(
                   children: displayItems.map((item) {
                     final isSelected =
@@ -199,9 +202,9 @@ class _CagedItem extends StatelessWidget {
                 '${data.result.voicing.startFret}fr', // Use actual voicing start fret
                 style: TextStyle(
                     color: Theme.of(context).hintColor, fontSize: 10)),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             SizedBox(
-              height: 90, // Reduced height for horizontal widget
+              height: 84, // Reduced height for horizontal widget
               width: 120, // Increased width
               child: CustomPaint(
                 painter: GuitarChordPainter(

@@ -80,6 +80,7 @@ git config user.email "jungho.lee@maius.co.kr"
 *   **Mode & Scale Visualizer**: Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, Locrian 등 7가지 모드와 캐릭터 노트를 실시간으로 확인합니다.
 *   **AI Modulation Navigator**: 현재 키에서 목표 키로 자연스럽게 이동할 수 있는 **Pivot Chord Modulation** 경로를 멀티 AI 모델이 실시간으로 분석/추천합니다. (휠 영역 길게 누르기)
 *   **Diatonic Dashboard & 카포 추천**: 선택된 키의 다이아토닉 코드를 한눈에 파악하고, 카포 추천 버튼을 통해 쉬운 오픈 코드 폼을 즉시 탐색합니다.
+*   **PC 1:1 완벽 수평선 2분할 대시보드 (Pixel-Perfect Zero-Scroll)**: 좌측 380px 컨트롤 마스터 독(5도권 휠 + 3/7화음 토글 + 모드 셀렉터)과 우측 2단 워크스페이스(모드 정보 + CAGED 5개 폼 + 다이아토닉 7코드 + 프렛보드 맵)가 단 1픽셀의 오차도 없이 1:1 동일한 높이(`585px`)로 자동 정렬되는 프로페셔널 데스크톱 대시보드 제공.
 
 ### 2. 🎸 스마트 카포 전조기 (Smart Capo Transposer)
 *   어려운 하이코드(바레코드)가 많은 곡(예: `Eb - Bb - Cm - Ab`)을 기타리스트가 연주하기 쉬운 **오픈 코드(Open Chord: C, G, D, Em, Am 폼)**로 변환하는 카포 위치(Capo 1~11)를 실시간 분석합니다.
@@ -152,6 +153,10 @@ git config user.email "jungho.lee@maius.co.kr"
 *   **LaTeX 수식 및 화살표 렌더러 탑재**: 답변 내 `$\rightarrow$`, `$\to$`, `$\Rightarrow$` 등의 화살표 문법 및 수식(`$$...$$`)이 깨짐 없이 시각적 기호로 깔끔하게 렌더링됩니다.
 *   사용자의 자연어 요청에 따라 앱의 5도권 키 및 모드를 실시간으로 변경(App State Command Execution)합니다.
 *   헤더에 최적화된 단일 라인 축약 뱃지(`3.7F`, `4o`, `3.7S`, `R1` 등)와 외부 사이트 바로가기 제공.
+
+### 10. 🏷️ 통합 헤더 & 브랜딩 시스템 (Unified Brand & Navigation Header)
+*   **전 탭 일관된 브랜드 정체성**: 모든 탭에서 **Guitar & Theory** 대표 브랜드를 일관되게 표기하며, 활성 탭에 따른 부제(`Circle of Fifths`, `Chord Analyzer`, `Chord Progression Studio`) 및 버전을 명확히 제공합니다.
+*   **코드 분석 탭 레이아웃 최적화**: 코드 분석 탭에서도 브랜드 로고와 텍스트 타이틀이 온전히 유지되며, 중앙의 340px 컴팩트 스마트 코드 검색창과 우측 테마 선택기, AI 비서, 아티스트 릭 보관함 액션 버튼들이 가로 충돌 없이 우아하게 정렬됩니다.
 
 ---
 
@@ -245,7 +250,7 @@ flutter run -d windows
 # 정적 분석 (0 issues)
 dart analyze lib test
 
-# 전체 단위 및 위젯 테스트 실행 (92 tests)
+# 전체 단위 및 위젯 테스트 실행 (98 tests)
 flutter test
 ```
 
@@ -266,6 +271,29 @@ firebase deploy --only hosting
 ---
 
 ## 📝 변경 이력 (Changelog)
+
+### v3.0.2 (2026-09-17 - Pixel-Perfect Dashboard Alignment & Header Branding Standardization)
+* **📐 데스크톱 2분할 대시보드 1:1 완벽 수평선 높이 일치 (Pixel-Perfect Alignment)**:
+  * **근본 원인 해결**: 좌우 Row가 `CrossAxisAlignment.start`로 배치되어 좌측 마스터 독(466px)과 우측 2단 워크스페이스(486px) 간 20px의 높이 단차가 발생하던 현상 수정.
+  * **IntrinsicHeight & Auto-Stretch 적용**: 상위 Row를 `IntrinsicHeight` + `crossAxisAlignment: CrossAxisAlignment.stretch`로 전환하고, 좌측 380px 마스터 독에 `spaceBetween`을 부여하여 1600px 및 1200px 등 모든 데스크톱 해상도에서 하단 끝선(Bottom Y좌표: `585.0px`)이 **단 1픽셀의 오차도 없이 1:1 완벽하게 일치**하도록 설계.
+  * **Intrinsic Dimension 측정 충돌 우회**: `InfoPanel`에 `isWide` 명시적 파라미터를 추가하여 데스크톱 환경에서 `LayoutBuilder`를 즉시 우회(Bypass)함으로써 Flutter 렌더 트리의 고유 크기 측정 실패를 원천 해결.
+  * **CAGED 타이틀 가로 오버플로우 방지**: 중소형 랩탑 화면에서 `CagedList` 타이틀의 코드명이 잘리거나 넘치지 않도록 `Expanded` + `TextOverflow.ellipsis` 적용.
+* **🏷️ 상단 헤더 브랜딩 일원화 및 탭별 명칭/검색창 최적화**:
+  * **대표 브랜드 단일화**: 탭에 따라 명칭이 달라지던 현상을 해소하고, 모든 탭에서 **`Guitar & Theory`** 메인 브랜드를 일관되게 표기.
+  * **부제(Subtitle) 및 버전 체계화**:
+    * 5도권 탐색기: `Circle of Fifths v3.0.1`
+    * 코드 분석: `Chord Analyzer v3.0.1`
+    * 코드진행: `Chord Progression Studio v3.0.1`
+  * **코드 분석(Chord Analyzer) 탭 헤더 정상화**:
+    * 기존에 탭 진입 시 브랜드 로고 우측 타이틀이 통째로 숨겨지던 조건문 제거.
+    * 중앙 코드 검색창(`_buildSearchBar`)에 `maxWidth: 340` 및 36px 컴팩트 높이를 부여하여 로고/타이틀, 검색창, 우측 테마/액션 버튼들이 가로 충돌 없이 이상적으로 배치되도록 정렬.
+* **⚡ 스튜디오 잼 제어바(JamControlsBar) 반응형 오버플로우 해소**:
+  * 템포/볼륨 슬라이더의 `isNarrow` 임계치를 820px로 확장하여 중형 뷰포트에서도 슬라이더가 2단으로 자동 전환되며 RenderFlex 오버플로우(17px) 완전 방지.
+* **🧪 자동화 테스트 보강 및 품질 검증**:
+  * `widget_test.dart`에 데스크톱 1:1 수평선 일치 검증 및 3개 탭 전환 시 헤더 브랜딩/부제 렌더링 검증 테스트 추가.
+  * `dart analyze` 0 이슈 및 단위/위젯 테스트 100% 통과 유지 (총 98개 테스트).
+* **🚀 프로덕션 빌드 및 Firebase Hosting 실서버 배포 완료**:
+  * `flutter build web --release` 및 `firebase deploy --only hosting` 완료 ([https://chord5-wheel.web.app](https://chord5-wheel.web.app)).
 
 ### v3.0.1 (2026-09-17 - Full-Platform App Icon Redesign & PWA/Desktop Deployment)
 * **🎨 전 플랫폼(Web PWA, Windows 데스크톱, Android, iOS) 전용 앱 아이콘 브랜딩 개편**:

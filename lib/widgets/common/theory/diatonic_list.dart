@@ -30,6 +30,7 @@ class DiatonicList extends StatelessWidget {
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -156,6 +157,34 @@ class DiatonicList extends StatelessWidget {
                   ),
                 );
               }).toList(),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Theme.of(context)
+                    .colorScheme
+                    .surfaceContainerHighest
+                    .withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.lightbulb_outline,
+                      size: 14, color: Theme.of(context).colorScheme.primary),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      '주요 3화음: 1도(Tonic) · 4도(Subdominant) · 5도(Dominant) | 대리: 2도 · 3도 · 6도',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         );

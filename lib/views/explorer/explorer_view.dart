@@ -21,6 +21,7 @@ import '../../utils/guitar_utils.dart';
 import '../../utils/guitar/pentatonic_box_calculator.dart';
 import '../../widgets/common/glass_container.dart';
 import '../../models/fretboard_marker.dart';
+import '../../widgets/lick/chord_lick_recommendation_card.dart';
 
 
 
@@ -40,67 +41,135 @@ class ExplorerView extends StatelessWidget {
     });
   }
 
-  /// 데스크톱(PC) 전용: 휠과 지판을 1화면에 동시에 배치하는 2분할 올인원 레이아웃
+  /// 데스크톱(PC) 전용: 안 1 [좌측 마스터 독 + 우측 메인 워크스페이스 + 중단 릭 & CAGED + 하단 전폭 지판]
   Widget _buildDesktopDashboard(
       BuildContext context, BoxConstraints constraints) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-      child: GlassContainer(
-        padding: const EdgeInsets.all(12),
-        opacity: 0.6,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Left Panel: Controller Dock (폭 380px 고정)
-            SizedBox(
-              width: 380,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildWheel(context, size: 300),
-                  const SizedBox(height: 10),
-                  _buildChordTypeToggle(context),
-                  const SizedBox(height: 10),
-                  _buildModeSelector(context),
-                ],
-              ),
-            ),
-            const SizedBox(width: 20),
-            // Right Panel: Integrated Theory, CAGED & Fretboard Dock
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const InfoPanel(withContainer: false),
-                  const SizedBox(height: 10),
-                  Divider(color: Theme.of(context).dividerColor, height: 1),
-                  const SizedBox(height: 10),
-                  // Side-by-side: CAGED & Diatonic (중복 토글 제거)
-                  const Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.all(12.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Tier 1: 상단 마스터 독 & 메인 작업 영역 (좌우 1:1 완벽한 높이 수평 일치)
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Left Panel: Controller Master Dock (폭 380px 고정, 우측과 1:1 동일 높이 스트레칭)
+                SizedBox(
+                  width: 380,
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surfaceContainer,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Theme.of(context).dividerColor),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildWheel(context, size: 280),
+                        _buildChordTypeToggle(context),
+                        _buildModeSelector(context),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                // Right Panel: Theory Workspace (1층 InfoPanel + 2층 CAGED & Diatonic Side-by-Side)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        flex: 5,
-                        child: CagedList(),
-                      ),
-                      SizedBox(width: 16),
-                      Expanded(
-                        flex: 6,
-                        child: DiatonicList(showChordTypeToggle: false),
+                      // 1층: 스케일 정보 & 선택 코드 핑거링 다이어그램
+                      const InfoPanel(
+                          withContainer: true,
+                          showLickSection: false,
+                          isWide: true),
+                      const SizedBox(height: 12),
+                      // 2층: CAGED 5개 폼(좌) & Diatonic 7개 코드(우) 나란히 배치 (5:5 Side-by-Side, 높이 완벽 일치)
+                      IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Expanded(
+                              flex: 5,
+                              child: Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.surfaceContainer,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Theme.of(context).dividerColor),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.1),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const CagedList(),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              flex: 5,
+                              child: Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.surfaceContainer,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Theme.of(context).dividerColor),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.1),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const DiatonicList(showChordTypeToggle: false),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  Divider(color: Theme.of(context).dividerColor, height: 1),
-                  const SizedBox(height: 10),
-                  // Full Fretboard Map
-                  _buildFretboardSection(context),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // 거장 릭 섹션 (Full Width 가로 캐러셀)
+          Consumer<MusicState>(
+            builder: (context, state, _) {
+              final chord = state.selectedChord;
+              final mode = state.currentMode;
+              final root = state.rootNote;
+              return ChordLickRecommendationCard(
+                chordRoot: chord.root,
+                chordQuality: chord.quality,
+                keyContext: '$root ${mode.name}',
+              );
+            },
+          ),
+
+          const SizedBox(height: 14),
+
+          // Tier 3: 하단 기타 지판 맵 (Full Width!)
+          _buildFretboardSection(context),
+          const SizedBox(height: 40),
+        ],
       ),
     );
   }
@@ -126,7 +195,7 @@ class ExplorerView extends StatelessWidget {
                 _buildModeSelector(context),
                 const SizedBox(height: 16),
                 Divider(color: Theme.of(context).dividerColor),
-                const InfoPanel(withContainer: false),
+                const InfoPanel(withContainer: false, isWide: false),
                 const SizedBox(height: 16),
                 Divider(color: Theme.of(context).dividerColor),
                 const Padding(

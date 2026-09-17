@@ -67,12 +67,12 @@ class TimelineKeyPanel extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         Expanded(
           child: Center(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                double size = min(constraints.maxWidth, constraints.maxHeight);
+                double size = min(min(constraints.maxWidth, constraints.maxHeight), 280.0);
                 return CircleOfFifthsSelector(
                   currentKey: session.key,
                   isSeventhMode: context.watch<MusicState>().isSeventhMode,
@@ -87,23 +87,30 @@ class TimelineKeyPanel extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            session.key,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
+        Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 8,
+          runSpacing: 6,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                session.key,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+              ),
             ),
-          ),
+            TimelineChordTypeToggle(studio: studio),
+          ],
         ),
-        const SizedBox(height: 8),
-        TimelineChordTypeToggle(studio: studio),
       ],
     );
   }

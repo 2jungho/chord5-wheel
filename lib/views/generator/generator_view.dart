@@ -58,33 +58,10 @@ class GeneratorView extends StatelessWidget {
             );
           }
 
-          // --- Desktop Layout (Unified Scroll) ---
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AppCardContainer(
-                    padding: const EdgeInsets.all(12),
-                    child: LayoutBuilder(
-                      builder: (context, dashboardConstraints) {
-                        final isDashboardWide =
-                            dashboardConstraints.maxWidth > 1100;
-                        if (isDashboardWide) {
-                          return const _GeneratorDesktopDashboard();
-                        } else {
-                          return const _GeneratorMobileDashboardBody();
-                        }
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  const _GeneratorFretboardSection(),
-                  const SizedBox(height: 40),
-                ],
-              ),
-            ),
+          // --- Desktop Layout (Unified Scroll - Scheme 1) ---
+          return const SingleChildScrollView(
+            padding: EdgeInsets.all(12.0),
+            child: _GeneratorDesktopDashboard(),
           );
         });
       },
@@ -221,7 +198,7 @@ class _ChordResultCard extends StatelessWidget {
   }
 }
 
-/// 데스크톱용 3분할 대시보드
+/// 데스크톱용 통일 대시보드 (안 1: 마스터 독 + 워크스페이스 + 보이싱/릭 + 지판)
 class _GeneratorDesktopDashboard extends StatelessWidget {
   const _GeneratorDesktopDashboard();
 
@@ -239,6 +216,12 @@ class _GeneratorDesktopDashboard extends StatelessWidget {
           ChordVoicing? voicing,
           bool canRestore,
           String? selectedScaleName,
+          List<ChordVoicing> voicings,
+          String selectedStyle,
+          int? selectedVoicingIndex,
+          List<String> relatedScales,
+          bool isMinor,
+          List<String> chordIntervalList,
         })>(
       selector: (_, s) => (
         root: s.analyzedRoot,
@@ -250,48 +233,189 @@ class _GeneratorDesktopDashboard extends StatelessWidget {
             : null,
         canRestore: s.canRestore,
         selectedScaleName: s.selectedScaleName,
+        voicings: s.generatedVoicings,
+        selectedStyle: s.selectedVoicingStyle,
+        selectedVoicingIndex: s.selectedVoicingIndex,
+        relatedScales: s.relatedScales,
+        isMinor: s.isMinor,
+        chordIntervalList: s.chordIntervalList,
       ),
       builder: (context, data, _) {
         final state = context.read<GeneratorState>();
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        final theme = Theme.of(context);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 1. Info Section (Left)
-            Expanded(
-              flex: 3,
-              child: _ChordResultCard(
-                root: data.root,
-                quality: data.quality,
-                intervals: data.intervals,
-                notes: data.notes,
-                voicing: data.voicing,
-                canRestore: data.canRestore,
-                instrument: instrument,
-              ),
-            ),
-            const SizedBox(width: 24),
-            // 2. Middle Section
-            const Expanded(
-              flex: 5,
-              child: _GeneratorMobileDashboardBody(showExtendedAnalysis: false),
-            ),
-            const SizedBox(width: 24),
-            // 3. Right Section
-            Expanded(
-              flex: 3,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ExtendedAnalysisSection(
+            // Tier 1: 상단 코드 마스터 독 (좌) + 화성학 분석 워크스페이스 (우)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 좌측 마스터 독: 코드 심볼 & 기본 핑거링 다이어그램 (고정 폭 380px)
+                Container(
+                  width: 380,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainer,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: theme.dividerColor),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ChordInfoSection(
                     root: data.root,
                     quality: data.quality,
-                    selectedScaleName: data.selectedScaleName,
-                    onChordSelected: (val) =>
-                        state.analyzeChord(val, isNavigation: true),
+                    intervals: data.intervals,
+                    notes: data.notes,
+                    onPlay: () {
+                      if (data.voicing != null &&
+                          data.voicing!.frets.any((f) => f != -1)) {
+                        state.playVoicing(data.voicing!);
+                      } else {
+                        state.playChordStrum();
+                      }
+                    },
+                    onRestore:
+                        data.canRestore ? state.restoreInitialChord : null,
+                    voicing: data.voicing,
+                    instrument: instrument,
+                  ),
+                ),
+                const SizedBox(width: 14),
+
+                // 우측 메인 워크스페이스: 연관 스케일 & 스케일 구성음 + 심층 화성 분석
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // 1. 연관 스케일 & 스케일 구성음 시각화 카드
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: theme.dividerColor),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            RelatedScalesSection(
+                              root: data.root,
+                              displayQuality: data.quality,
+                              relatedScales: data.relatedScales,
+                              selectedScaleName: data.selectedScaleName,
+                              onScaleSelected: (scaleName) =>
+                                  state.selectScale(scaleName),
+                              onChordTonesSelected: state.selectChordTones,
+                              showHeader: false,
+                              hasContainer: false,
+                            ),
+                            const SizedBox(height: 10),
+                            Divider(color: theme.dividerColor),
+                            const SizedBox(height: 10),
+                            ScaleVisualizationSection(
+                              root: data.root,
+                              selectedScaleName: data.selectedScaleName,
+                              baseScaleName: data.relatedScales.isNotEmpty
+                                  ? data.relatedScales.first
+                                  : null,
+                              isMinor: data.isMinor,
+                              chordNotes: data.notes,
+                              chordIntervals: data.chordIntervalList,
+                              onPlayScale: state.playSelectedScale,
+                              onPlayChord: state.playChordStrum,
+                              hasContainer: false,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // 2. 다각도 심층 화성 분석 카드 (Diatonic, Tensions, Substitutions, Style)
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainer,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: theme.dividerColor),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: ExtendedAnalysisSection(
+                          root: data.root,
+                          quality: data.quality,
+                          selectedScaleName: data.selectedScaleName,
+                          onChordSelected: (val) =>
+                              state.analyzeChord(val, isNavigation: true),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 14),
+
+            // Tier 2: 중단 실전 보이싱 & 거장 릭
+            // 1. Recommended Voicings (5개 폼 전폭 가로 카드)
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainer,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: theme.dividerColor),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
+              child: ChordVoicingSection(
+                root: data.root,
+                quality: data.quality,
+                notes: data.notes,
+                voicings: data.voicings,
+                onPlayVoicing: state.playVoicing,
+                selectedStyle: data.selectedStyle,
+                onStyleSelected: state.setVoicingStyle,
+                selectedVoicingIndex: data.selectedVoicingIndex,
+                onVoicingSelected: state.selectVoicing,
+              ),
             ),
+
+            const SizedBox(height: 14),
+
+            // 2. 추천 거장 릭 (Full Width 가로 캐러셀)
+            ChordLickRecommendationCard(
+              chordRoot: data.root,
+              chordQuality: data.quality,
+            ),
+
+            const SizedBox(height: 14),
+
+            // Tier 3: 하단 기타 지판 맵 (Full Width!)
+            const _GeneratorFretboardSection(),
+            const SizedBox(height: 40),
           ],
         );
       },
@@ -299,11 +423,9 @@ class _GeneratorDesktopDashboard extends StatelessWidget {
   }
 }
 
-/// 대시보드 공통 바디 (Voicing + Scales + Visualization)
+/// 대시보드 공통 바디 (Voicing + Scales + Visualization + Analysis)
 class _GeneratorMobileDashboardBody extends StatelessWidget {
-  final bool showExtendedAnalysis;
-
-  const _GeneratorMobileDashboardBody({this.showExtendedAnalysis = true});
+  const _GeneratorMobileDashboardBody();
 
   @override
   Widget build(BuildContext context) {
@@ -379,16 +501,14 @@ class _GeneratorMobileDashboardBody extends StatelessWidget {
               onPlayChord: generatorState.playChordStrum,
               hasContainer: false,
             ),
-            if (showExtendedAnalysis) ...[
-              const SizedBox(height: 16),
-              ExtendedAnalysisSection(
-                root: data.root,
-                quality: data.quality,
-                selectedScaleName: data.selectedScaleName,
-                onChordSelected: (val) =>
-                    generatorState.analyzeChord(val, isNavigation: true),
-              ),
-            ],
+            const SizedBox(height: 16),
+            ExtendedAnalysisSection(
+              root: data.root,
+              quality: data.quality,
+              selectedScaleName: data.selectedScaleName,
+              onChordSelected: (val) =>
+                  generatorState.analyzeChord(val, isNavigation: true),
+            ),
           ],
         );
       },

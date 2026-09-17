@@ -119,7 +119,25 @@ class _AppHeaderState extends State<AppHeader> {
 
   Widget _buildLogoSection(
       BuildContext context, bool isMobile, bool isUltraMobile) {
+    String subtitle;
+    switch (widget.currentTab) {
+      case AppTab.explorer:
+        subtitle = 'Circle of Fifths';
+        break;
+      case AppTab.generator:
+        subtitle = 'Chord Analyzer';
+        break;
+      case AppTab.studio:
+        subtitle = 'Chord Progression Studio';
+        break;
+    }
+
+    final versionStr = _latestVersion.isNotEmpty
+        ? '  ${_latestVersion.startsWith('v') ? _latestVersion : 'v$_latestVersion'}'
+        : '';
+
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: isUltraMobile ? 30 : 36,
@@ -150,29 +168,26 @@ class _AppHeaderState extends State<AppHeader> {
         ),
         if (!isMobile) ...[
           const SizedBox(width: 10),
-          if (widget.currentTab != AppTab.generator)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  widget.currentTab == AppTab.explorer
-                      ? 'Guitar & Theory'
-                      : 'Music Studio',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Guitar & Theory',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
-                Text(
-                  '${widget.currentTab == AppTab.explorer ? 'Circle of Fifths' : 'Chord Flow & Rhythm'}${_latestVersion.isNotEmpty ? '  ${_latestVersion.startsWith('v') ? _latestVersion : 'v$_latestVersion'}' : ''}',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontSize: 11,
-                  ),
+              ),
+              Text(
+                '$subtitle$versionStr',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 11,
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
         ],
       ],
     );
@@ -183,49 +198,50 @@ class _AppHeaderState extends State<AppHeader> {
     return Expanded(
       child: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
+          constraints: const BoxConstraints(maxWidth: 340),
           child: Row(
             children: [
               Expanded(
                 child: Container(
-                  height: 38,
+                  height: 36,
                   margin:
-                      EdgeInsets.symmetric(horizontal: isMobile ? 8 : 24),
+                      EdgeInsets.symmetric(horizontal: isMobile ? 8 : 16),
                   child: TextField(
                     controller: _searchController,
                     onChanged: (_) => setState(() {}),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: isUltraMobile ? 14 : 16,
+                      fontSize: isUltraMobile ? 13 : 14,
                     ),
                     decoration: InputDecoration(
                       hintText: isUltraMobile
                           ? 'Chord...'
                           : (isMobile
                               ? 'Chord (영문)...'
-                              : 'Enter chord (영문 입력 e.g. Cmaj7)...'),
-                      hintStyle:
-                          TextStyle(color: Theme.of(context).hintColor),
+                              : 'Chord (e.g. Cmaj7)...'),
+                      hintStyle: TextStyle(
+                          color: Theme.of(context).hintColor, fontSize: 13),
                       filled: true,
                       fillColor: Theme.of(context).scaffoldBackgroundColor,
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 0),
+                          horizontal: 14, vertical: 0),
                       prefixIcon: isUltraMobile
                           ? null
                           : Icon(Icons.search,
-                              color: Theme.of(context).hintColor),
+                              size: 18, color: Theme.of(context).hintColor),
                       suffixIcon: IconButton(
                         icon: Icon(Icons.arrow_forward,
+                            size: 18,
                             color: Theme.of(context).colorScheme.primary),
                         onPressed: _handleAnalyze,
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(22),
+                        borderRadius: BorderRadius.circular(18),
                         borderSide: BorderSide(
                             color: Theme.of(context).dividerColor),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(22),
+                        borderRadius: BorderRadius.circular(18),
                         borderSide: BorderSide(
                           color: Theme.of(context).colorScheme.primary,
                           width: 1.5,
@@ -241,7 +257,7 @@ class _AppHeaderState extends State<AppHeader> {
                       .hasMatch(_searchController.text) &&
                   !isMobile)
                 Padding(
-                  padding: const EdgeInsets.only(right: 16),
+                  padding: const EdgeInsets.only(right: 12),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -250,7 +266,7 @@ class _AppHeaderState extends State<AppHeader> {
                           size: 12),
                       const SizedBox(width: 4),
                       Text(
-                        '한/영 키를 눌러 영문으로 변경하세요',
+                        '한/영 변환 필요',
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.error,
                           fontSize: 10,

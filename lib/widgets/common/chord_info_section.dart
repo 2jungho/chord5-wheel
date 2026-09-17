@@ -63,13 +63,13 @@ class ChordInfoSection extends StatelessWidget {
             ],
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Row(
           children: [
             Text(root,
                 style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface,
-                    fontSize: 48,
+                    fontSize: 42,
                     fontWeight: FontWeight.bold)),
             const SizedBox(width: 12),
             Expanded(
@@ -79,7 +79,7 @@ class ChordInfoSection extends StatelessWidget {
                 child: Text(displayQuality,
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
-                        fontSize: 32,
+                        fontSize: 30,
                         fontWeight: FontWeight.w300)),
               ),
             ),
@@ -101,53 +101,29 @@ class ChordInfoSection extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 12),
         if (voicing != null || notes.isNotEmpty)
-          LayoutBuilder(builder: (context, constraints) {
-            // Use side-by-side layout if there's enough width
-            // 180 (Diagram) + 16 (Gap) + 130 (Min Text width) = 326
-            final bool useRow = constraints.maxWidth > 330;
-
-            final diagramWidget = AdaptiveChordDiagram(
-              voicing: voicing,
-              notes: notes,
-              width: 180,
-              height: 140,
-              isMain: true,
-              root: root,
-              quality: quality,
-              characterNote: characterNote,
-              onPlay: onPlay,
-              enableDetailDialog: true,
-              instrument: instrument,
-            );
-
-            if (useRow) {
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  diagramWidget,
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildDetails(context, instrument),
-                  ),
-                ],
-              );
-            } else {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  diagramWidget,
-                  const SizedBox(height: 16),
-                  Container(
-                    width: double.infinity,
-                    alignment: Alignment.centerLeft,
-                    child: _buildDetails(context, instrument),
-                  ),
-                ],
-              );
-            }
-          }),
+          Wrap(
+            spacing: 16,
+            runSpacing: 10,
+            crossAxisAlignment: WrapCrossAlignment.start,
+            children: [
+              AdaptiveChordDiagram(
+                voicing: voicing,
+                notes: notes,
+                width: 170,
+                height: 130,
+                isMain: true,
+                root: root,
+                quality: quality,
+                characterNote: characterNote,
+                onPlay: onPlay,
+                enableDetailDialog: true,
+                instrument: instrument,
+              ),
+              _buildDetails(context, instrument),
+            ],
+          ),
       ],
     );
   }
@@ -156,15 +132,16 @@ class ChordInfoSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         _buildInfoItem(
             context, 'Intervals', intervals.isEmpty ? '-' : intervals,
             isCode: true),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         _buildInfoItem(context, 'Notes', notes.join(', '), isCode: true),
         // Shape Info는 프렛보드 악기일 때만 의미가 있음
         if (voicing != null && instrument.isFretted) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           _buildInfoItem(
             context,
             'Shape Info',

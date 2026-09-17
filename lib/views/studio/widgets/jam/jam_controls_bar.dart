@@ -28,7 +28,7 @@ class JamControlsBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isNarrow = constraints.maxWidth < 650;
+        final isNarrow = constraints.maxWidth < 820;
 
         final startButton = FilledButton.icon(
           onPressed: lyria.isConnecting

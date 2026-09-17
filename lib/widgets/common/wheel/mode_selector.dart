@@ -15,7 +15,7 @@ class ModeSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
@@ -33,11 +33,11 @@ class ModeSelector extends StatelessWidget {
               style: TextStyle(
                   color: Theme.of(context).colorScheme.primary,
                   fontWeight: FontWeight.bold,
-                  fontSize: 14)),
-          const SizedBox(height: 12),
+                  fontSize: 13)),
+          const SizedBox(height: 8),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 6,
+            runSpacing: 6,
             alignment: WrapAlignment.center,
             children: List.generate(MusicConstants.MODES.length, (index) {
               final mode = MusicConstants.MODES[index];
@@ -52,7 +52,7 @@ class ModeSelector extends StatelessWidget {
                 borderRadius: BorderRadius.circular(4),
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? activeColor
@@ -71,7 +71,7 @@ class ModeSelector extends StatelessWidget {
                       color: isSelected
                           ? Theme.of(context).colorScheme.onPrimary
                           : Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontSize: 12,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
