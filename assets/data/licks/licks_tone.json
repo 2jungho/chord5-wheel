@@ -92,5 +92,57 @@
       {"string": 1, "fret": 10, "duration": 0.5, "interval": "4", "noteName": "D", "technique": "bendHalf", "isTargetNote": false},
       {"string": 1, "fret": 12, "duration": 0.75, "interval": "5", "noteName": "E", "technique": "vibrato", "isTargetNote": true}
     ]
+  },
+  {
+    "id": "gilmour_time",
+    "artistId": "gilmour",
+    "artist": "David Gilmour",
+    "genre": "Tone & Expressive",
+    "title": "Time Epic F#m Fuzz Solo Cry",
+    "difficulty": "Intermediate",
+    "defaultKey": "F# Minor",
+    "targetChord": "F#m",
+    "applicableDegrees": ["i", "vi"],
+    "scaleUsed": "F# Minor Pentatonic",
+    "cagedForm": "E Form",
+    "pentatonicBox": 1,
+    "description": "묵직한 퍼즈 드라이브와 롱 딜레이 공간계 속에서 2번 줄 17프렛에서 19프렛으로 솟구치는 길모어 특유의 서정적이고 애절한 오버벤딩 릭입니다.",
+    "theoryTips": "F#m 코드의 5도(C#)에서 7도(E)를 2온음 벤딩으로 휘어올린 뒤, 루트(F#)로 유려하게 떨어지는 구조로, 단순한 음표 구성이지만 비브라토와 서스테인의 완급 조절이 핵심입니다.",
+    "tags": ["Full Bend", "Sustain", "Vibrato", "Fuzz Lead"],
+    "notes": [
+      {"string": 3, "fret": 14, "duration": 0.5, "interval": "b7", "noteName": "E", "technique": "none", "isTargetNote": false},
+      {"string": 2, "fret": 14, "duration": 0.5, "interval": "5", "noteName": "C#", "technique": "none", "isTargetNote": true},
+      {"string": 2, "fret": 17, "duration": 1.0, "interval": "b7", "noteName": "E", "technique": "bendFull", "isTargetNote": false},
+      {"string": 2, "fret": 17, "duration": 0.5, "interval": "b7", "noteName": "E", "technique": "pull", "isTargetNote": false},
+      {"string": 2, "fret": 14, "duration": 0.5, "interval": "5", "noteName": "C#", "technique": "none", "isTargetNote": true},
+      {"string": 3, "fret": 16, "duration": 1.0, "interval": "4", "noteName": "B", "technique": "bendFull", "isTargetNote": false},
+      {"string": 3, "fret": 14, "duration": 1.5, "interval": "R", "noteName": "F#", "technique": "vibrato", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "beck_people_get_ready",
+    "artistId": "beck",
+    "artist": "Jeff Beck",
+    "genre": "Tone & Expressive",
+    "title": "People Get Ready Soulful Singing Harmonics",
+    "difficulty": "Advanced",
+    "defaultKey": "D Major",
+    "targetChord": "D",
+    "applicableDegrees": ["I"],
+    "scaleUsed": "D Major Pentatonic",
+    "cagedForm": "A Form",
+    "pentatonicBox": 4,
+    "description": "7프렛 내추럴 하모닉스 타현 후 슬라이드와 미세 하프 벤딩으로 노래하듯 인간의 음성을 흉내 내는 제프 벡의 최고 명연 발라드 릭입니다.",
+    "theoryTips": "루트(D), 3도(F#), 6도(B)의 내추럴 하모닉스를 오버랩시키고, 1번줄에서 2도(E)를 3도(F#) 방향으로 부드럽게 반음 벤딩하여 깊은 소울의 해결감을 표현합니다.",
+    "tags": ["Natural Harmonic", "Singing Tone", "Half Bend", "Soul"],
+    "notes": [
+      {"string": 3, "fret": 7, "duration": 0.5, "interval": "R", "noteName": "D", "technique": "harmonic", "isTargetNote": true},
+      {"string": 2, "fret": 7, "duration": 0.5, "interval": "3", "noteName": "F#", "technique": "harmonic", "isTargetNote": true},
+      {"string": 1, "fret": 7, "duration": 0.5, "interval": "6", "noteName": "B", "technique": "harmonic", "isTargetNote": false},
+      {"string": 2, "fret": 10, "duration": 0.5, "interval": "5", "noteName": "A", "technique": "slide", "isTargetNote": false},
+      {"string": 1, "fret": 10, "duration": 0.5, "interval": "R", "noteName": "D", "technique": "slide", "isTargetNote": true},
+      {"string": 1, "fret": 12, "duration": 0.75, "interval": "2", "noteName": "E", "technique": "bendHalf", "isTargetNote": false},
+      {"string": 1, "fret": 10, "duration": 1.0, "interval": "R", "noteName": "D", "technique": "vibrato", "isTargetNote": true}
+    ]
   }
 ]

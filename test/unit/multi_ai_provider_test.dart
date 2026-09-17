@@ -15,8 +15,8 @@ void main() {
     test('Provider preset models contain correct definitions', () {
       // Gemini
       expect(AIModelInfo.geminiModels.length, greaterThanOrEqualTo(4));
-      expect(AIModelInfo.geminiModels.first.id, contains('gemini-3.7-flash'));
-      expect(AIModelInfo.geminiModels.first.shortLabel, '3.7F');
+      expect(AIModelInfo.geminiModels.first.id, contains('gemini-3.8-flash'));
+      expect(AIModelInfo.geminiModels.first.shortLabel, '3.8F');
 
       // OpenAI
       expect(AIModelInfo.openAiModels.length, greaterThanOrEqualTo(4));

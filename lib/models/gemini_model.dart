@@ -18,6 +18,7 @@ enum ThinkingLevel {
 }
 
 enum GeminiModel {
+  flash38('gemini-3.8-flash', 'Gemini 3.8 Flash', ThinkingLevel.high),
   flash37('gemini-3.7-flash', 'Gemini 3.7 Flash', ThinkingLevel.high),
   flash36('gemini-3.6-flash', 'Gemini 3.6 Flash', ThinkingLevel.medium),
   flash35('gemini-3.5-flash', 'Gemini 3.5 Flash', ThinkingLevel.medium),
@@ -50,7 +51,7 @@ enum GeminiModel {
 
     return GeminiModel.values.firstWhere(
       (e) => e.id == id,
-      orElse: () => GeminiModel.flash37,
+      orElse: () => GeminiModel.flash38,
     );
   }
 }

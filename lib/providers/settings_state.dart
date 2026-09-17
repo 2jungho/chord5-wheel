@@ -31,7 +31,7 @@ class SettingsState extends ChangeNotifier {
   String _huggingFaceToken = '';
 
   // 4. Provider-specific Selected Model IDs
-  GeminiModel _geminiModel = GeminiModel.flash37;
+  GeminiModel _geminiModel = GeminiModel.flash38;
   String _openAiModelId = 'gpt-4o';
   String _claudeModelId = 'claude-3-7-sonnet-20250219';
   String _deepseekModelId = 'deepseek-chat';
@@ -193,7 +193,7 @@ class SettingsState extends ChangeNotifier {
 
     final String? modelId = _prefs?.getString('geminiModel');
     _geminiModel =
-        modelId != null ? GeminiModel.fromId(modelId) : GeminiModel.flash37;
+        modelId != null ? GeminiModel.fromId(modelId) : GeminiModel.flash38;
 
     _openAiModelId = _prefs?.getString('openAiModelId') ?? 'gpt-4o';
     _claudeModelId =

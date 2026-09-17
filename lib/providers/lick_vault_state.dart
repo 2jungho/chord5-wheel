@@ -280,6 +280,15 @@ class LickVaultState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// AI로 생성한 커스텀 릭을 보관함 목록의 최상단에 동적 추가하고 즉시 선택합니다.
+  void addCustomLick(ArtistLick lick) {
+    _currentArtistLicks.insert(0, lick);
+    _selectedLick = lick;
+    _selectedBox = lick.pentatonicBox;
+    _stopAndResetPlayer();
+    notifyListeners();
+  }
+
   /// 스튜디오 세션 키 동기화
   void syncKey(String key) {
     if (_activeKey == key) return;

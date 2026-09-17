@@ -8,6 +8,7 @@ import '../../services/lick_analyzer_service.dart';
 import '../../services/lick_audio_player.dart';
 import 'artist_lick_vault_sheet.dart';
 import 'components/mini_lick_player_card.dart';
+import 'dialogs/ai_lick_generator_dialog.dart';
 
 /// 코드 진행 탭(StudioView)에서 현재 타임라인의 코드 진행 및 선택 블록에 어울리는 기타 거장의 시그니처 릭을 표시하는 패널
 class ProgressionLickPanel extends StatefulWidget {
@@ -181,6 +182,19 @@ class _ProgressionLickPanelState extends State<ProgressionLickPanel> {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ],
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => AILickGeneratorDialog.show(
+                      context,
+                      initialKey: widget.session.key,
+                      initialTargetChord: selectedChord ?? (chordSymbols.isNotEmpty ? chordSymbols.first : 'G'),
+                    ),
+                    icon: const Icon(Icons.psychology, size: 14),
+                    label: const Text('AI 릭 생성', style: TextStyle(fontSize: 11)),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      visualDensity: VisualDensity.compact,
                     ),
                   ),
                   TextButton.icon(

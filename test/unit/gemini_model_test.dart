@@ -4,6 +4,7 @@ import 'package:guitar_theory_app/models/gemini_model.dart';
 void main() {
   group('GeminiModel Tests', () {
     test('GeminiModel enum parsing and values', () {
+      expect(GeminiModel.fromId('gemini-3.8-flash'), GeminiModel.flash38);
       expect(GeminiModel.fromId('gemini-3.7-flash'), GeminiModel.flash37);
       expect(GeminiModel.fromId('gemini-3.6-flash'), GeminiModel.flash36);
       expect(GeminiModel.fromId('gemini-3.5-flash'), GeminiModel.flash35);
@@ -17,7 +18,7 @@ void main() {
       expect(GeminiModel.fromId('gemini-3-flash-preview'), GeminiModel.flash37);
       expect(GeminiModel.fromId('gemini-2.5-flash-lite'), GeminiModel.flash35Lite);
       expect(GeminiModel.fromId('gemma-3-27b-it'), GeminiModel.gemma4_31b);
-      expect(GeminiModel.fromId('unknown-model'), GeminiModel.flash37);
+      expect(GeminiModel.fromId('unknown-model'), GeminiModel.flash38);
     });
 
     test('GeminiModel labels and default thinking levels', () {
@@ -27,6 +28,7 @@ void main() {
         expect(model.defaultThinking, isNotNull);
       }
 
+      expect(GeminiModel.flash38.defaultThinking, ThinkingLevel.high);
       expect(GeminiModel.flash37.defaultThinking, ThinkingLevel.high);
       expect(GeminiModel.flash36.defaultThinking, ThinkingLevel.medium);
       expect(GeminiModel.flash35.defaultThinking, ThinkingLevel.medium);

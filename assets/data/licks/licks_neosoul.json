@@ -143,5 +143,86 @@
       {"string": 2, "fret": 14, "duration": 0.25, "interval": "b7", "noteName": "E", "technique": "slide", "isTargetNote": false},
       {"string": 2, "fret": 12, "duration": 0.5, "interval": "4", "noteName": "B", "technique": "vibrato", "isTargetNote": true}
     ]
+  },
+  {
+    "id": "mayer_neon",
+    "artistId": "mayer",
+    "artist": "John Mayer",
+    "genre": "Neo-Soul & Modern",
+    "title": "Neon Slap & Finger-Flick Acoustic Groove",
+    "difficulty": "Advanced",
+    "defaultKey": "C Minor",
+    "targetChord": "Cm",
+    "applicableDegrees": ["i"],
+    "scaleUsed": "C Minor Pentatonic / Blues",
+    "cagedForm": "G Form",
+    "pentatonicBox": 5,
+    "description": "오른손 엄지로 베이스 줄을 슬랩하고 검지로 윗줄을 튕겨내는(Flick) 존 메이어 특유의 극악 난이도 어쿠스틱/일렉 핑거스타일 그루브 릭입니다.",
+    "theoryTips": "5번줄 루트 C를 퍼커시브하게 때린 뒤 단7도(Bb)와 5도(G), 단3도(Eb)를 해머링/풀오프로 엮어 드럼 비트와 멜로디를 기타 한 대로 동시에 구현합니다.",
+    "tags": ["Acoustic Slap", "Finger Flick", "Neo-Soul Groove", "John Mayer"],
+    "notes": [
+      {"string": 5, "fret": 3, "duration": 0.25, "interval": "R", "noteName": "C", "technique": "none", "isTargetNote": true},
+      {"string": 4, "fret": 5, "duration": 0.25, "interval": "5", "noteName": "G", "technique": "hammer", "isTargetNote": true},
+      {"string": 3, "fret": 3, "duration": 0.25, "interval": "b7", "noteName": "Bb", "technique": "none", "isTargetNote": false},
+      {"string": 3, "fret": 5, "duration": 0.25, "interval": "R", "noteName": "C", "technique": "hammer", "isTargetNote": true},
+      {"string": 2, "fret": 4, "duration": 0.25, "interval": "b3", "noteName": "Eb", "technique": "none", "isTargetNote": true},
+      {"string": 3, "fret": 5, "duration": 0.25, "interval": "R", "noteName": "C", "technique": "none", "isTargetNote": true},
+      {"string": 4, "fret": 5, "duration": 0.25, "interval": "5", "noteName": "G", "technique": "pull", "isTargetNote": false},
+      {"string": 5, "fret": 3, "duration": 0.75, "interval": "R", "noteName": "C", "technique": "vibrato", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "asato_dont_dream",
+    "artistId": "asato",
+    "artist": "Mateus Asato",
+    "genre": "Neo-Soul & Modern",
+    "title": "Don't Dream It's Over 10th Interval Lyrical Slide",
+    "difficulty": "Intermediate",
+    "defaultKey": "E Major",
+    "targetChord": "E",
+    "applicableDegrees": ["I"],
+    "scaleUsed": "E Major Scale (10th Intervals)",
+    "cagedForm": "C Form",
+    "pentatonicBox": 3,
+    "description": "5번 줄의 베이스와 2번 줄의 멜로디를 10도 인터벌(10th Interval)로 묶어 유려하게 미끄러뜨리는 마테우스 아사토의 감미로운 보이스 리딩 시그니처 릭입니다.",
+    "theoryTips": "루트와 옥타브 위의 3도음(10도)을 하이브리드 피킹으로 동시에 울리며 반음/온음 병행 슬라이드를 적용하여 피아노의 양손 연주 같은 풍성한 공간감을 기타로 표현합니다.",
+    "tags": ["10th Interval", "Voice Leading", "Lyrical Slide", "Mateus Asato"],
+    "notes": [
+      {"string": 5, "fret": 7, "duration": 0.25, "interval": "R", "noteName": "E", "technique": "none", "isTargetNote": true},
+      {"string": 2, "fret": 9, "duration": 0.25, "interval": "3", "noteName": "G#", "technique": "none", "isTargetNote": true},
+      {"string": 5, "fret": 9, "duration": 0.25, "interval": "2", "noteName": "F#", "technique": "slide", "isTargetNote": false},
+      {"string": 2, "fret": 10, "duration": 0.25, "interval": "4", "noteName": "A", "technique": "slide", "isTargetNote": false},
+      {"string": 5, "fret": 11, "duration": 0.5, "interval": "3", "noteName": "G#", "technique": "slide", "isTargetNote": true},
+      {"string": 2, "fret": 12, "duration": 0.5, "interval": "5", "noteName": "B", "technique": "slide", "isTargetNote": true},
+      {"string": 2, "fret": 9, "duration": 0.25, "interval": "3", "noteName": "G#", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 7, "duration": 0.75, "interval": "5", "noteName": "B", "technique": "vibrato", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "henson_abc",
+    "artistId": "henson",
+    "artist": "Tim Henson",
+    "genre": "Neo-Soul & Modern",
+    "title": "ABC Catchy Trap Hybrid-Picking Hook",
+    "difficulty": "Advanced",
+    "defaultKey": "C Major",
+    "targetChord": "Cmaj7",
+    "applicableDegrees": ["I"],
+    "scaleUsed": "C Major Pentatonic / Trap Pop",
+    "cagedForm": "A Form",
+    "pentatonicBox": 4,
+    "description": "트랩 비트 위에 얹히는 통통 튀는 피크+핑거 하이브리드 피킹 훅으로, 복잡한 테크닉을 극도로 대중적인 팝 멜로디로 소화해낸 팀 헨슨의 대표작입니다.",
+    "theoryTips": "Cmaj7의 7도(B)에서 루트(C), 3도(E), 5도(G)를 고속 하이브리드 피킹으로 분산 타현한 후 6도(A)에서 7도(B)로 미끄러져 모던 팝의 중독적인 바운스를 형성합니다.",
+    "tags": ["Hybrid Picking", "Trap Pop", "Cmaj7", "Tim Henson"],
+    "notes": [
+      {"string": 5, "fret": 3, "duration": 0.125, "interval": "R", "noteName": "C", "technique": "none", "isTargetNote": true},
+      {"string": 3, "fret": 4, "duration": 0.125, "interval": "7", "noteName": "B", "technique": "hammer", "isTargetNote": false},
+      {"string": 3, "fret": 5, "duration": 0.25, "interval": "R", "noteName": "C", "technique": "none", "isTargetNote": true},
+      {"string": 2, "fret": 5, "duration": 0.25, "interval": "3", "noteName": "E", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 3, "duration": 0.125, "interval": "5", "noteName": "G", "technique": "none", "isTargetNote": false},
+      {"string": 1, "fret": 5, "duration": 0.125, "interval": "6", "noteName": "A", "technique": "hammer", "isTargetNote": false},
+      {"string": 1, "fret": 7, "duration": 0.25, "interval": "7", "noteName": "B", "technique": "slide", "isTargetNote": false},
+      {"string": 2, "fret": 5, "duration": 0.75, "interval": "3", "noteName": "E", "technique": "vibrato", "isTargetNote": true}
+    ]
   }
 ]

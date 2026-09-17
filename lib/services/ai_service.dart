@@ -21,7 +21,7 @@ class AIService {
       case 'gemini':
         _provider = GeminiProvider(
           apiKey.trim(),
-          modelName: modelName ?? GeminiModel.flash37.id,
+          modelName: modelName ?? GeminiModel.flash38.id,
           systemPrompt: systemPrompt,
           thinkingLevel: thinkingLevel,
         );
@@ -69,7 +69,7 @@ class AIService {
       default:
         _provider = GeminiProvider(
           apiKey.trim(),
-          modelName: modelName ?? GeminiModel.flash37.id,
+          modelName: modelName ?? GeminiModel.flash38.id,
           systemPrompt: systemPrompt,
           thinkingLevel: thinkingLevel,
         );

@@ -44,6 +44,14 @@ class AIModelInfo {
   // 1. Google Gemini
   static const List<AIModelInfo> geminiModels = [
     AIModelInfo(
+      id: 'gemini-3.8-flash',
+      label: 'Gemini 3.8 Flash',
+      shortLabel: '3.8F',
+      provider: AIProviderType.gemini,
+      supportsThinking: true,
+      defaultThinking: ThinkingLevel.high,
+    ),
+    AIModelInfo(
       id: 'gemini-3.7-flash',
       label: 'Gemini 3.7 Flash',
       shortLabel: '3.7F',

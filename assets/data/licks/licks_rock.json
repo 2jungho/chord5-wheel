@@ -146,5 +146,86 @@
       {"string": 1, "fret": 13, "duration": 0.5, "interval": "b7", "noteName": "Eb", "technique": "bendFull", "isTargetNote": false},
       {"string": 1, "fret": 10, "duration": 0.75, "interval": "R", "noteName": "F", "technique": "vibrato", "isTargetNote": true}
     ]
+  },
+  {
+    "id": "page_black_dog",
+    "artistId": "page",
+    "artist": "Jimmy Page",
+    "genre": "Classic & Hard Rock",
+    "title": "Black Dog Syncopated Blues-Rock Turnaround",
+    "difficulty": "Advanced",
+    "defaultKey": "A Major",
+    "targetChord": "A7",
+    "applicableDegrees": ["I", "V"],
+    "scaleUsed": "A Blues Scale + Major 3rd (Hybrid Blues)",
+    "cagedForm": "E Form",
+    "pentatonicBox": 1,
+    "description": "5/4박 느낌의 아슬아슬한 당김음(Syncopation) 리프 후 단3도(C)에서 장3도(C#)로 해머링하며 으르렁거리는 레플리카 레스폴의 원초적 록 톤입니다.",
+    "theoryTips": "단3도(C)와 장3도(C#)를 공존시키는 블루스 특유의 믹솔리디안/블루스 하이브리드 어프로치로, 2번줄 8프렛의 단7도(G) 하프 벤딩이 도미넌트 성향을 강렬하게 못 박습니다.",
+    "tags": ["Syncopation", "Hammer-on", "Hybrid Blues", "Led Zeppelin"],
+    "notes": [
+      {"string": 5, "fret": 7, "duration": 0.25, "interval": "5", "noteName": "E", "technique": "none", "isTargetNote": false},
+      {"string": 4, "fret": 7, "duration": 0.5, "interval": "R", "noteName": "A", "technique": "none", "isTargetNote": true},
+      {"string": 3, "fret": 5, "duration": 0.25, "interval": "b3", "noteName": "C", "technique": "none", "isTargetNote": false},
+      {"string": 3, "fret": 6, "duration": 0.25, "interval": "3", "noteName": "C#", "technique": "hammer", "isTargetNote": true},
+      {"string": 3, "fret": 7, "duration": 0.25, "interval": "4", "noteName": "D", "technique": "none", "isTargetNote": false},
+      {"string": 2, "fret": 5, "duration": 0.25, "interval": "5", "noteName": "E", "technique": "none", "isTargetNote": false},
+      {"string": 2, "fret": 8, "duration": 0.5, "interval": "b7", "noteName": "G", "technique": "bendHalf", "isTargetNote": false},
+      {"string": 1, "fret": 5, "duration": 0.75, "interval": "R", "noteName": "A", "technique": "vibrato", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "van_halen_panama",
+    "artistId": "van_halen",
+    "artist": "Eddie Van Halen",
+    "genre": "Classic & Hard Rock",
+    "title": "Panama Double-Stop Bounce Fill",
+    "difficulty": "Intermediate",
+    "defaultKey": "E Major",
+    "targetChord": "E",
+    "applicableDegrees": ["I"],
+    "scaleUsed": "E Major Pentatonic",
+    "cagedForm": "E Form",
+    "pentatonicBox": 1,
+    "description": "개방현 울림과 1, 2번 줄 6도/4도 더블스탑을 경쾌한 셔플 바운스로 오르내리는 에디 밴 헤일런 특유의 파티 록 필인입니다.",
+    "theoryTips": "코드 진행 사이의 빈 공간을 오픈 코드톤(E, G#, B)과 메이저 펜타토닉 더블스탑으로 채우며, 브릿지 험버커의 고역대 배음이 폭발적인 에너지를 전달합니다.",
+    "tags": ["Double Stop", "Bounce Groove", "Major Pentatonic", "Van Halen"],
+    "notes": [
+      {"string": 2, "fret": 0, "duration": 0.25, "interval": "5", "noteName": "B", "technique": "none", "isTargetNote": false},
+      {"string": 1, "fret": 0, "duration": 0.25, "interval": "R", "noteName": "E", "technique": "none", "isTargetNote": true},
+      {"string": 2, "fret": 2, "duration": 0.25, "interval": "6", "noteName": "C#", "technique": "hammer", "isTargetNote": false},
+      {"string": 1, "fret": 2, "duration": 0.25, "interval": "2", "noteName": "F#", "technique": "none", "isTargetNote": false},
+      {"string": 2, "fret": 4, "duration": 0.25, "interval": "7", "noteName": "D#", "technique": "slide", "isTargetNote": false},
+      {"string": 1, "fret": 4, "duration": 0.5, "interval": "3", "noteName": "G#", "technique": "none", "isTargetNote": true},
+      {"string": 2, "fret": 5, "duration": 0.25, "interval": "R", "noteName": "E", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 0, "duration": 0.75, "interval": "R", "noteName": "E", "technique": "vibrato", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "slash_paradise_city",
+    "artistId": "slash",
+    "artist": "Slash",
+    "genre": "Classic & Hard Rock",
+    "title": "Paradise City Fast Pentatonic Slinger",
+    "difficulty": "Advanced",
+    "defaultKey": "G Major",
+    "targetChord": "G7",
+    "applicableDegrees": ["I", "IV"],
+    "scaleUsed": "G Minor/Major Hybrid Pentatonic",
+    "cagedForm": "E Form",
+    "pentatonicBox": 1,
+    "description": "3번 줄 풀 벤딩 후 1, 2번 줄 3프렛을 검지로 바레한 채 고속 풀오프로 쏟아붓는 슬래시의 대표적인 스피드 슬링거 릭입니다.",
+    "theoryTips": "척 베리(Chuck Berry)식 로큰롤 더블스탑 박스를 하드록의 스피드로 확장한 형태로, 4도(C)를 5도(D)로 벤딩한 후 단7도(F)에서 루트(G)로 풀오프 해결되는 속도감이 백미입니다.",
+    "tags": ["Full Bend", "Fast Pull-off", "Blues Slinger", "Guns N Roses"],
+    "notes": [
+      {"string": 3, "fret": 5, "duration": 0.5, "interval": "4", "noteName": "C", "technique": "bendFull", "isTargetNote": false},
+      {"string": 2, "fret": 3, "duration": 0.25, "interval": "5", "noteName": "D", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 3, "duration": 0.25, "interval": "R", "noteName": "G", "technique": "none", "isTargetNote": true},
+      {"string": 2, "fret": 6, "duration": 0.25, "interval": "b7", "noteName": "F", "technique": "pull", "isTargetNote": false},
+      {"string": 2, "fret": 3, "duration": 0.25, "interval": "5", "noteName": "D", "technique": "none", "isTargetNote": true},
+      {"string": 3, "fret": 5, "duration": 0.25, "interval": "4", "noteName": "C", "technique": "none", "isTargetNote": false},
+      {"string": 3, "fret": 3, "duration": 0.25, "interval": "b3", "noteName": "Bb", "technique": "hammer", "isTargetNote": false},
+      {"string": 4, "fret": 5, "duration": 0.75, "interval": "R", "noteName": "G", "technique": "vibrato", "isTargetNote": true}
+    ]
   }
 ]

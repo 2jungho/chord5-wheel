@@ -7,6 +7,7 @@ import 'components/lick_card_list.dart';
 import 'components/interactive_tab_viewer.dart';
 import 'components/lick_theory_panel.dart';
 import 'components/lick_action_bar.dart';
+import 'dialogs/ai_lick_generator_dialog.dart';
 
 /// 아티스트 릭 보관함 및 인터랙티브 TAB / 화성 분석 바텀시트
 class ArtistLickVaultSheet extends StatelessWidget {
@@ -95,6 +96,20 @@ class ArtistLickVaultSheet extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
+                FilledButton.tonalIcon(
+                  onPressed: () => AILickGeneratorDialog.show(
+                    context,
+                    initialKey: vault.activeKey,
+                    initialTargetChord: activeLick.targetChord,
+                  ),
+                  icon: const Icon(Icons.psychology, size: 16),
+                  label: const Text('AI 릭 즉석 생성', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+                const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: () => Navigator.of(context).pop(),

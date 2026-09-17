@@ -103,5 +103,60 @@
       {"string": 1, "fret": 10, "duration": 0.125, "interval": "b7", "noteName": "D", "technique": "none", "isTargetNote": false},
       {"string": 1, "fret": 12, "duration": 0.5, "interval": "R", "noteName": "E", "technique": "vibrato", "isTargetNote": true}
     ]
+  },
+  {
+    "id": "malmsteen_trilogy",
+    "artistId": "malmsteen",
+    "artist": "Yngwie Malmsteen",
+    "genre": "Shred & Neo-Classical",
+    "title": "Trilogy Suite Baroque Pedal Point Sequence",
+    "difficulty": "Advanced",
+    "defaultKey": "E Minor",
+    "targetChord": "B7",
+    "applicableDegrees": ["V", "i"],
+    "scaleUsed": "E Harmonic Minor (D# Leading Tone)",
+    "cagedForm": "A Form",
+    "pentatonicBox": 4,
+    "description": "B7 도미넌트 화성 상에서 2번 줄 12프렛(B음)을 페달 포인트로 고정하고, 1번 줄에서 바흐풍 대위법 선율을 빛의 속도로 연타하는 네오클래시컬의 정석입니다.",
+    "theoryTips": "하모닉 마이너의 이끄는음인 장7도(D#)를 B코드의 3도로 적중시켜 강렬한 도미넌트 텐션을 유발하며, 바로크 바이올린 협주곡의 페달 기법을 일렉기타 피킹으로 이식했습니다.",
+    "tags": ["Pedal Point", "Harmonic Minor", "Baroque", "Yngwie Malmsteen"],
+    "notes": [
+      {"string": 2, "fret": 12, "duration": 0.125, "interval": "5", "noteName": "B", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 11, "duration": 0.125, "interval": "7", "noteName": "D#", "technique": "none", "isTargetNote": true},
+      {"string": 2, "fret": 12, "duration": 0.125, "interval": "5", "noteName": "B", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 12, "duration": 0.125, "interval": "R", "noteName": "E", "technique": "none", "isTargetNote": false},
+      {"string": 2, "fret": 12, "duration": 0.125, "interval": "5", "noteName": "B", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 14, "duration": 0.125, "interval": "2", "noteName": "F#", "technique": "none", "isTargetNote": false},
+      {"string": 1, "fret": 15, "duration": 0.25, "interval": "b3", "noteName": "G", "technique": "hammer", "isTargetNote": false},
+      {"string": 1, "fret": 14, "duration": 0.125, "interval": "2", "noteName": "F#", "technique": "pull", "isTargetNote": false},
+      {"string": 1, "fret": 11, "duration": 0.5, "interval": "7", "noteName": "D#", "technique": "vibrato", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "gilbert_to_be_with_you",
+    "artistId": "gilbert",
+    "artist": "Paul Gilbert",
+    "genre": "Shred & Neo-Classical",
+    "title": "To Be with You Sweet Acoustic Country Fill",
+    "difficulty": "Beginner",
+    "defaultKey": "E Major",
+    "targetChord": "E",
+    "applicableDegrees": ["I"],
+    "scaleUsed": "E Major Pentatonic",
+    "cagedForm": "E Form",
+    "pentatonicBox": 1,
+    "description": "속주의 거장 폴 길버트가 통기타 한 대로 전 세계 차트 1위를 휩쓸었던, 친근하고 달콤한 메이저 펜타토닉 어쿠스틱 솔로 프레이즈입니다.",
+    "theoryTips": "3번줄 1프렛의 장3도(G#) 해머링 후 개방현 B/E와 2번줄 2프렛 장6도(C#)를 오가는 전형적인 컨트리/포크 필인으로, 오픈 코드와 완벽하게 융합됩니다.",
+    "tags": ["Acoustic", "Major Pentatonic", "Sweet Country", "Paul Gilbert"],
+    "notes": [
+      {"string": 3, "fret": 0, "duration": 0.125, "interval": "b3", "noteName": "G", "technique": "none", "isTargetNote": false},
+      {"string": 3, "fret": 1, "duration": 0.25, "interval": "3", "noteName": "G#", "technique": "hammer", "isTargetNote": true},
+      {"string": 2, "fret": 0, "duration": 0.25, "interval": "5", "noteName": "B", "technique": "none", "isTargetNote": false},
+      {"string": 1, "fret": 0, "duration": 0.25, "interval": "R", "noteName": "E", "technique": "none", "isTargetNote": true},
+      {"string": 2, "fret": 2, "duration": 0.25, "interval": "6", "noteName": "C#", "technique": "hammer", "isTargetNote": false},
+      {"string": 2, "fret": 0, "duration": 0.25, "interval": "5", "noteName": "B", "technique": "pull", "isTargetNote": false},
+      {"string": 3, "fret": 1, "duration": 0.25, "interval": "3", "noteName": "G#", "technique": "none", "isTargetNote": true},
+      {"string": 4, "fret": 2, "duration": 0.75, "interval": "R", "noteName": "E", "technique": "vibrato", "isTargetNote": true}
+    ]
   }
 ]

@@ -97,5 +97,59 @@
       {"string": 1, "fret": 10, "duration": 0.5, "interval": "5", "noteName": "D", "technique": "slide", "isTargetNote": true},
       {"string": 1, "fret": 13, "duration": 0.75, "interval": "b7", "noteName": "F", "technique": "bendFull", "isTargetNote": true}
     ]
+  },
+  {
+    "id": "vai_tender_surrender",
+    "artistId": "vai",
+    "artist": "Steve Vai",
+    "genre": "Instrumental Rock",
+    "title": "Tender Surrender Ethereal Octave Flight",
+    "difficulty": "Intermediate",
+    "defaultKey": "E Minor",
+    "targetChord": "Em7",
+    "applicableDegrees": ["i", "ii"],
+    "scaleUsed": "E Dorian Mode (Major 6th C#)",
+    "cagedForm": "D Form",
+    "pentatonicBox": 2,
+    "description": "몽환적인 볼륨 주법과 부드러운 옥타브 글라이드로 시작하여 도리안의 세련된 장6도(C#)를 우아하게 터치하는 스티브 바이의 네오소울/재즈 퓨전 발라드 릭입니다.",
+    "theoryTips": "단조로운 마이너 펜타토닉 대신 도리안 모드의 캐릭터 노트인 장6도(C#)를 서스테인 타겟 노트로 사용하여 감미롭고 현대적인 퓨전 재즈 사운드를 구현합니다.",
+    "tags": ["Octave Run", "Dorian Mode", "Major 6th", "Ballad"],
+    "notes": [
+      {"string": 4, "fret": 2, "duration": 0.25, "interval": "R", "noteName": "E", "technique": "none", "isTargetNote": true},
+      {"string": 2, "fret": 5, "duration": 0.25, "interval": "R", "noteName": "E", "technique": "none", "isTargetNote": true},
+      {"string": 4, "fret": 4, "duration": 0.25, "interval": "2", "noteName": "F#", "technique": "none", "isTargetNote": false},
+      {"string": 2, "fret": 7, "duration": 0.25, "interval": "2", "noteName": "F#", "technique": "none", "isTargetNote": false},
+      {"string": 4, "fret": 5, "duration": 0.5, "interval": "b3", "noteName": "G", "technique": "slide", "isTargetNote": true},
+      {"string": 2, "fret": 8, "duration": 0.5, "interval": "b3", "noteName": "G", "technique": "slide", "isTargetNote": true},
+      {"string": 3, "fret": 6, "duration": 0.75, "interval": "6", "noteName": "C#", "technique": "vibrato", "isTargetNote": false},
+      {"string": 2, "fret": 5, "duration": 0.75, "interval": "R", "noteName": "E", "technique": "vibrato", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "satriani_satch_boogie",
+    "artistId": "satriani",
+    "artist": "Joe Satriani",
+    "genre": "Instrumental Rock",
+    "title": "Satch Boogie Double-Stop Tap Shuffler",
+    "difficulty": "Advanced",
+    "defaultKey": "A Major",
+    "targetChord": "A7",
+    "applicableDegrees": ["I"],
+    "scaleUsed": "A Mixolydian + Blues (Boogie Rhythm)",
+    "cagedForm": "E Form",
+    "pentatonicBox": 1,
+    "description": "흥겨운 4/4 셔플 리듬 위에서 왼손의 블루스 릭에 오른손 14프렛 장3도(C#) 태핑을 절묘하게 융합한 조 사트리아니식 신나는 부기 록 릭입니다.",
+    "theoryTips": "A7 코드톤인 장3도(C#)를 오른손 태핑으로 짚고, 왼손 풀오프로 단7도(G)와 5도(E)를 훑어내려 도미넌트 화성의 모든 구성음을 한 프레이즈에 담아냅니다.",
+    "tags": ["Right-hand Tap", "Boogie Shuffle", "Mixolydian", "Joe Satriani"],
+    "notes": [
+      {"string": 4, "fret": 7, "duration": 0.25, "interval": "R", "noteName": "A", "technique": "none", "isTargetNote": true},
+      {"string": 3, "fret": 5, "duration": 0.25, "interval": "b3", "noteName": "C", "technique": "none", "isTargetNote": false},
+      {"string": 3, "fret": 6, "duration": 0.25, "interval": "3", "noteName": "C#", "technique": "hammer", "isTargetNote": true},
+      {"string": 2, "fret": 5, "duration": 0.25, "interval": "5", "noteName": "E", "technique": "none", "isTargetNote": false},
+      {"string": 2, "fret": 14, "duration": 0.5, "interval": "3", "noteName": "C#", "technique": "tap", "isTargetNote": true},
+      {"string": 2, "fret": 8, "duration": 0.25, "interval": "b7", "noteName": "G", "technique": "pull", "isTargetNote": false},
+      {"string": 2, "fret": 5, "duration": 0.25, "interval": "5", "noteName": "E", "technique": "pull", "isTargetNote": false},
+      {"string": 3, "fret": 7, "duration": 0.75, "interval": "4", "noteName": "D", "technique": "vibrato", "isTargetNote": false}
+    ]
   }
 ]

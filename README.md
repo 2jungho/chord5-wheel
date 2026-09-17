@@ -4,13 +4,13 @@
 [![Live Demo](https://img.shields.io/badge/Live_Demo-chord5--wheel.web.app-4285F4?style=flat-square&logo=googlechrome&logoColor=white)](https://chord5-wheel.web.app)
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Firebase](https://img.shields.io/badge/Firebase-Hosting-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com)
-[![Gemini](https://img.shields.io/badge/Gemini-3.7_Flash-8E75B2?style=flat-square&logo=google)](https://deepmind.google/technologies/gemini/)
+[![Gemini](https://img.shields.io/badge/Gemini-3.8_Flash-8E75B2?style=flat-square&logo=google)](https://deepmind.google/technologies/gemini/)
 [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o_/_o3--mini-412991?style=flat-square&logo=openai&logoColor=white)](https://openai.com/)
 [![Claude](https://img.shields.io/badge/Claude-3.7_Sonnet-D97706?style=flat-square&logo=anthropic&logoColor=white)](https://claude.ai/)
 
 **[👉 웹 데모 실행하기 (Live Demo)](https://chord5-wheel.web.app)** | **[📦 GitHub 저장소 바로가기](https://github.com/2jungho/chord5-wheel)**
 
-화성학 이론과 기타 연주 정보를 시각적으로 탐험하고, 다양한 최신 생성형 AI 모델(Gemini, ChatGPT, Claude, Ollama) 및 4인조 가상 밴드(드럼, 베이스, 건반, 기타) 세션과 함께 음악적 영감을 얻는 멀티 플랫폼 Flutter 애플리케이션입니다. 5도권(Circle of Fifths) 기반의 키 탐색부터, 18대 전설적 기타 거장의 시그니처 릭 보관함(Artist Lick Vault), 5대 기타 사운드(통기타, 나일론, 클린, 오버드라이브, 디스토션) 톤 프리셋 엔진, 고도화된 코드 보이싱 알고리즘, 실시간 타임라인 코드 진행 스튜디오, 스마트 카포 전조기, 화성학적 경과 화음 삽입기, 5트랙 DAW MIDI 익스포터, CAGED 펜타토닉 솔로 박스 내비게이터, 5가지 고품질 테마 팔레트, 그리고 통합 AI 음악 비서까지 음악인 및 작곡 입문자를 위한 올인원 환경을 제공합니다.
+화성학 이론과 기타 연주 정보를 시각적으로 탐험하고, 다양한 최신 생성형 AI 모델(Gemini 3.8 Flash, ChatGPT, Claude, Ollama) 및 4인조 가상 밴드(드럼, 베이스, 건반, 기타) 세션과 함께 음악적 영감을 얻는 멀티 플랫폼 Flutter 애플리케이션입니다. 5도권(Circle of Fifths) 기반의 키 탐색부터, 18대 전설적 기타 거장의 시그니처 릭 보관함(Artist Lick Vault), 자연어 즉석 릭 생성기(Interactive AI Lick Generator), 5대 기타 사운드(통기타, 나일론, 클린, 오버드라이브, 디스토션) 톤 프리셋 엔진, 고도화된 코드 보이싱 알고리즘, 실시간 타임라인 코드 진행 스튜디오, 스마트 카포 전조기, 화성학적 경과 화음 삽입기, 5트랙 DAW MIDI 익스포터, CAGED 펜타토닉 솔로 박스 내비게이터, 5가지 고품질 테마 팔레트, 그리고 통합 AI 음악 비서까지 음악인 및 작곡 입문자를 위한 올인원 환경을 제공합니다.
 
 ---
 
@@ -52,7 +52,7 @@ git config user.email "jungho.lee@maius.co.kr"
 
 | AI 프로바이더 | 지원 모델 프리셋 | 특징 및 강점 |
 | :--- | :--- | :--- |
-| **Google Gemini** | `gemini-3.7-flash` (기본), `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-pro`, `gemini-2.5-flash` | 초고속 실시간 스트리밍, 단계별 추론 강도(Thinking Level) 지원 |
+| **Google Gemini** | `gemini-3.8-flash` (기본), `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.5-flash-lite`, `gemini-3.1-pro`, `gemini-2.5-flash` | 차세대 초고속 멀티모달 & 고성능 추론(Thinking Level: high) 지원 |
 | **OpenAI ChatGPT** | `gpt-4o`, `gpt-4o-mini`, `o3-mini` (추론형), `o1` (고성능 추론) | 탁월한 작곡/화성학 지식, 강력한 음악적 추론 역량 |
 | **Anthropic Claude** | `claude-3-7-sonnet-20250219` (Hybrid Thinking), `claude-3-5-sonnet`, `claude-3-5-haiku` | 뛰어난 이론적 서술력, 자연스러운 한국어 설명, 심층 사고 지원 |
 | **Custom / Local AI** | `Ollama` (`http://localhost:11434/v1`), `Groq`, `OpenRouter` 등 | 개인 PC 로컬 LLM(Llama 3 등) 또는 호환 엔드포인트 연동 |
@@ -109,14 +109,14 @@ git config user.email "jungho.lee@maius.co.kr"
 *   **블루스 노트($\flat5$)** 및 루트(Root) 마커가 시각적으로 강조되어 기타 솔로 즉흥 연주(Improvisation) 학습에 최적화되어 있습니다.
 
 ### 6. 🎸 아티스트 릭 보관함 & 18대 거장 라이브러리 (Artist Lick Vault)
-*   **18대 전설적 기타 거장 & 40여 개 시그니처 릭**:
-    *   **Blues & Blues Rock**: 지미 헨드릭스(Jimi Hendrix), 에릭 클랩튼(Eric Clapton), 스티비 레이 본(Stevie Ray Vaughan), 게리 무어(Gary Moore)
-    *   **Classic & Hard Rock**: 지미 페이지(Jimmy Page), 에디 반 헤일런(Eddie Van Halen), 슬래시(Slash)
-    *   **Tone & Expressive**: 데이비드 길모어(David Gilmour), 제프 벡(Jeff Beck)
-    *   **Instrumental Rock**: 스티브 바이(Steve Vai), 조 사트리아니(Joe Satriani)
-    *   **Shred & Neo-Classical**: 잉베이 말름스틴(Yngwie Malmsteen), 폴 길버트(Paul Gilbert)
-    *   **Jazz & Fusion**: 웨스 몽고메리(Wes Montgomery), 조 패스(Joe Pass)
-    *   **Neo-Soul & Modern**: 존 메이어(John Mayer), 마테우스 아사토(Mateus Asato), 팀 헨슨(Tim Henson)
+*   **18대 전설적 기타 거장 & 58개 시그니처 릭 (전 아티스트 3곡 이상 완비)**:
+    *   **Blues & Blues Rock (16곡)**: 지미 헨드릭스(Jimi Hendrix), 에릭 클랩튼(Eric Clapton), 스티비 레이 본(Stevie Ray Vaughan), 게리 무어(Gary Moore)
+    *   **Classic & Hard Rock (9곡)**: 지미 페이지(Jimmy Page), 에디 반 헤일런(Eddie Van Halen), 슬래시(Slash)
+    *   **Tone & Expressive (6곡)**: 데이비드 길모어(David Gilmour), 제프 벡(Jeff Beck)
+    *   **Instrumental Rock (6곡)**: 스티브 바이(Steve Vai), 조 사트리아니(Joe Satriani)
+    *   **Shred & Neo-Classical (6곡)**: 잉베이 말름스틴(Yngwie Malmsteen), 폴 길버트(Paul Gilbert)
+    *   **Jazz & Fusion (6곡)**: 웨스 몽고메리(Wes Montgomery), 조 패스(Joe Pass)
+    *   **Neo-Soul & Modern (9곡)**: 존 메이어(John Mayer), 마테우스 아사토(Mateus Asato), 팀 헨슨(Tim Henson)
 *   **확장형 Repository 패턴 & 지연 로딩 (Lazy Loading)**: 장르별 분할 JSON 에셋(`assets/data/licks/*.json`)을 선택 시점에만 비동기 로드하고 인메모리 캐싱하여 가벼운 메모리 점유율과 제로 렉(0-lag) 보장.
 *   **인터랙티브 Guitar TAB 뷰어 & 실시간 단음 미리듣기**: 벤딩(Full, Half), 해머링 온, 풀링 오프, 슬라이드, 비브라토, 태핑('T'), 내추럴 하모닉스('NH') 기호 시각화 및 타브 악보 음표 클릭 시 즉시 톤 프리뷰 재생.
 *   **코드 & 코드 진행 맞춤 릭 자동 추천 (Contextual Lick Recommendation Engine)**:
@@ -134,7 +134,21 @@ git config user.email "jungho.lee@maius.co.kr"
 *   **실시간 화성학 분석 & 연주 가이드**: 릭별 권장 연주 폼(CAGED 폼 및 펜타토닉 박스), 타겟 코드톤, 연주 팁, 그리고 각 음표의 화성적 역할(3도, 7도, 텐션, $\flat5$ 블루노트 등)을 자동 분석/표시.
 *   **키 자동 조옮김 (Auto Transposition)**: 5도권 휠의 현재 Key나 타임라인 선택 코드에 맞춰 릭의 음정과 기타 지판 운지를 실시간으로 조옮김.
 
-### 7. 🔊 5대 기타 사운드 & 톤 프리셋 시스템 (5 Guitar Tone Presets)
+### 7. 🧠 대화형 AI(Gemini 3.8 Flash) 연동 자연어 즉석 릭 생성기 (Interactive AI Lick Generator)
+*   **자연어 프롬프트 작곡**: "지미 헨드릭스 스타일의 펜타토닉 1번 폼 더블스탑 릭", "데이비드 길모어 풍의 1번줄 풀 벤딩과 긴 서스테인 릭", "잉베이 맘스틴 스타일의 디미니쉬드 7th 스윕 피킹 런" 등 원하는 감성이나 연주 테크닉을 자연어로 입력하면 **Gemini 3.8 Flash**가 실시간으로 실전 연주 가능한 기타 시그니처 릭(`ArtistLick`)을 즉석 작곡합니다.
+*   **철저한 물리적 연주성(Guitar Playability) 보장**:
+    *   표준 튜닝(E-A-D-G-B-E) 및 실전 6개 현 기준 운지 생성.
+    *   지판 범위(0~22프렛) 및 인접 음표 간 운지 간격(4~5프렛 이내 손가락 이동)을 엄격히 준수하여 실제 연주 불가능한 가상 음표 생성을 방지.
+    *   정규 박자 단위(0.125, 0.25, 0.5, 0.75, 1.0)와 연주 테크닉(`bendHalf`, `bendFull`, `slide`, `hammer`, `pull`, `vibrato`, `tap`, `harmonic`), CAGED 폼(1~5번 폼) 및 타겟 코드톤 해결음을 정확히 화성학적으로 매핑.
+*   **추천 퀵 프리셋 칩 (Inspiration Chips)**: 헨드릭스 블루스 더블스탑, 존 메이어 네오소울, 길모어 서스테인 벤딩, 에디 밴 헤일런 양손 태핑, 잉베이 하모닉 스윕, 조 패스 비밥 2-5-1 등 원클릭 감성 프리셋 제공.
+*   **즉각적인 오디오 프리뷰 & 인터랙티브 미니 TAB**: 작곡된 릭을 5대 기타 톤 엔진으로 실시간 들어보고, 각 음표의 줄 번호, 프렛, 음정명, 인터벌, 연주 기법을 가로 스크롤 TAB으로 시각적 확인.
+*   **다양한 연계 워크플로우**:
+    *   **보관함에 즉시 추가 (Add to Vault)**: 클릭 즉시 릭 보관함 최상단에 동적 등록(`addCustomLick`)되어 5대 CAGED 폼 운지 변환기 및 지판 맵에서 바로 탐색 가능.
+    *   **JSON 복사 (Export JSON)**: 들여쓰기가 완료된 깔끔한 JSON 포맷을 원클릭으로 클립보드에 복사하여 `assets/data/licks/` 파일에 즉시 영구 보관/커밋 가능.
+    *   **스튜디오 타임라인 코드 삽입**: 릭의 타겟 코드를 스튜디오 코드 진행 타임라인에 바로 삽입.
+*   **듀얼 진입점 지원**: 릭 보관함 바텀시트 상단 헤더(`[AI 릭 즉석 생성]`) 및 스튜디오 코드 진행 패널(`[AI 릭 생성]`) 양쪽 모두에서 즉시 호출 가능.
+
+### 8. 🔊 5대 기타 사운드 & 톤 프리셋 시스템 (5 Guitar Tone Presets)
 *   하단 액션 바의 톤 선택 팝업 버튼을 통해 원하는 기타 사운드를 원클릭으로 변경할 수 있으며, 릭 재생 및 TAB 악보 단음 클릭 시 Web Audio(Tone.js) DSP 체인을 통해 실시간으로 사운드가 변환됩니다:
     *   **🎸 스틸 통기타 (Acoustic Steel)**: 찰랑거리는 스틸현의 찰현음과 선명한 고음, 풍성한 어쿠스틱 바디 공명감 (Folk / Pop / Fingerstyle).
     *   **🎸 나일론 기타 (Classical Nylon)**: 핑거링에 최적화된 부드러운 어택, 따뜻한 중저음과 부드러운 하이컷 롤오프 (Bossa Nova / Flamenco / Latin).
@@ -143,18 +157,18 @@ git config user.email "jungho.lee@maius.co.kr"
     *   **🎸 디스토션 (High-Gain Lead)**: 헤비 록 & 메탈 리드 솔로용 강력한 하이게인, 배음 증폭 및 긴 서스테인 (Hard Rock / Heavy Metal / Shred).
 *   **스마트 사운드 추천**: 아티스트 선택 시 해당 아티스트의 음악 스타일과 장르에 가장 잘 어울리는 기타 사운드가 자동으로 기본 매핑됩니다.
 
-### 8. 🥁 4인조 가상 밴드 & AI 잼 세션 (4-Piece Virtual Band & AI Jam)
+### 9. 🥁 4인조 가상 밴드 & AI 잼 세션 (4-Piece Virtual Band & AI Jam)
 *   **Multi-Instrument Realtime Accompaniment**: 드럼, 베이스, 건반(Rhodes), 기타가 어우러진 4인조 가상 밴드 사운드.
 *   **Dynamic Controls**: 60 ~ 180 BPM 템포 슬라이더, 볼륨 조절 및 원클릭 음소거/복원 토글.
 *   **7가지 음악 스타일**: Neo-Soul, Jazz Funk, Lofi Chill, Rock, Blues, City Pop, Acoustic Ballad.
 
-### 9. 🤖 대화형 AI 튜터 챗봇 & 앱 상태 제어
+### 10. 🤖 대화형 AI 튜터 챗봇 & 앱 상태 제어
 *   우측 패널에서 실시간 스트리밍으로 화성학 질문 답변 및 코드 진행 분석을 제공합니다.
 *   **LaTeX 수식 및 화살표 렌더러 탑재**: 답변 내 `$\rightarrow$`, `$\to$`, `$\Rightarrow$` 등의 화살표 문법 및 수식(`$$...$$`)이 깨짐 없이 시각적 기호로 깔끔하게 렌더링됩니다.
 *   사용자의 자연어 요청에 따라 앱의 5도권 키 및 모드를 실시간으로 변경(App State Command Execution)합니다.
-*   헤더에 최적화된 단일 라인 축약 뱃지(`3.7F`, `4o`, `3.7S`, `R1` 등)와 외부 사이트 바로가기 제공.
+*   헤더에 최적화된 단일 라인 축약 뱃지(`3.8F`, `4o`, `3.7S`, `R1` 등)와 외부 사이트 바로가기 제공.
 
-### 10. 🏷️ 통합 헤더 & 브랜딩 시스템 (Unified Brand & Navigation Header)
+### 11. 🏷️ 통합 헤더 & 브랜딩 시스템 (Unified Brand & Navigation Header)
 *   **전 탭 일관된 브랜드 정체성**: 모든 탭에서 **Guitar & Theory** 대표 브랜드를 일관되게 표기하며, 활성 탭에 따른 부제(`Circle of Fifths`, `Chord Analyzer`, `Chord Progression Studio`) 및 버전을 명확히 제공합니다.
 *   **코드 분석 탭 레이아웃 최적화**: 코드 분석 탭에서도 브랜드 로고와 텍스트 타이틀이 온전히 유지되며, 중앙의 340px 컴팩트 스마트 코드 검색창과 우측 테마 선택기, AI 비서, 아티스트 릭 보관함 액션 버튼들이 가로 충돌 없이 우아하게 정렬됩니다.
 
@@ -287,6 +301,9 @@ firebase deploy --only hosting
   * **코드 분석(Chord Analyzer) 탭 헤더 정상화**:
     * 기존에 탭 진입 시 브랜드 로고 우측 타이틀이 통째로 숨겨지던 조건문 제거.
     * 중앙 코드 검색창(`_buildSearchBar`)에 `maxWidth: 340` 및 36px 컴팩트 높이를 부여하여 로고/타이틀, 검색창, 우측 테마/액션 버튼들이 가로 충돌 없이 이상적으로 배치되도록 정렬.
+* **🎸 18대 기타 거장 시그니처 릭 대규모 확장 (총 58개 릭 구축)**:
+  * 7개 장르 전체에 걸쳐 18개 대표 명연 릭을 신규 추가하여, 18명 전설적 기타리스트 전원 3곡 이상(총 58곡)의 완벽한 밸런스를 갖춘 세계적 수준의 기타 릭 라이브러리 완성.
+  * 퍼즈 리드 오버벤딩(Time), 내추럴 하모닉스(People Get Ready), 당김음 록(Black Dog), 셔플 바운스(Panama), 스피드 슬링거(Paradise City), 도리안 옥타브(Tender Surrender), 태핑 부기(Satch Boogie), 바로크 페달 포인트(Trilogy Suite), 스위트 어쿠스틱(To Be with You), 재즈 블록 코드(West Coast Blues), 2-5-1 보이스 리딩(Stella by Starlight), 어쿠스틱 슬랩/플릭(Neon), 10도 인터벌 슬라이드(Don't Dream It's Over), 트랩 팝 하이브리드(ABC) 등 고난도 연주 기법 데이터셋 완벽 탑재.
 * **⚡ 스튜디오 잼 제어바(JamControlsBar) 반응형 오버플로우 해소**:
   * 템포/볼륨 슬라이더의 `isNarrow` 임계치를 820px로 확장하여 중형 뷰포트에서도 슬라이더가 2단으로 자동 전환되며 RenderFlex 오버플로우(17px) 완전 방지.
 * **🧪 자동화 테스트 보강 및 품질 검증**:

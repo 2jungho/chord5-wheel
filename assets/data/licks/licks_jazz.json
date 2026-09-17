@@ -95,5 +95,58 @@
       {"string": 1, "fret": 8, "duration": 0.5, "interval": "5", "noteName": "C", "technique": "none", "isTargetNote": true},
       {"string": 1, "fret": 12, "duration": 0.75, "interval": "7", "noteName": "E", "technique": "vibrato", "isTargetNote": true}
     ]
+  },
+  {
+    "id": "montgomery_west_coast_blues",
+    "artistId": "montgomery",
+    "artist": "Wes Montgomery",
+    "genre": "Jazz & Fusion",
+    "title": "West Coast Blues 3/4 Swing Block Chord Solo",
+    "difficulty": "Advanced",
+    "defaultKey": "Bb Major",
+    "targetChord": "Bb7",
+    "applicableDegrees": ["I"],
+    "scaleUsed": "Bb Mixolydian + 9th/13th Tensions",
+    "cagedForm": "E Form",
+    "pentatonicBox": 1,
+    "description": "3/4박자 재즈 블루스 왈츠 위에서 피크 없이 엄지손가락 살(Thumb)로 도미넌트 9도와 13도 텐션 블록 코드를 스윙감 넘치게 밀어붙이는 릭입니다.",
+    "theoryTips": "단순한 3화음이 아닌 Bb7의 단7도(Ab), 장3도(D) 위에 9도(C)와 13도(G) 텐션을 얹어 미끄러뜨림으로써 웨스 몽고메리 특유의 고급스러운 모던 재즈 사운드를 창조합니다.",
+    "tags": ["Thumb Picking", "Block Chord", "Jazz Blues", "13th Tension"],
+    "notes": [
+      {"string": 4, "fret": 6, "duration": 0.25, "interval": "b7", "noteName": "Ab", "technique": "none", "isTargetNote": true},
+      {"string": 3, "fret": 7, "duration": 0.25, "interval": "3", "noteName": "D", "technique": "none", "isTargetNote": true},
+      {"string": 2, "fret": 6, "duration": 0.25, "interval": "5", "noteName": "F", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 6, "duration": 0.5, "interval": "R", "noteName": "Bb", "technique": "none", "isTargetNote": true},
+      {"string": 2, "fret": 8, "duration": 0.25, "interval": "13", "noteName": "G", "technique": "slide", "isTargetNote": false},
+      {"string": 1, "fret": 8, "duration": 0.5, "interval": "9", "noteName": "C", "technique": "slide", "isTargetNote": false},
+      {"string": 2, "fret": 6, "duration": 0.25, "interval": "5", "noteName": "F", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 6, "duration": 0.75, "interval": "R", "noteName": "Bb", "technique": "vibrato", "isTargetNote": true}
+    ]
+  },
+  {
+    "id": "pass_stella",
+    "artistId": "pass",
+    "artist": "Joe Pass",
+    "genre": "Jazz & Fusion",
+    "title": "Stella by Starlight Elegant 2-5-1 Resolution",
+    "difficulty": "Advanced",
+    "defaultKey": "Bb Major",
+    "targetChord": "Bbmaj7",
+    "applicableDegrees": ["ii", "V", "I"],
+    "scaleUsed": "Bb Major / Altered Scale (ii-V-I Progression)",
+    "cagedForm": "C Form",
+    "pentatonicBox": 3,
+    "description": "재즈 스탠다드의 대명사 Stella by Starlight의 ii-V-I 진행에서 반음계 하행 보이스 리딩으로 Bbmaj7 코드톤에 완벽하게 안착하는 조 패스의 정통 재즈 솔로 릭입니다.",
+    "theoryTips": "Cm7의 11도(Eb)에서 F7의 얼터드 텐션(F#, #5/b13)을 거쳐 Bbmaj7의 5도(F)와 7도(A)로 순차 해결되는 3단계 화성적 유도(Voice Leading)의 모범 답안입니다.",
+    "tags": ["ii-V-I", "Voice Leading", "Altered Tension", "Jazz Standard"],
+    "notes": [
+      {"string": 3, "fret": 8, "duration": 0.25, "interval": "11", "noteName": "Eb", "technique": "none", "isTargetNote": false},
+      {"string": 2, "fret": 8, "duration": 0.25, "interval": "5", "noteName": "G", "technique": "none", "isTargetNote": false},
+      {"string": 3, "fret": 8, "duration": 0.25, "interval": "b7", "noteName": "Eb", "technique": "none", "isTargetNote": false},
+      {"string": 2, "fret": 7, "duration": 0.5, "interval": "b13", "noteName": "F#", "technique": "slide", "isTargetNote": false},
+      {"string": 2, "fret": 6, "duration": 0.25, "interval": "5", "noteName": "F", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 5, "duration": 0.5, "interval": "7", "noteName": "A", "technique": "none", "isTargetNote": true},
+      {"string": 1, "fret": 6, "duration": 0.75, "interval": "R", "noteName": "Bb", "technique": "vibrato", "isTargetNote": true}
+    ]
   }
 ]
